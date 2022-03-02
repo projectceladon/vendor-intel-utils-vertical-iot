@@ -1,0 +1,1 @@
+# vendor-intel-utils-vertical-iot
