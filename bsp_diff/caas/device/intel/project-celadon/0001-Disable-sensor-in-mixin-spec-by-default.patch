@@ -1,0 +1,25 @@
+From c4664e435d57404282e3a6bc45cd2481d7bd1c2e Mon Sep 17 00:00:00 2001
+From: Basanagouda Koppad <basanagoudax.n.koppad@intel.com>
+Date: Mon, 14 Feb 2022 11:39:44 +0530
+Subject: [PATCH] Disable sensor in mixin spec by default
+
+enable_sensor_list flag is set to false
+
+Tracked-On: OAM-100975
+Signed-off-by: Basanagouda Koppad <basanagoudax.n.koppad@intel.com>
+
+diff --git a/caas/mixins.spec b/caas/mixins.spec
+index a8ad282..f4f01cd 100755
+--- a/caas/mixins.spec
++++ b/caas/mixins.spec
+@@ -85,6 +85,6 @@ atrace: true
+ firmware: true(all_firmwares=false)
+ aaf: true
+ suspend: auto
+-sensors: mediation(enable_sensor_list=true)
++sensors: mediation(enable_sensor_list=false)
+ bugreport: true
+ mainline-mod: true
+-- 
+2.35.1
+

@@ -1,0 +1,263 @@
+From 77df4d3234aaf4e619a0dd0da78be84d6ad6d3e0 Mon Sep 17 00:00:00 2001
+From: Xiao He <xiao.he@intel.com>
+Date: Wed, 25 Nov 2020 21:19:10 +0800
+Subject: [PATCH] SDE/FRP: vm-manager: start_civ.sh changes
+
+1. Support boot android guest form specific partition
+2. Enable secure erase daemon for secure data erase
+
+Signed-off-by: Xiao He <xiao.he@intel.com>
+---
+ scripts/start_civ.sh       |  19 +++++
+ scripts/start_flash_usb.sh | 151 ++++++++++++++++++++++++++-----------
+ 2 files changed, 125 insertions(+), 45 deletions(-)
+
+diff --git a/scripts/start_civ.sh b/scripts/start_civ.sh
+index 86287c8..89d34a0 100755
+--- a/scripts/start_civ.sh
++++ b/scripts/start_civ.sh
+@@ -24,6 +24,7 @@ GUEST_VGA_DEV="-device virtio-gpu-pci"
+ GUEST_RPMB_DEV=
+ GUEST_RPMB_DEV_PID=
+ GUEST_RPMB_DEV_SOCK=
++GUEST_SECURE_ERASE_DAEMON_PID=
+ GUEST_THERMAL_DAEMON_PID=
+ GUEST_BATTERY_DAEMON_PID=
+ GUEST_IMAGE=$WORK_DIR/android.qcow2
+@@ -242,6 +243,19 @@ function set_cpu() {
+ 
+ function set_disk() {
+     GUEST_DISK="-drive file=$1,if=none,id=disk1"
++    if [[ $1 =~ "/dev/" ]]; then
++        SECURE_ERASE_DAEMON=$SCRIPTS_DIR/secure_erase_daemon
++        local start=$(gdisk -l $1 | while read line;do vars=($line); [ "${vars[6]}" == "userdata" ] && echo ${vars[1]//.}; done)
++        local end=$(gdisk -l $1 | while read line;do vars=($line); [ "${vars[6]}" == "userdata" ] && echo ${vars[2]//.}; done)
++        if [ ! -f "$SECURE_ERASE_DAEMON" ]; then
++            echo "Fatal: $SECURE_ERASE_DAEMON not found !"
++            exit -1
++        else
++            chmod +x $SECURE_ERASE_DAEMON
++            $SECURE_ERASE_DAEMON $1 $start $end &
++            GUEST_SECURE_ERASE_DAEMON_PID=$!
++        fi
++   fi
+ }
+ 
+ function set_firmware_path() {
+@@ -440,6 +454,10 @@ function set_extra_qcmd() {
+     GUEST_EXTRA_QCMD=$1
+ }
+ 
++function cleanup_secure_erase_daemon() {
++    kill_daemon_proc "$GUEST_SECURE_ERASE_DAEMON_PID" "secure_erase_daemon"
++}
++
+ function set_pt_pci_vfio() {
+     local PT_PCI=$1
+     local unset=$2
+@@ -625,6 +643,7 @@ function enable_external_wakeup_mode() {
+ 
+ function cleanup() {
+     cleanup_rpmb_dev
++    cleanup_secure_erase_daemon
+     cleanup_thermal_mediation
+     cleanup_battery_mediation
+     cleanup_pt_pci
+diff --git a/scripts/start_flash_usb.sh b/scripts/start_flash_usb.sh
+index 7beb60d..bf5d723 100755
+--- a/scripts/start_flash_usb.sh
++++ b/scripts/start_flash_usb.sh
+@@ -7,73 +7,134 @@
+ 
+ WORK_DIR=$PWD
+ 
+-[ $# -lt 1 ] && echo "Usage: $0 caas-flashfiles-eng-<user>.zip" && exit -1
+-
+-if [ -f android.qcow2 ]
+-then
+-	echo -n "android.qcow2 already exsited, Do you want to flash new one(y/N):"
+-	read option
+-	if [ "$option" == 'y' ]
+-	then
+-		rm android.qcow2
+-	else
+-		exit 1
+-	fi
+-fi
+-
+ display_type="gtk,gl=on"
+ support_dedicated_data=false
+-for var in "$@"
+-do
+-	if [[ $var == "--display-off" ]]
+-	then
+-		display_type="none"
+-	elif [[ $var == "--dedicated-data" ]]
+-	then
+-		support_dedicated_data=true
+-	fi
+-done
++GUEST_IMAGE=$WORK_DIR/android.qcow2
++IMAGE_FORMAT=qcow2
++Flash_PHY_DISK=false
++FLASH_FILES=
+ 
+-if [ "$support_dedicated_data" = true ]
+-then
+-	qemu-img create -f qcow2 android.qcow2 8500M
++function set_display_off()
++{
++  display_type="none"
++}
++
++function set_disk()
++{
++  GUEST_IMAGE=$1
++  IMAGE_FORMAT=raw
++  FLASH_PHY_DISK=true
++}
++
++function show_help()
++{
++  printf "$(basename "$0") flashfiles [-d <partition>] [--display-off] [--dedicated-data]\n"
++  printf "\t flashfiles caas-flashfiles-eng-<user>.zip\n"
++  printf "Options:\n"
++  printf "\t-h show this help message\n"
++  printf "\t--display-off disable use of display for flashing process output\n"
++  printf "\t--dedicated-data separate image for data\n"
++  printf "\t-d flash image to physical partition specified\n"
++}
++
++function parse_arg() {
++  [ $# -lt 1 ]  && show_help && exit -1
++  FLASH_FILES=$1;
++  [ ! -f $FLASH_FILES ] && show_help && exit -1
++  shift
++  while [[ $# -gt 0 ]]; do
++    case $1 in
++      -h|-\?|--help)
++        show_help
++        exit
++        ;;
++
++      -d)
++        set_disk $2
++        shift
++        ;;
++
++      --display-off)
++        set_display_off
++        ;;
++
++      --dedicated-data)
++        support_dedicated_data=true
++        ;;
++
++      -?*)
++        echo "Error: Invalid option $1"
++        show_help
++        return -1
++        ;;
++
++      *)
++        echo "unknown option: $1"
++        show_help
++        return -1
++        ;;
++      esac
++      shift
++  done
++}
++
++parse_arg "$@" || exit -1
++
++if [[ $FLASH_PHY_DISK == true ]]; then
++  dd if=/dev/zero of=$GUEST_IMAGE bs=32M count=8
++  mkfs.ext4 $GUEST_IMAGE
+ else
+-	qemu-img create -f qcow2 android.qcow2 32G
++  if [ -f $GUEST_IMAGE ]; then
++    echo -n "$GUEST_IMAGE already exsited, Do you want to flash new one(y/N):"
++    read option
++    if [ "$option" == 'y' ]; then
++      rm $GUEST_IMAGE
++    else
++      exit 1
++    fi
++  fi
++
++  if [ "$support_dedicated_data" = true ]
++  then
++    qemu-img create -f qcow2 android.qcow2 8500M
++  else
++    qemu-img create -f qcow2 android.qcow2 32G
++  fi
+ fi
+ 
+-[ -d "./flashfiles_decompress" ] && rm -rf "./flashfiles_decompress"
+-mkdir ./flashfiles_decompress
+-unzip $1 -d ./flashfiles_decompress
++[ -d "$WORK_DIR/flashfiles_decompress" ] && rm -rf "$WORK_DIR/flashfiles_decompress"
++mkdir $WORK_DIR/flashfiles_decompress
++unzip $1 -d $WORK_DIR/flashfiles_decompress
+ 
+ G_size=$((1<<32))
+-for i in `ls ./flashfiles_decompress`;do
+-	if [ -f "./flashfiles_decompress/"$i ] && [ "`grep $i ./flashfiles_decompress/installer.cmd`" ]; then
+-		size=$(stat -c %s "./flashfiles_decompress/"$i)
++for i in `ls $WORK_DIR/flashfiles_decompress`;do
++	if [ -f "$WORK_DIR/flashfiles_decompress/"$i ] && [ "`grep $i $WORK_DIR/flashfiles_decompress/installer.cmd`" ]; then
++		size=$(stat -c %s "$WORK_DIR/flashfiles_decompress/"$i)
+ 		if [[ $size -gt $G_size ]]; then
+ 			echo "Split $i due to its size bigger than 4G\n"
+-			split --bytes=$((G_size-1)) --numeric-suffixes "./flashfiles_decompress/"$i "./flashfiles_decompress/"$i.part
+-			rm "./flashfiles_decompress/"$i
++			split --bytes=$((G_size-1)) --numeric-suffixes "$WORK_DIR/flashfiles_decompress/"$i "$WORK_DIR/flashfiles_decompress/"$i.part
++			rm "$WORK_DIR/flashfiles_decompress/"$i
+ 		fi
+ 	fi
+ done
+ 
+-dd if=/dev/zero of=./flash.vfat bs=63M count=160
+-mkfs.vfat ./flash.vfat
+-mcopy -i flash.vfat flashfiles_decompress/* ::
++dd if=/dev/zero of=$WORK_DIR/flash.vfat bs=63M count=160
++mkfs.vfat $WORK_DIR/flash.vfat
++mcopy -i $WORK_DIR/flash.vfat $WORK_DIR/flashfiles_decompress/* ::
+ 
+ if [ "$support_dedicated_data" = true ]
+ then
+-	[ ! -d "./userdata" ] && mkdir ./userdata
++	[ ! -d "$WORK_DIR/userdata" ] && mkdir $WORK_DIR/userdata
+ 	if [[ $(id -u) = 0 ]]
+ 	then
+-		data_image=./userdata/$SUDO_USER.img
++		data_image=$WORK_DIR/userdata/$SUDO_USER.img
+ 	else
+-		data_image=./userdata/$USER.img
++		data_image=$WORK_DIR/userdata/$USER.img
+ 	fi
+ 	qemu-img create -f qcow2 $data_image 16G
+ fi
+ 
+-ovmf_file="./OVMF.fd"
++ovmf_file="$WORK_DIR/OVMF.fd"
+ [ ! -f $ovmf_file ] && ovmf_file="/usr/share/qemu/OVMF.fd"
+ 
+ #start software Trusted Platform Module
+@@ -90,10 +151,10 @@ qemu-system-x86_64 \
+   -chardev socket,id=charserial0,path=./kernel-console,server,nowait \
+   -device isa-serial,chardev=charserial0,id=serial0 \
+   -device qemu-xhci,id=xhci,addr=0x5 \
+-  -drive file=./flash.vfat,id=udisk1,format=raw,if=none \
++  -drive file=$WORK_DIR/flash.vfat,id=udisk1,format=raw,if=none \
+   -device usb-storage,drive=udisk1,bus=xhci.0 \
+   -device virtio-scsi-pci,id=scsi0,addr=0x8 \
+-  -drive file=./android.qcow2,if=none,format=qcow2,id=scsidisk1 \
++  -drive file=$GUEST_IMAGE,if=none,format=$IMAGE_FORMAT,id=scsidisk1 \
+   -device scsi-hd,drive=scsidisk1,bus=scsi0.0 \
+   -drive file=$ovmf_file,format=raw,if=pflash \
+   -no-reboot \
+-- 
+2.17.1
+

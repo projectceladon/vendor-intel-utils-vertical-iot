@@ -1,0 +1,31 @@
+From 672ee0de9dd85e7ed3049c979249172db6a4dcb8 Mon Sep 17 00:00:00 2001
+From: vdanix <vishwanathx.dani@intel.com>
+Date: Thu, 10 Feb 2022 12:56:31 +0530
+Subject: [PATCH] Revert "Add sepolicy for keymaster"
+
+This reverts commit f4c6c38aef03ce85a42882e65d0b6a9b8de6ee21.
+
+diff --git a/trusty/disabled/file_contexts b/trusty/disabled/file_contexts
+index e6cbb19..66d77c7 100644
+--- a/trusty/disabled/file_contexts
++++ b/trusty/disabled/file_contexts
+@@ -1,4 +1 @@
+ /vendor/bin/hw/android.hardware.gatekeeper@1.0-service.software    u:object_r:hal_gatekeeper_default_exec:s0
+-
+-/vendor/bin/hw/android.hardware.keymaster@3.0-service      u:object_r:hal_keymaster_default_exec:s0
+-/vendor/bin/hw/android.hardware.keymaster@4.0-service      u:object_r:hal_keymaster_default_exec:s0
+diff --git a/trusty/enabled/file_contexts b/trusty/enabled/file_contexts
+index 6bb3301..2b7be97 100644
+--- a/trusty/enabled/file_contexts
++++ b/trusty/enabled/file_contexts
+@@ -7,7 +7,3 @@
+ /vendor/bin/keybox_provisioning     u:object_r:tee_exec:s0
+ /data/vendor/securestorage(/.*)?    u:object_r:tee_data_file:s0
+ /vendor/bin/hw/android.hardware.gatekeeper@1.0-service.trusty   u:object_r:hal_gatekeeper_default_exec:s0
+-
+-# Trusty keymaste treble service
+-/vendor/bin/hw/android.hardware.keymaster@3.0-service.trusty      u:object_r:hal_keymaster_default_exec:s0
+-/vendor/bin/hw/android.hardware.keymaster@4.0-service.trusty      u:object_r:hal_keymaster_default_exec:s0
+-- 
+2.35.1
+
