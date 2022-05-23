@@ -1,4 +1,4 @@
-From 77df4d3234aaf4e619a0dd0da78be84d6ad6d3e0 Mon Sep 17 00:00:00 2001
+From 101e9a653e221e11466520569fed0ea38a9fa575 Mon Sep 17 00:00:00 2001
 From: Xiao He <xiao.he@intel.com>
 Date: Wed, 25 Nov 2020 21:19:10 +0800
 Subject: [PATCH] SDE/FRP: vm-manager: start_civ.sh changes
@@ -13,7 +13,7 @@ Signed-off-by: Xiao He <xiao.he@intel.com>
  2 files changed, 125 insertions(+), 45 deletions(-)
 
 diff --git a/scripts/start_civ.sh b/scripts/start_civ.sh
-index 86287c8..89d34a0 100755
+index 1ade22c..d7d50b3 100755
 --- a/scripts/start_civ.sh
 +++ b/scripts/start_civ.sh
 @@ -24,6 +24,7 @@ GUEST_VGA_DEV="-device virtio-gpu-pci"
@@ -24,7 +24,7 @@ index 86287c8..89d34a0 100755
  GUEST_THERMAL_DAEMON_PID=
  GUEST_BATTERY_DAEMON_PID=
  GUEST_IMAGE=$WORK_DIR/android.qcow2
-@@ -242,6 +243,19 @@ function set_cpu() {
+@@ -270,6 +271,19 @@ function set_cpu() {
  
  function set_disk() {
      GUEST_DISK="-drive file=$1,if=none,id=disk1"
@@ -44,7 +44,7 @@ index 86287c8..89d34a0 100755
  }
  
  function set_firmware_path() {
-@@ -440,6 +454,10 @@ function set_extra_qcmd() {
+@@ -541,6 +555,10 @@ function set_extra_qcmd() {
      GUEST_EXTRA_QCMD=$1
  }
  
@@ -55,7 +55,7 @@ index 86287c8..89d34a0 100755
  function set_pt_pci_vfio() {
      local PT_PCI=$1
      local unset=$2
-@@ -625,6 +643,7 @@ function enable_external_wakeup_mode() {
+@@ -751,6 +769,7 @@ function enable_external_wakeup_mode() {
  
  function cleanup() {
      cleanup_rpmb_dev
@@ -64,7 +64,7 @@ index 86287c8..89d34a0 100755
      cleanup_battery_mediation
      cleanup_pt_pci
 diff --git a/scripts/start_flash_usb.sh b/scripts/start_flash_usb.sh
-index 7beb60d..bf5d723 100755
+index df2f88d..1f502d7 100755
 --- a/scripts/start_flash_usb.sh
 +++ b/scripts/start_flash_usb.sh
 @@ -7,73 +7,134 @@
@@ -246,7 +246,7 @@ index 7beb60d..bf5d723 100755
  
  #start software Trusted Platform Module
 @@ -90,10 +151,10 @@ qemu-system-x86_64 \
-   -chardev socket,id=charserial0,path=./kernel-console,server,nowait \
+   -chardev socket,id=charserial0,path=./kernel-console,server=on,wait=off \
    -device isa-serial,chardev=charserial0,id=serial0 \
    -device qemu-xhci,id=xhci,addr=0x5 \
 -  -drive file=./flash.vfat,id=udisk1,format=raw,if=none \
@@ -259,5 +259,5 @@ index 7beb60d..bf5d723 100755
    -drive file=$ovmf_file,format=raw,if=pflash \
    -no-reboot \
 -- 
-2.17.1
+2.36.1
 
