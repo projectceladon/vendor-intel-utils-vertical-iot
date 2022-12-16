@@ -1,0 +1,26 @@
+From a1be8edd871a2961ece337ae55c50142b26e5bad Mon Sep 17 00:00:00 2001
+From: Basil Chew <basil.chew@intel.com>
+Date: Wed, 2 Jun 2021 10:42:21 +0800
+Subject: [PATCH] Revert "Disable HWC"
+
+This reverts commit 95d9d3b065e7b9269d571d6977d6e148abe2a1b5.
+---
+ common/core/gpudevice.cpp | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/common/core/gpudevice.cpp b/common/core/gpudevice.cpp
+index 48dc865..4e65d55 100644
+--- a/common/core/gpudevice.cpp
++++ b/common/core/gpudevice.cpp
+@@ -101,7 +101,7 @@ uint32_t GpuDevice::GetFD() const {
+ }
+ 
+ bool GpuDevice::IsGvtActive() const {
+-  return true;
++  return gvt_active_;
+ }
+ 
+ NativeDisplay *GpuDevice::GetDisplay(uint32_t display_id) {
+-- 
+2.17.1
+

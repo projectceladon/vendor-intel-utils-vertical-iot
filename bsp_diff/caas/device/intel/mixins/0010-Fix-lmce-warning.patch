@@ -1,0 +1,28 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Basil Chew <basil.chew@intel.com>
+Date: Mon, 4 Oct 2021 12:42:32 +0800
+Subject: [PATCH] Fix lmce warning
+
+Change:
+- disabled unsupported lmce through command line
+---
+ groups/kernel/BoardConfig.mk | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/groups/kernel/BoardConfig.mk b/groups/kernel/BoardConfig.mk
+index e7ae50e..bbfc333 100644
+--- a/groups/kernel/BoardConfig.mk
++++ b/groups/kernel/BoardConfig.mk
+@@ -50,6 +50,9 @@ BOARD_KERNEL_CMDLINE += \
+ ifeq ($(BASE_YOCTO_KERNEL), true)
+ BOARD_KERNEL_CMDLINE += \
+       snd-intel-dspcfg.dsp_driver=1
++else ifeq ($(BASE_LTS2020_YOCTO_KERNEL), true)
++BOARD_KERNEL_CMDLINE += \
++      mce=no_lmce
+ endif
+ 
+ BOARD_SEPOLICY_M4DEFS += module_kernel=true
+-- 
+2.17.1
+

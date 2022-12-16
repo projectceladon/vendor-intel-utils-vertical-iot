@@ -1,0 +1,41 @@
+From a6afcb4e78377c9b0c319f11be0fc02d1f18311e Mon Sep 17 00:00:00 2001
+From: "Suresh, Prashanth" <prashanth.suresh@intel.com>
+Date: Wed, 16 Nov 2022 21:45:41 +0530
+Subject: [PATCH] Fix Android first launch failure with VM manager
+
+Replace sriov_numvfs with sriov_totalvfs while checking condition.
+
+Signed-off-by: Suresh, Prashanth <prashanth.suresh@intel.com>
+---
+ src/guest/start.c | 15 +++++++++++++++
+ 1 file changed, 15 insertions(+)
+
+diff --git a/src/guest/start.c b/src/guest/start.c
+index 844fc2c..05f5907 100644
+--- a/src/guest/start.c
++++ b/src/guest/start.c
+@@ -482,6 +482,21 @@ static int set_available_vf(void)
+ 		}
+ 	}
+ 
++        fd = open("/sys/class/drm/card0/device/sriov_numvfs", O_RDONLY);
++        if (fd == -1) {
++                fprintf(stderr, "open /sys/class/drm/card0/device/sriov_numvfs, errno=%d\n", errno);
++                return 0;
++        }
++
++        n = read(fd, buf, sizeof(buf));
++        if (n == -1) {
++                fprintf(stderr, "read /sys/class/drm/card0/device//sriov_numvfs failed, errno=%d\n", errno);
++                close(fd);
++                return 0;
++        }
++        close(fd);
++        numvfs = strtoul(buf, NULL, 10);
++
+ 	for (i = 1; i < numvfs; i++) {
+ 		memset(buf, 0, sizeof(buf));
+ 		snprintf(buf, sizeof(buf), "/sys/bus/pci/devices/0000:00:02.%d/enable", i);
+-- 
+2.38.1
+

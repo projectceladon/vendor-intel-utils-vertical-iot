@@ -1,0 +1,67 @@
+From 32443e32dfa934081c580c2d6e6446f0d80d4b0a Mon Sep 17 00:00:00 2001
+From: "Suresh, Prashanth" <prashanth.suresh@intel.com>
+Date: Mon, 26 Sep 2022 14:57:02 +0530
+Subject: [PATCH] Pass host graphics SRIOV info to guest.
+
+Add file in aaf folder to enable guest to know if host supports SRIOV.
+
+Signed-off-by: Suresh, Prashanth <prashanth.suresh@intel.com
+---
+ src/guest/aaf.c         | 5 +++--
+ src/guest/start.c       | 2 +-
+ src/include/guest/aaf.h | 3 ++-
+ 3 files changed, 6 insertions(+), 4 deletions(-)
+
+diff --git a/src/guest/aaf.c b/src/guest/aaf.c
+index c76bcbf..a1c4eb2 100644
+--- a/src/guest/aaf.c
++++ b/src/guest/aaf.c
+@@ -25,7 +25,8 @@
+ static const char *gpu_type[] = {
+ 	[AAF_GPU_TYPE_VIRTIO] = "gpu-type:virtio",
+ 	[AAF_GPU_TYPE_GVTG]   = "gpu-type:gvtg",
+-	[AAF_GPU_TYPE_GVTD]   = "gpu-type:gvtd"
++	[AAF_GPU_TYPE_GVTD]   = "gpu-type:gvtd",
++	[AAF_GPU_TYPE_SRIOV]  = "gpu-type:sriov"
+ };
+ 
+ static const char *suspend_support[] = {
+@@ -111,7 +112,7 @@ int set_aaf_option(aaf_config_opt_t opt, unsigned int sub)
+ 			aaf_config_array[AAF_CONFIG_AUDIO] = audio_type[sub];
+ 			break;
+ 		case AAF_CONFIG_GPU_TYPE:
+-			if (sub > AAF_GPU_TYPE_GVTD)
++			if (sub > AAF_GPU_TYPE_SRIOV)
+ 				return -1;
+ 			aaf_config_array[AAF_CONFIG_GPU_TYPE] = gpu_type[sub];
+ 			break;
+diff --git a/src/guest/start.c b/src/guest/start.c
+index 2f05c19..a6000ab 100644
+--- a/src/guest/start.c
++++ b/src/guest/start.c
+@@ -1036,7 +1036,7 @@ int start_guest(char *name)
+ 	} else if (strcmp(val, VGPU_OPTS_SRIOV_STR) == 0) {
+ 		if (setup_sriov(gkf, &p, &size))
+ 			return -1;
+-		set_aaf_option(AAF_CONFIG_GPU_TYPE, AAF_GPU_TYPE_VIRTIO);
++		set_aaf_option(AAF_CONFIG_GPU_TYPE, AAF_GPU_TYPE_SRIOV);
+ 	} else {
+ 		g_warning("Invalid Graphics config\n");
+ 		return -1;
+diff --git a/src/include/guest/aaf.h b/src/include/guest/aaf.h
+index 4a49dd7..f00510f 100644
+--- a/src/include/guest/aaf.h
++++ b/src/include/guest/aaf.h
+@@ -28,7 +28,8 @@ enum {
+ enum {
+     AAF_GPU_TYPE_VIRTIO = 0,
+     AAF_GPU_TYPE_GVTG,
+-    AAF_GPU_TYPE_GVTD
++    AAF_GPU_TYPE_GVTD,
++    AAF_GPU_TYPE_SRIOV
+ };
+ 
+ int set_aaf_path(const char *bin_path);
+-- 
+2.34.1
+

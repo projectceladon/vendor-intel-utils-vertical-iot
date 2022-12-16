@@ -1,0 +1,31 @@
+From c77a637eff258e04133519a8dafe08d207a5ba53 Mon Sep 17 00:00:00 2001
+From: "Teli,ShivaniX" <shivanix.teli@intel.com>
+Date: Wed, 16 Nov 2022 12:28:14 +0530
+Subject: [PATCH] Added passpoint.xml to PRODUCT_COPY_FILES
+
+For celadon added  passpoint.xml to PRODUCT_COPY_FILES
+Fix for CtsWifiTestCases
+
+Tracked-On: OAM-104818
+Signed-off-by: Teli,ShivaniX <shivanix.teli@intel.com>
+---
+ caas/device.mk | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/caas/device.mk b/caas/device.mk
+index aa9746f..5f0ecc8 100644
+--- a/caas/device.mk
++++ b/caas/device.mk
+@@ -118,7 +118,8 @@ PRODUCT_COPY_FILES += \
+     $(INTEL_PATH_COMMON)/wlan/iwlwifi/p2p_supplicant_overlay.conf:vendor/etc/wifi/p2p_supplicant_overlay.conf \
+     frameworks/native/data/etc/android.hardware.wifi.xml:vendor/etc/permissions/android.hardware.wifi.xml \
+     frameworks/native/data/etc/android.hardware.wifi.direct.xml:vendor/etc/permissions/android.hardware.wifi.direct.xml \
+-    frameworks/native/data/etc/android.software.ipsec_tunnels.xml:vendor/etc/permissions/android.software.ipsec_tunnels.xml
++    frameworks/native/data/etc/android.software.ipsec_tunnels.xml:vendor/etc/permissions/android.software.ipsec_tunnels.xml \
++    frameworks/native/data/etc/android.hardware.wifi.passpoint.xml:vendor/etc/permissions/android.hardware.wifi.passpoint.xml
+ 
+ PRODUCT_PACKAGE_OVERLAYS += $(INTEL_PATH_COMMON)/wlan/overlay-disable_keepalive_offload
+ ##############################################################
+-- 
+2.38.1
+

@@ -1,0 +1,53 @@
+From a649b9c4caf03b237740603120c2e22921320df9 Mon Sep 17 00:00:00 2001
+From: HeYue <yue.he@intel.com>
+Date: Mon, 11 Jul 2022 13:58:50 +0800
+Subject: [PATCH] Upgrade the qemu to 7.0
+
+Tracked-On: OAM-102812
+Signed-off-by: HeYue <yue.he@intel.com>
+Change-Id: I3ecd76dacffc6e6cd778085c9f156546852e4d91
+
+diff --git a/scripts/setup_host.sh b/scripts/setup_host.sh
+index d60bcd3..372b9f7 100755
+--- a/scripts/setup_host.sh
++++ b/scripts/setup_host.sh
+@@ -9,7 +9,7 @@ set -eE
+ 
+ #---------      Global variable     -------------------
+ reboot_required=0
+-QEMU_REL="qemu-6.0.0"
++QEMU_REL="qemu-7.0.0"
+ 
+ #Directory to keep versions of qemu which can be reused instead of downloading again
+ QEMU_CACHE_DIR="$HOME/.cache/civ/qemu"
+@@ -108,8 +108,12 @@ function ubu_install_qemu_gvt(){
+ }
+ 
+ function ubu_build_ovmf_gvt(){
++    [ -d $CIV_WORK_DIR/edk2 ] && rm -rf $CIV_WORK_DIR/edk2
++
+     sudo apt install -y uuid-dev nasm acpidump iasl
+-    cd $CIV_WORK_DIR/$QEMU_REL/roms/edk2
++    git clone https://github.com/tianocore/edk2.git
++    cd $CIV_WORK_DIR/edk2
++    git checkout -b stable202111 edk2-stable202111
+ 
+     patch -p1 < $CIV_WORK_DIR/patches/ovmf/0001-OvmfPkg-add-IgdAssignmentDxe.patch
+     if [ -d $CIV_GOP_DIR ]; then
+@@ -125,10 +129,12 @@ function ubu_build_ovmf_gvt(){
+         done
+     fi
+ 
++    git submodule update --init
++
+     source ./edksetup.sh
+     make -C BaseTools/
+     build -b DEBUG -t GCC5 -a X64 -p OvmfPkg/OvmfPkgX64.dsc -D NETWORK_IP4_ENABLE -D NETWORK_ENABLE  -D SECURE_BOOT_ENABLE -D TPM_ENABLE
+-    cp Build/OvmfX64/DEBUG_GCC5/FV/OVMF.fd ../../../OVMF.fd
++    cp Build/OvmfX64/DEBUG_GCC5/FV/OVMF.fd ../OVMF.fd
+ 
+     if [ -d $CIV_GOP_DIR ]; then
+         local gpu_device_id=$(cat /sys/bus/pci/devices/0000:00:02.0/device)
+-- 
+2.38.0
+

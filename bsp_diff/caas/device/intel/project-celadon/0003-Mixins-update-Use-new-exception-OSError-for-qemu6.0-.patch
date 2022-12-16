@@ -1,0 +1,40 @@
+From 56e7948562859925e198385cd7a062212de71027 Mon Sep 17 00:00:00 2001
+From: "Suresh, Prashanth" <prashanth.suresh@intel.com>
+Date: Wed, 11 May 2022 14:59:05 +0530
+Subject: [PATCH] [PATCH] Mixins update - Use new exception OSError for qemu6.0
+ qmp.py
+
+---
+ caas/guest_pm_control | 2 ++
+ caas/wakeup.py        | 2 ++
+ 2 files changed, 4 insertions(+)
+
+diff --git a/caas/guest_pm_control b/caas/guest_pm_control
+index b5017d2..529cdd4 100755
+--- a/caas/guest_pm_control
++++ b/caas/guest_pm_control
+@@ -91,6 +91,8 @@ def main():
+             print('Could not negotiate capabilities with QEMU QMP server')
+         except qmp.QMPTimeoutError:
+             print('Connection Timeout Error')
++        except OSError:
++            print
+         else:
+             print("connected to QEMU QMP server")
+             break
+diff --git a/caas/wakeup.py b/caas/wakeup.py
+index 9565fba..0ee3c0e 100755
+--- a/caas/wakeup.py
++++ b/caas/wakeup.py
+@@ -23,6 +23,8 @@ def main():
+             print('Didn\'t get QMP greeting message from QEMU QMP server')
+         except qmp.QMPCapabilitiesError:
+             print('Could not negotiate capabilities with QEMU QMP server')
++        except OSError:
++            print
+ 
+         if time.time() >= timeout + timeout_start:
+             print("connection timeout error")
+-- 
+2.36.1
+

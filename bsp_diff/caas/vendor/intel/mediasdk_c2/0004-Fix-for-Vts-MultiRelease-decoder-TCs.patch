@@ -1,0 +1,32 @@
+From ff9d4b86a7de5a2bb26d783bdb17a06a8b7f2a7d Mon Sep 17 00:00:00 2001
+From: gollarx <ratnakumarix.golla@intel.com>
+Date: Tue, 15 Nov 2022 10:52:21 +0530
+Subject: [PATCH] Fix for Vts MultiRelease decoder TCs
+
+kParamIndexMediaType is missing in decoder component.
+
+Added this switch case in decoder DoCOnfig method and return the
+positive value.
+
+Tracked-On: OAM-104799
+Signed-off-by: gollarx <ratnakumarix.golla@intel.com>
+---
+ c2_components/src/mfx_c2_decoder_component.cpp | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/c2_components/src/mfx_c2_decoder_component.cpp b/c2_components/src/mfx_c2_decoder_component.cpp
+index b5e3c44..4fe12ce 100755
+--- a/c2_components/src/mfx_c2_decoder_component.cpp
++++ b/c2_components/src/mfx_c2_decoder_component.cpp
+@@ -1314,6 +1314,8 @@ void MfxC2DecoderComponent::DoConfig(const std::vector<C2Param*> &params,
+                 }
+                 break;
+             }
++	    case kParamIndexMediaType:
++		break;
+             default:
+                 MFX_DEBUG_TRACE_PRINTF("applying default parameter: %X02", param->index());
+                 m_paramStorage.ConfigParam(*param, m_state == State::STOPPED, failures);
+-- 
+2.38.1
+

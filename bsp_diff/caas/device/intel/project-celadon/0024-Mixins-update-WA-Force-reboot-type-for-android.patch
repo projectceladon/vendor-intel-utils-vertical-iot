@@ -1,0 +1,24 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Basil Chew <basil.chew@intel.com>
+Date: Wed, 27 Apr 2022 15:23:04 +0800
+Subject: [PATCH] Mixins update - WA: Force reboot type for android
+
+---
+ caas/BoardConfig.mk | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/caas/BoardConfig.mk b/caas/BoardConfig.mk
+index 2d10e51..2942ed6 100644
+--- a/caas/BoardConfig.mk
++++ b/caas/BoardConfig.mk
+@@ -266,6 +266,7 @@ BOARD_KERNEL_CMDLINE += \
+ 	i915.hpd_sense_invert=0x7 \
+ 	intel_iommu=off \
+ 	i915.enable_pvmmio=0 \
++	reboot=a,e,p,t,f \
+ 	loop.max_part=7
+ 
+ BOARD_FLASHFILES += ${TARGET_DEVICE_DIR}/bldr_utils.img:bldr_utils.img
+-- 
+2.17.1
+

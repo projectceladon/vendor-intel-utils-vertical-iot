@@ -1,0 +1,27 @@
+From e6719055ad03b2067a80221e67152b4b9c74d34a Mon Sep 17 00:00:00 2001
+From: "Talla, SrinivasuluX" <srinivasulux.talla@intel.com>
+Date: Mon, 4 Jul 2022 21:21:50 +0530
+Subject: [PATCH] Remove hwc2 and drmhwc graphics mixin options
+
+Remove as relevant config is deleted in mixin, DRM used by default
+Tracked-On: OAM-102675
+---
+ caas/mixins.spec | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/caas/mixins.spec b/caas/mixins.spec
+index 1467cf9..551f68f 100755
+--- a/caas/mixins.spec
++++ b/caas/mixins.spec
+@@ -26,7 +26,7 @@ allow-missing-dependencies: true
+ dexpreopt: true
+ pstore: false
+ media: auto(enable_msdk_omx=false, add_sw_msdk=false, opensource_msdk=true, opensource_msdk_omx_il=false)
+-graphics: auto(gen9+=true,hwc2=true,vulkan=true,drmhwc=false,minigbm=true,gralloc1=true,enable_guc=true)
++graphics: auto(gen9+=true,vulkan=true,minigbm=true,gralloc1=true,enable_guc=false)
+ storage: sdcard-v-usb-only(adoptablesd=false,adoptableusb=false)
+ ethernet: dhcp
+ camera-ext: ext-camera-only
+--
+2.37.0
+

@@ -1,0 +1,125 @@
+From a13823b5ac2848fcebce75ccd79fd691ef07306d Mon Sep 17 00:00:00 2001
+From: Kalyan Alle <kalyan.alle@intel.com>
+Date: Tue, 5 Jul 2022 16:40:20 +0530
+Subject: [PATCH 3/5] Zero copy changes in minigbm gralloc to fix the android
+ boot failure issue
+
+minigbm needs to open virtio-gpu render node and enable the virtiogpu
+backend driver to bring up the android boot animation and UI.
+
+Tracked-On: OAM-102839
+Signed-of-by: Shekhar Chauhan <shekhar.chauhan@intel.com>
+---
+ Android.bp                          | 10 +++++-----
+ Makefile                            |  3 +++
+ cros_gralloc/cros_gralloc_driver.cc |  2 +-
+ drv.c                               |  9 +++++++--
+ 4 files changed, 16 insertions(+), 8 deletions(-)
+
+diff --git a/Android.bp b/Android.bp
+index 4aa6a22..b575b13 100644
+--- a/Android.bp
++++ b/Android.bp
+@@ -39,7 +39,7 @@ cc_defaults {
+         "-Wno-switch",
+         "-Wno-format",
+         "-Wno-unused-variable",
+-        "-DDRV_I915",
++        "-DDRV_VIRTIO_GPU",
+         "-DUSE_GRALLOC1",
+         "-Wno-cast-qual",
+     ],
+@@ -84,7 +84,7 @@ cc_defaults {
+     ],
+ 
+     cflags: [
+-        "-DDRV_I915",
++        "-DDRV_VIRTIO_GPU",
+         "-DUSE_GRALLOC1",
+     ],
+ 
+@@ -138,7 +138,7 @@ cc_library_shared {
+             enabled: true,
+         },
+     },
+-    cflags: ["-DDRV_I915"],
++    cflags: ["-DDRV_VIRTIO_GPU"],
+     srcs: ["cros_gralloc/gralloc0/gralloc0.cc"],
+ }
+ 
+@@ -154,7 +154,7 @@ cc_library_shared {
+         },
+     },
+     cflags: [
+-        "-DDRV_I915",
++        "-DDRV_VIRTIO_GPU",
+         "-DUSE_GRALLOC1",
+     ],
+     relative_install_path: "hw",
+@@ -173,7 +173,7 @@ cc_library_shared {
+         },
+     },
+     cflags: [
+-        "-DDRV_I915",
++        "-DDRV_VIRTIO_GPU",
+         "-DUSE_GRALLOC1",
+     ],
+     relative_install_path: "hw",
+diff --git a/Makefile b/Makefile
+index 35f92f2..7cde685 100644
+--- a/Makefile
++++ b/Makefile
+@@ -34,6 +34,9 @@ endif
+ ifdef DRV_VC4
+ 	CFLAGS += $(shell $(PKG_CONFIG) --cflags libdrm_vc4)
+ endif
++ifdef DRV_VIRTIO_GPU
++	CFLAGS += $(shell $(PKG_CONFIG) --cflags libdrm_intel)
++endif
+ 
+ CPPFLAGS += $(PC_CFLAGS)
+ LDLIBS += $(PC_LIBS)
+diff --git a/cros_gralloc/cros_gralloc_driver.cc b/cros_gralloc/cros_gralloc_driver.cc
+index d7e4cda..7ebeb1b 100644
+--- a/cros_gralloc/cros_gralloc_driver.cc
++++ b/cros_gralloc/cros_gralloc_driver.cc
+@@ -49,7 +49,7 @@ int32_t cros_gralloc_driver::init()
+ 
+ 	int fd;
+ 	drmVersionPtr version;
+-	char const *str = "%s/renderD%d";
++	char const *str = "%s/renderD129";
+ 	const char *undesired[2] = { "vgem", nullptr };
+ 	uint32_t num_nodes = 63;
+ 	uint32_t min_node = 128;
+diff --git a/drv.c b/drv.c
+index 504bc2e..e9da5de 100644
+--- a/drv.c
++++ b/drv.c
+@@ -69,8 +69,10 @@ extern const struct backend backend_udl;
+ extern const struct backend backend_vc4;
+ #endif
+ 
+-extern const struct backend backend_vgem;
++#ifdef DRV_VIRTIO_GPU
+ extern const struct backend backend_virtio_gpu;
++#endif
++extern const struct backend backend_vgem;
+ 
+ static const struct backend *drv_get_backend(int fd)
+ {
+@@ -122,7 +124,10 @@ static const struct backend *drv_get_backend(int fd)
+ #ifdef DRV_VC4
+ 		&backend_vc4,
+ #endif
+-		&backend_vgem,	    &backend_virtio_gpu,
++#ifdef DRV_VIRTIO_GPU
++		&backend_virtio_gpu,
++#endif
++		&backend_vgem,
+ 	};
+ 
+ 	for (i = 0; i < ARRAY_SIZE(backend_list); i++) {
+-- 
+2.17.1
+

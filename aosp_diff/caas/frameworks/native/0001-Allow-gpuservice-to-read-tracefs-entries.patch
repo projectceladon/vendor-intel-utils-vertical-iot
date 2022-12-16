@@ -1,0 +1,27 @@
+From 334a75fad8159351ee1f1e934b540eff7a55b41c Mon Sep 17 00:00:00 2001
+From: "Vasoya,Nikhilx" <nikhilx.vasoya@intel.com>
+Date: Mon, 28 Nov 2022 15:54:27 +0530
+Subject: [PATCH] Allow gpuservice to read tracefs entries
+
+Gpu service needs tracefs access to attach the BPF program
+to the gpu_mem_total tracepoint for GPU memory tracking.
+
+Tracked-On: OAM-104011
+Signed-off-by: Vasoya,Nikhilx <nikhilx.vasoya@intel.com>
+---
+ services/gpuservice/gpuservice.rc | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/services/gpuservice/gpuservice.rc b/services/gpuservice/gpuservice.rc
+index 65a5c2776a..0da8bd3812 100644
+--- a/services/gpuservice/gpuservice.rc
++++ b/services/gpuservice/gpuservice.rc
+@@ -1,4 +1,4 @@
+ service gpu /system/bin/gpuservice
+     class core
+     user gpu_service
+-    group graphics
++    group graphics readtracefs
+-- 
+2.38.1
+

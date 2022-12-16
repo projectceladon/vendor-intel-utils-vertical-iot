@@ -1,0 +1,105 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Swee Yee Fonn <swee.yee.fonn@intel.com>
+Date: Thu, 17 Sep 2020 12:57:02 +0800
+Subject: [PATCH] CIV: Fix sensor mediation hal reporting
+
+Add android-removed-permissions.xml to
+remove sensor features not supported
+on CML NUC.
+Add mixins option to support disable
+static sensor list reported by hal.
+
+Tracked-on: OAM-92946
+Change-Id: I7eacbf8b2ed646c3a70b2fe68a89fd7bc3be0bf4
+Signed-off-by: Swee Yee Fonn <swee.yee.fonn@intel.com>
+---
+ .../caas/android-removed-permissions.xml      | 24 +++++++++++++++++++
+ groups/device-specific/caas/caas.mk           |  3 ++-
+ groups/device-specific/caas/files.spec        |  1 +
+ groups/sensors/mediation/BoardConfig.mk       |  4 ++++
+ groups/sensors/mediation/option.spec          |  2 ++
+ 5 files changed, 33 insertions(+), 1 deletion(-)
+ create mode 100644 groups/device-specific/caas/android-removed-permissions.xml
+ create mode 100644 groups/sensors/mediation/option.spec
+
+diff --git a/groups/device-specific/caas/android-removed-permissions.xml b/groups/device-specific/caas/android-removed-permissions.xml
+new file mode 100644
+index 0000000..18d3ef8
+--- /dev/null
++++ b/groups/device-specific/caas/android-removed-permissions.xml
+@@ -0,0 +1,24 @@
++<?xml version="1.0" encoding="utf-8"?>
++<!-- Copyright (C) 2020 The Android Open Source Project
++
++     Licensed under the Apache License, Version 2.0 (the "License");
++     you may not use this file except in compliance with the License.
++     You may obtain a copy of the License at
++
++          http://www.apache.org/licenses/LICENSE-2.0
++
++     Unless required by applicable law or agreed to in writing, software
++     distributed under the License is distributed on an "AS IS" BASIS,
++     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++     See the License for the specific language governing permissions and
++     limitations under the License.
++-->
++
++<permissions>
++    <!-- Disable support for hardware we don't support -->
++    <unavailable-feature name="android.hardware.sensor.compass" />
++    <unavailable-feature name="android.hardware.sensor.accelerometer" />
++    <unavailable-feature name="android.hardware.sensor.gyroscope" />
++    <unavailable-feature name="android.hardware.sensor.light" />
++    <unavailable-feature name="android.hardware.sensor.ambient_temperature" />
++</permissions>
+diff --git a/groups/device-specific/caas/caas.mk b/groups/device-specific/caas/caas.mk
+index a3d92fb..d5f1c1b 100644
+--- a/groups/device-specific/caas/caas.mk
++++ b/groups/device-specific/caas/caas.mk
+@@ -24,7 +24,8 @@ PRODUCT_FULL_TREBLE_OVERRIDE := false
+ {{/treble}}
+ 
+ PRODUCT_DEFAULT_PROPERTY_OVERRIDES += ro.zygote=zygote64_32
+-PRODUCT_COPY_FILES += system/core/rootdir/init.zygote64_32.rc:root/init.zygote64_32.rc
++PRODUCT_COPY_FILES += system/core/rootdir/init.zygote64_32.rc:root/init.zygote64_32.rc \
++    $(LOCAL_PATH)/android-removed-permissions.xml:system/etc/permissions/android-removed-permissions.xml
+ 
+ BOARD_USE_64BIT_USERSPACE := true
+ 
+diff --git a/groups/device-specific/caas/files.spec b/groups/device-specific/caas/files.spec
+index 3a12411..01307de 100644
+--- a/groups/device-specific/caas/files.spec
++++ b/groups/device-specific/caas/files.spec
+@@ -11,6 +11,7 @@ overlay: "configurations for SystemUI"
+ system.prop: "system properties file"
+ {{ref_target}}.mk: "product definition file"
+ r2_{{target}}.mk: "Ring 2 target for P.car"
++android-removed-permissions.xml: "remove features not supported"
+ start_flash_usb.sh: "script for flashing qcow2 in Qemu"
+ start_android_qcow2.sh: "script for starting android in Qemu"
+ setup_host.sh: "script for setting up virtulization environment on host"
+diff --git a/groups/sensors/mediation/BoardConfig.mk b/groups/sensors/mediation/BoardConfig.mk
+index 0adc828..7ad4545 100644
+--- a/groups/sensors/mediation/BoardConfig.mk
++++ b/groups/sensors/mediation/BoardConfig.mk
+@@ -1,5 +1,9 @@
+ USE_SENSOR_MEDIATION_HAL := true
+
++{{#disable_static_sensor_list}}
++MEDIATION_HAL_DISABLE_STATIC_SENSOR_LIST := true
++{{/disable_static_sensor_list}}
++
+ SOONG_CONFIG_NAMESPACES += senPlugin
+ SOONG_CONFIG_senPlugin  += SENSOR_LIST
+ SOONG_CONFIG_senPlugin_SENSOR_LIST := {{enable_sensor_list}}
+diff --git a/groups/sensors/mediation/option.spec b/groups/sensors/mediation/option.spec
+index ff58bdd..205bb9e 100644
+--- a/groups/sensors/mediation/option.spec
++++ b/groups/sensors/mediation/option.spec
+@@ -1,2 +1,2 @@
+ [defaults]
+-enable_sensor_list = true
++enable_sensor_list = false
+-- 
+2.17.1
+

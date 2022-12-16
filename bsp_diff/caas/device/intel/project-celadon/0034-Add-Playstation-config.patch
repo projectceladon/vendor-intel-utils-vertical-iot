@@ -1,0 +1,31 @@
+From 908d108a0fc863d3e63ff01a2fa025d6007b5f88 Mon Sep 17 00:00:00 2001
+From: "Talla, SrinivasuluX" <srinivasulux.talla@intel.com>
+Date: Thu, 15 Sep 2022 16:40:43 +0530
+Subject: [PATCH] Add Playstation config
+
+This fixes CtsHardwareTestCases for 6 sonyduasense TC's like
+android.hardware.input.cts.tests.SonyDualSenseUsbTest#testAllKeys
+
+Tracked-On: OAM-103867
+Signed-off-by: Talla, SrinivasuluX <srinivasulux.talla@intel.com>
+---
+ caas/config-lts/lts2020-yocto/x86_64_defconfig | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/caas/config-lts/lts2020-yocto/x86_64_defconfig b/caas/config-lts/lts2020-yocto/x86_64_defconfig
+index 09075d8..5a6a34d 100644
+--- a/caas/config-lts/lts2020-yocto/x86_64_defconfig
++++ b/caas/config-lts/lts2020-yocto/x86_64_defconfig
+@@ -4706,7 +4706,8 @@ CONFIG_HID_NTRIG=m
+ # CONFIG_HID_PETALYNX is not set
+ # CONFIG_HID_PICOLCD is not set
+ # CONFIG_HID_PLANTRONICS is not set
+-# CONFIG_HID_PLAYSTATION is not set
++CONFIG_HID_PLAYSTATION=y
++CONFIG_PLAYSTATION_FF=y
+ # CONFIG_HID_PRIMAX is not set
+ # CONFIG_HID_RETRODE is not set
+ # CONFIG_HID_ROCCAT is not set
+--
+2.37.3
+

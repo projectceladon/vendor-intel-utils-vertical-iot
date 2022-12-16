@@ -1,0 +1,44 @@
+From a598eb1ea29dac4a199f3aa68216fd26556c428a Mon Sep 17 00:00:00 2001
+From: HeYue <yue.he@intel.com>
+Date: Wed, 6 Jul 2022 12:30:46 +0530
+Subject: [PATCH 5/5] Added back 'if it is not kmsro mode only destroy driver
+ once'
+
+    If is not kmsro mode, only destroy driver once
+
+    The drv_kms == drv_render when not in kmsro mode.
+    Then only destroy driver once to avoid crash.
+
+    Tracked-On: OAM-102839
+    Signed-off-by: Shekhar Chauhan <shekhar.chauhan@intel.com>
+---
+ cros_gralloc/cros_gralloc_driver.cc | 6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/cros_gralloc/cros_gralloc_driver.cc b/cros_gralloc/cros_gralloc_driver.cc
+index 7c25b5e..8ed8529 100644
+--- a/cros_gralloc/cros_gralloc_driver.cc
++++ b/cros_gralloc/cros_gralloc_driver.cc
+@@ -34,6 +34,9 @@ cros_gralloc_driver::~cros_gralloc_driver()
+ 	if (drv_kms) {
+ 		int fd = drv_get_fd(drv_kms);
+ 		drv_destroy(drv_kms);
++		if (!is_kmsro_enabled()) {
++			drv_render = nullptr;
++		}
+ 		drv_kms = nullptr;
+ 		close(fd);
+ 	}
+@@ -76,6 +79,9 @@ int32_t cros_gralloc_driver::init()
+ 	if (drv_kms) {
+ 		int fd = drv_get_fd(drv_kms);
+ 		drv_destroy(drv_kms);
++		if (!is_kmsro_enabled()) {
++			drv_render = nullptr;
++		}
+ 		drv_kms = nullptr;
+ 		close(fd);
+ 	}
+-- 
+2.17.1
+

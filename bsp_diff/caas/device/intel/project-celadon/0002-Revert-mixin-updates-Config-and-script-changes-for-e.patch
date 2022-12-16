@@ -1,0 +1,229 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Basil Chew <basil.chew@intel.com>
+Date: Thu, 28 Oct 2021 16:55:05 +0800
+Subject: [PATCH] Revert "mixin updates" - Config and script changes for
+ enabling iwl7000 module
+
+This reverts commit 1317713aaaf15ba390ce496859ebedd0cb5eaba7.
+---
+ .../lts2019-chromium/x86_64_defconfig          | 18 ++++++++++++++----
+ caas/init.rc                                   |  4 ++--
+ .../lts2019-chromium/x86_64_defconfig          | 18 ++++++++++++++----
+ caas_cfc/init.rc                               |  4 ++--
+ .../lts2019-chromium/x86_64_defconfig          | 18 ++++++++++++++----
+ celadon_ivi/init.rc                            |  4 ++--
+ .../lts2019-chromium/x86_64_defconfig          | 18 ++++++++++++++----
+ celadon_tablet/init.rc                         |  4 ++--
+ 8 files changed, 64 insertions(+), 24 deletions(-)
+
+diff --git a/caas/config-lts/lts2019-chromium/x86_64_defconfig b/caas/config-lts/lts2019-chromium/x86_64_defconfig
+index fc4f9b1..c674ccb 100644
+--- a/caas/config-lts/lts2019-chromium/x86_64_defconfig
++++ b/caas/config-lts/lts2019-chromium/x86_64_defconfig
+@@ -2317,16 +2317,26 @@ CONFIG_WLAN_VENDOR_INTEL=y
+ # CONFIG_IPW2200 is not set
+ # CONFIG_IWL4965 is not set
+ # CONFIG_IWL3945 is not set
++CONFIG_IWLWIFI=m
++CONFIG_IWLWIFI_LEDS=y
++CONFIG_IWLDVM=m
++CONFIG_IWLMVM=m
++CONFIG_IWLWIFI_OPMODE_MODULAR=y
++# CONFIG_IWLWIFI_BCAST_FILTERING is not set
++
++#
++# Debugging Options
++#
++# CONFIG_IWLWIFI_DEBUG is not set
++CONFIG_IWLWIFI_DEVICE_TRACING=y
++# end of Debugging Options
+ 
+ CONFIG_WLAN_VENDOR_INTERSIL=y
+ # CONFIG_HOSTAP is not set
+ # CONFIG_HERMES is not set
+ # CONFIG_P54_COMMON is not set
+ # CONFIG_PRISM54 is not set
+-CONFIG_IWL7000=m
+-CONFIG_IWL7000_LEDS=y
+-CONFIG_IWL7000_TRACING=y
+-CONFIG_IWL7000_VENDOR_CMDS=y
++# CONFIG_IWL7000 is not set
+ CONFIG_WLAN_VENDOR_MARVELL=y
+ # CONFIG_LIBERTAS is not set
+ # CONFIG_LIBERTAS_THINFIRM is not set
+diff --git a/caas/init.rc b/caas/init.rc
+index 763c7fd..3c1c94e 100644
+--- a/caas/init.rc
++++ b/caas/init.rc
+@@ -38,10 +38,10 @@ on post-fs-data
+     setprop wifi.interface wlan0
+     setprop wifi.direct.interface p2p-dev-wlan0
+ 
+-on early-boot
++on post-fs
+  
+     insmod /vendor/lib/modules/cfg80211.ko
+-    insmod /vendor/lib/modules/iwl7000_mac80211.ko
++    insmod /vendor/lib/modules/mac80211.ko
+     insmod /vendor/lib/modules/iwlwifi.ko
+     insmod /vendor/lib/modules/iwlmvm.ko power_scheme=1
+ 
+diff --git a/caas_cfc/config-lts/lts2019-chromium/x86_64_defconfig b/caas_cfc/config-lts/lts2019-chromium/x86_64_defconfig
+index fc4f9b1..c674ccb 100644
+--- a/caas_cfc/config-lts/lts2019-chromium/x86_64_defconfig
++++ b/caas_cfc/config-lts/lts2019-chromium/x86_64_defconfig
+@@ -2317,16 +2317,26 @@ CONFIG_WLAN_VENDOR_INTEL=y
+ # CONFIG_IPW2200 is not set
+ # CONFIG_IWL4965 is not set
+ # CONFIG_IWL3945 is not set
++CONFIG_IWLWIFI=m
++CONFIG_IWLWIFI_LEDS=y
++CONFIG_IWLDVM=m
++CONFIG_IWLMVM=m
++CONFIG_IWLWIFI_OPMODE_MODULAR=y
++# CONFIG_IWLWIFI_BCAST_FILTERING is not set
++
++#
++# Debugging Options
++#
++# CONFIG_IWLWIFI_DEBUG is not set
++CONFIG_IWLWIFI_DEVICE_TRACING=y
++# end of Debugging Options
+ 
+ CONFIG_WLAN_VENDOR_INTERSIL=y
+ # CONFIG_HOSTAP is not set
+ # CONFIG_HERMES is not set
+ # CONFIG_P54_COMMON is not set
+ # CONFIG_PRISM54 is not set
+-CONFIG_IWL7000=m
+-CONFIG_IWL7000_LEDS=y
+-CONFIG_IWL7000_TRACING=y
+-CONFIG_IWL7000_VENDOR_CMDS=y
++# CONFIG_IWL7000 is not set
+ CONFIG_WLAN_VENDOR_MARVELL=y
+ # CONFIG_LIBERTAS is not set
+ # CONFIG_LIBERTAS_THINFIRM is not set
+diff --git a/caas_cfc/init.rc b/caas_cfc/init.rc
+index 7612410..7f6d502 100644
+--- a/caas_cfc/init.rc
++++ b/caas_cfc/init.rc
+@@ -38,10 +38,10 @@ on post-fs-data
+     setprop wifi.interface wlan0
+     setprop wifi.direct.interface p2p-dev-wlan0
+ 
+-on early-boot
++on post-fs
+  
+     insmod /vendor/lib/modules/cfg80211.ko
+-    insmod /vendor/lib/modules/iwl7000_mac80211.ko
++    insmod /vendor/lib/modules/mac80211.ko
+     insmod /vendor/lib/modules/iwlwifi.ko
+     insmod /vendor/lib/modules/iwlmvm.ko power_scheme=1
+ 
+diff --git a/celadon_ivi/config-lts/lts2019-chromium/x86_64_defconfig b/celadon_ivi/config-lts/lts2019-chromium/x86_64_defconfig
+index fc4f9b1..c674ccb 100644
+--- a/celadon_ivi/config-lts/lts2019-chromium/x86_64_defconfig
++++ b/celadon_ivi/config-lts/lts2019-chromium/x86_64_defconfig
+@@ -2317,16 +2317,26 @@ CONFIG_WLAN_VENDOR_INTEL=y
+ # CONFIG_IPW2200 is not set
+ # CONFIG_IWL4965 is not set
+ # CONFIG_IWL3945 is not set
++CONFIG_IWLWIFI=m
++CONFIG_IWLWIFI_LEDS=y
++CONFIG_IWLDVM=m
++CONFIG_IWLMVM=m
++CONFIG_IWLWIFI_OPMODE_MODULAR=y
++# CONFIG_IWLWIFI_BCAST_FILTERING is not set
++
++#
++# Debugging Options
++#
++# CONFIG_IWLWIFI_DEBUG is not set
++CONFIG_IWLWIFI_DEVICE_TRACING=y
++# end of Debugging Options
+ 
+ CONFIG_WLAN_VENDOR_INTERSIL=y
+ # CONFIG_HOSTAP is not set
+ # CONFIG_HERMES is not set
+ # CONFIG_P54_COMMON is not set
+ # CONFIG_PRISM54 is not set
+-CONFIG_IWL7000=m
+-CONFIG_IWL7000_LEDS=y
+-CONFIG_IWL7000_TRACING=y
+-CONFIG_IWL7000_VENDOR_CMDS=y
++# CONFIG_IWL7000 is not set
+ CONFIG_WLAN_VENDOR_MARVELL=y
+ # CONFIG_LIBERTAS is not set
+ # CONFIG_LIBERTAS_THINFIRM is not set
+diff --git a/celadon_ivi/init.rc b/celadon_ivi/init.rc
+index 3c50cd7..710d52b 100644
+--- a/celadon_ivi/init.rc
++++ b/celadon_ivi/init.rc
+@@ -28,10 +28,10 @@ on post-fs-data
+     setprop wifi.interface wlan0
+     setprop wifi.direct.interface p2p-dev-wlan0
+ 
+-on early-boot
++on post-fs
+  
+     insmod /vendor/lib/modules/cfg80211.ko
+-    insmod /vendor/lib/modules/iwl7000_mac80211.ko
++    insmod /vendor/lib/modules/mac80211.ko
+     insmod /vendor/lib/modules/iwlwifi.ko
+     insmod /vendor/lib/modules/iwlmvm.ko power_scheme=1
+ 
+diff --git a/celadon_tablet/config-lts/lts2019-chromium/x86_64_defconfig b/celadon_tablet/config-lts/lts2019-chromium/x86_64_defconfig
+index fc4f9b1..c674ccb 100644
+--- a/celadon_tablet/config-lts/lts2019-chromium/x86_64_defconfig
++++ b/celadon_tablet/config-lts/lts2019-chromium/x86_64_defconfig
+@@ -2317,16 +2317,26 @@ CONFIG_WLAN_VENDOR_INTEL=y
+ # CONFIG_IPW2200 is not set
+ # CONFIG_IWL4965 is not set
+ # CONFIG_IWL3945 is not set
++CONFIG_IWLWIFI=m
++CONFIG_IWLWIFI_LEDS=y
++CONFIG_IWLDVM=m
++CONFIG_IWLMVM=m
++CONFIG_IWLWIFI_OPMODE_MODULAR=y
++# CONFIG_IWLWIFI_BCAST_FILTERING is not set
++
++#
++# Debugging Options
++#
++# CONFIG_IWLWIFI_DEBUG is not set
++CONFIG_IWLWIFI_DEVICE_TRACING=y
++# end of Debugging Options
+ 
+ CONFIG_WLAN_VENDOR_INTERSIL=y
+ # CONFIG_HOSTAP is not set
+ # CONFIG_HERMES is not set
+ # CONFIG_P54_COMMON is not set
+ # CONFIG_PRISM54 is not set
+-CONFIG_IWL7000=m
+-CONFIG_IWL7000_LEDS=y
+-CONFIG_IWL7000_TRACING=y
+-CONFIG_IWL7000_VENDOR_CMDS=y
++# CONFIG_IWL7000 is not set
+ CONFIG_WLAN_VENDOR_MARVELL=y
+ # CONFIG_LIBERTAS is not set
+ # CONFIG_LIBERTAS_THINFIRM is not set
+diff --git a/celadon_tablet/init.rc b/celadon_tablet/init.rc
+index 2e7e366..cd017c6 100644
+--- a/celadon_tablet/init.rc
++++ b/celadon_tablet/init.rc
+@@ -28,10 +28,10 @@ on post-fs-data
+     setprop wifi.interface wlan0
+     setprop wifi.direct.interface p2p-dev-wlan0
+ 
+-on early-boot
++on post-fs
+  
+     insmod /vendor/lib/modules/cfg80211.ko
+-    insmod /vendor/lib/modules/iwl7000_mac80211.ko
++    insmod /vendor/lib/modules/mac80211.ko
+     insmod /vendor/lib/modules/iwlwifi.ko
+     insmod /vendor/lib/modules/iwlmvm.ko power_scheme=1
+ 
+-- 
+2.17.1
+

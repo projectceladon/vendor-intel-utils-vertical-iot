@@ -1,0 +1,46 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Basil Chew <basil.chew@intel.com>
+Date: Fri, 29 Apr 2022 10:42:28 +0800
+Subject: [PATCH] Rebase patches for QEMU 6.2
+
+---
+ ...hange-fence-poll-time-by-current-workload.patch | 14 +++++++-------
+ 1 file changed, 7 insertions(+), 7 deletions(-)
+
+diff --git a/host/qemu/0002-qemu-change-fence-poll-time-by-current-workload.patch b/host/qemu/0002-qemu-change-fence-poll-time-by-current-workload.patch
+index 7ffe5e7..1512598 100644
+--- a/host/qemu/0002-qemu-change-fence-poll-time-by-current-workload.patch
++++ b/host/qemu/0002-qemu-change-fence-poll-time-by-current-workload.patch
+@@ -5,14 +5,14 @@ Subject: [PATCH] qemu: change fence poll time by current workload
+ 
+ This will improve performance while waiting the fence in 3D renderering
+ ---
+- hw/display/virtio-gpu-3d.c | 20 +++++++++++++++++++-
++ hw/display/virtio-gpu-virgl.c | 20 +++++++++++++++++++-
+  1 file changed, 19 insertions(+), 1 deletion(-)
+ 
+-diff --git a/hw/display/virtio-gpu-3d.c b/hw/display/virtio-gpu-3d.c
+-index d98964858e..cea8fc2679 100644
+---- a/hw/display/virtio-gpu-3d.c
+-+++ b/hw/display/virtio-gpu-3d.c
+-@@ -570,6 +570,21 @@ static void virtio_gpu_print_stats(void *opaque)
++diff --git a/hw/display/virtio-gpu-virgl.c b/hw/display/virtio-gpu-virgl.c
++index 18d054922f..afd0891560 100644
++--- a/hw/display/virtio-gpu-virgl.c
+++++ b/hw/display/virtio-gpu-virgl.c
++@@ -572,6 +572,21 @@ static void virtio_gpu_print_stats(void *opaque)
+      timer_mod(g->print_stats, qemu_clock_get_ms(QEMU_CLOCK_VIRTUAL) + 1000);
+  }
+  
+@@ -34,7 +34,7 @@ index d98964858e..cea8fc2679 100644
+  static void virtio_gpu_fence_poll(void *opaque)
+  {
+      VirtIOGPU *g = opaque;
+-@@ -577,7 +592,10 @@ static void virtio_gpu_fence_poll(void *opaque)
++@@ -579,7 +594,10 @@ static void virtio_gpu_fence_poll(void *opaque)
+      virgl_renderer_poll();
+      virtio_gpu_process_cmdq(g);
+      if (!QTAILQ_EMPTY(&g->cmdq) || !QTAILQ_EMPTY(&g->fenceq)) {
+-- 
+2.17.1
+

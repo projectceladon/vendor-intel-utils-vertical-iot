@@ -1,0 +1,37 @@
+From 5a560bb5b843627dba91f72dc44b16bdce521c32 Mon Sep 17 00:00:00 2001
+From: "Suresh, Prashanth" <prashanth.suresh@intel.com>
+Date: Mon, 10 Oct 2022 15:47:39 +0530
+Subject: [PATCH] Mixin update Add kernel configs to upgrade kernel to
+ lts-v5.10.140-civ-android-220929T140909Z
+
+Add the following changes:
+
+- CONFIG_CPU_IBPB_ENTRY=y
+- CONFIG_CPU_IBRS_ENTRY=y
+- CONFIG_LIB_MEMNEQ=y
+- CONFIG_SPECULATION_MITIGATIONS=y
+
+Tracked-On: OAM-104194
+Signed-off-by: Suresh, Prashanth <prashanth.suresh@intel.com>
+---
+ caas/config-lts/lts2020-yocto/x86_64_defconfig | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/caas/config-lts/lts2020-yocto/x86_64_defconfig b/caas/config-lts/lts2020-yocto/x86_64_defconfig
+index 7b341b2..3d8779f 100644
+--- a/caas/config-lts/lts2020-yocto/x86_64_defconfig
++++ b/caas/config-lts/lts2020-yocto/x86_64_defconfig
+@@ -1609,6 +1609,10 @@ CONFIG_HOTPLUG_PCI_ACPI=y
+ # Generic Driver Options
+ #
+ # CONFIG_AUXILIARY_BUS is not set
++CONFIG_CPU_IBPB_ENTRY=y
++CONFIG_CPU_IBRS_ENTRY=y
++CONFIG_LIB_MEMNEQ=y
++CONFIG_SPECULATION_MITIGATIONS=y
+ CONFIG_UEVENT_HELPER=y
+ CONFIG_UEVENT_HELPER_PATH="/sbin/hotplug"
+ # CONFIG_DEVTMPFS is not set
+-- 
+2.38.0
+

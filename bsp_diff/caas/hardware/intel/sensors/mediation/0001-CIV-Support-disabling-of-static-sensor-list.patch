@@ -1,0 +1,68 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Swee Yee Fonn <swee.yee.fonn@intel.com>
+Date: Fri, 18 Sep 2020 10:42:32 +0800
+Subject: [PATCH] CIV: Support disabling of static sensor list
+
+Support disabling of static sensor list
+reported by sensor hal via build
+option.
+
+Change-Id: I56fa946c7357366251a6ebc7b583d1a793d99a34
+Tracked-On: OAM-92946
+Signed-off-by: Swee Yee Fonn <swee.yee.fonn@intel.com>
+---
+ Android.mk     | 3 +++
+ sensor_hal.cpp | 6 ++++++
+ 2 files changed, 9 insertions(+)
+
+diff --git a/Android.mk b/Android.mk
+index 0f1acba..85e6c40 100644
+--- a/Android.mk
++++ b/Android.mk
+@@ -9,6 +9,9 @@ LOCAL_PROPRIETARY_MODULE := true
+ LOCAL_MODULE_RELATIVE_PATH := hw
+ 
+ LOCAL_CFLAGS := -DLOG_TAG=\"SensorsHal\" -Wall
++ifeq ($(MEDIATION_HAL_DISABLE_STATIC_SENSOR_LIST), true)
++LOCAL_CFLAGS += -DDISABLE_STATIC_SENSOR_LIST
++endif
+ 
+ LOCAL_SRC_FILES := sensor_hal.cpp iio-client.cpp \
+                     custom-libiio-client/xml.c \
+diff --git a/sensor_hal.cpp b/sensor_hal.cpp
+index 895ae67..bc48683 100644
+--- a/sensor_hal.cpp
++++ b/sensor_hal.cpp
+@@ -36,6 +36,7 @@
+ 
+ static bool is_meta_data_pending = false;
+ static iioClient iioc;
++#ifndef DISABLE_STATIC_SENSOR_LIST
+ static const struct sensor_t sSensorList[MAX_SENSOR] = {
+     {"Accelerometer",
+      "Intel",
+@@ -191,6 +192,7 @@ static const struct sensor_t sSensorList[MAX_SENSOR] = {
+      {},
+     },
+ };
++#endif
+ 
+ static int open_sensors(const struct hw_module_t* module, const char* id,
+             struct hw_device_t** device);
+@@ -199,9 +201,13 @@ static int sensors__get_sensors_list(struct sensors_module_t* module,
+             struct sensor_t const** list)
+ {
+     UNUSED(module);
++#ifndef DISABLE_STATIC_SENSOR_LIST
+     *list = sSensorList;
+ 
+     return MAX_SENSOR;
++#else
++	return 0;
++#endif
+ }
+ 
+ static struct hw_module_methods_t sensors_module_methods = {
+-- 
+2.17.1
+

@@ -1,0 +1,187 @@
+From 04b4fd8b6bf340bf380fa0765d439492efe17a05 Mon Sep 17 00:00:00 2001
+From: kalle <kalyan.alle@intel.com>
+Date: Wed, 10 Aug 2022 23:33:12 +0530
+Subject: [PATCH] Adding ADL-N support.
+
+Adding support for ADL-N
+
+Tracked-On: OAM-103486
+Signed-off-by: Alle, Kalyan <kalyan.alle@intel.com>
+Change-Id: I322dc883510ce75b9e894389caaa6a2affea26c4
+
+---
+ .../include/cmrt_cross_platform.h             |  1 +
+ .../h264/include/mfx_h264_encode_hw_utils.h   |  2 +-
+ .../encode_hw/h264/src/mfx_h264_encode_cm.cpp |  1 +
+ .../shared/src/mfx_h264_enc_common_hw.cpp     |  2 +-
+ _studio/mfx_lib/vpp/src/mfx_vpp_hw.cpp        |  2 ++
+ _studio/shared/asc/src/asc.cpp                |  1 +
+ _studio/shared/include/mfxstructures-int.h    | 24 ++++++++++++++++++-
+ _studio/shared/src/cm_mem_copy.cpp            |  1 +
+ _studio/shared/src/libmfx_core.cpp            |  1 +
+ api/vpl/mfxcommon.h                           |  1 +
+ 10 files changed, 33 insertions(+), 3 deletions(-)
+
+diff --git a/_studio/mfx_lib/cmrt_cross_platform/include/cmrt_cross_platform.h b/_studio/mfx_lib/cmrt_cross_platform/include/cmrt_cross_platform.h
+index fc5c3e2..b339760 100644
+--- a/_studio/mfx_lib/cmrt_cross_platform/include/cmrt_cross_platform.h
++++ b/_studio/mfx_lib/cmrt_cross_platform/include/cmrt_cross_platform.h
+@@ -715,6 +715,7 @@ typedef enum _GPU_PLATFORM {
+     PLATFORM_INTEL_DG1 = 20,  //DG1
+     PLATFORM_INTEL_ADL_S = 21,  //AlderLake
+     PLATFORM_INTEL_ADL_P = 23, //AlderLake
++    PLATFORM_INTEL_ADL_N = 24, //AlderLake-N
+ } GPU_PLATFORM;
+ 
+ //Time in seconds before kernel should timeout
+diff --git a/_studio/mfx_lib/encode_hw/h264/include/mfx_h264_encode_hw_utils.h b/_studio/mfx_lib/encode_hw/h264/include/mfx_h264_encode_hw_utils.h
+index 3c59cc2..69e2b84 100644
+--- a/_studio/mfx_lib/encode_hw/h264/include/mfx_h264_encode_hw_utils.h
++++ b/_studio/mfx_lib/encode_hw/h264/include/mfx_h264_encode_hw_utils.h
+@@ -73,7 +73,7 @@ inline constexpr
+ bool hasSupportVME(eMFXHWType platform)
+ {
+     return
+-           (platform <= MFX_HW_ADL_P);
++           (platform <= MFX_HW_ADL_N);
+ }
+ 
+ #define MFX_H264ENC_HW_TASK_TIMEOUT 2000
+diff --git a/_studio/mfx_lib/encode_hw/h264/src/mfx_h264_encode_cm.cpp b/_studio/mfx_lib/encode_hw/h264/src/mfx_h264_encode_cm.cpp
+index 551ba27..df0815f 100755
+--- a/_studio/mfx_lib/encode_hw/h264/src/mfx_h264_encode_cm.cpp
++++ b/_studio/mfx_lib/encode_hw/h264/src/mfx_h264_encode_cm.cpp
+@@ -863,6 +863,7 @@ void CmContext::Setup(
+     case MFX_HW_RKL:
+     case MFX_HW_ADL_S:
+     case MFX_HW_ADL_P:
++    case MFX_HW_ADL_N:
+         m_program = ReadProgram(m_device, genx_simple_me_gen12lp, SizeOf(genx_simple_me_gen12lp));
+         m_programHist = ReadProgram(m_device, genx_histogram_gen12lp, SizeOf(genx_histogram_gen12lp));
+         break;
+diff --git a/_studio/mfx_lib/shared/src/mfx_h264_enc_common_hw.cpp b/_studio/mfx_lib/shared/src/mfx_h264_enc_common_hw.cpp
+index 60961dd..6c4414d 100644
+--- a/_studio/mfx_lib/shared/src/mfx_h264_enc_common_hw.cpp
++++ b/_studio/mfx_lib/shared/src/mfx_h264_enc_common_hw.cpp
+@@ -1326,7 +1326,7 @@ bool MfxHwH264Encode::IsExtBrcSceneChangeSupported(
+ bool MfxHwH264Encode::IsCmSupported(eMFXHWType platform)
+ {
+     return
+-        (platform <= MFX_HW_ADL_P);
++        (platform <= MFX_HW_ADL_N);
+ }
+ 
+ bool MfxHwH264Encode::IsCmNeededForSCD(
+diff --git a/_studio/mfx_lib/vpp/src/mfx_vpp_hw.cpp b/_studio/mfx_lib/vpp/src/mfx_vpp_hw.cpp
+index 4236b52..81799b9 100755
+--- a/_studio/mfx_lib/vpp/src/mfx_vpp_hw.cpp
++++ b/_studio/mfx_lib/vpp/src/mfx_vpp_hw.cpp
+@@ -2438,6 +2438,7 @@ mfxStatus  VideoVPPHW::Init(
+             case MFX_HW_RKL:
+             case MFX_HW_ADL_S:
+             case MFX_HW_ADL_P:
++	    case MFX_HW_ADL_N:
+                 res = m_pCmDevice->LoadProgram((void*)genx_fcopy_gen12lp,sizeof(genx_fcopy_gen12lp),m_pCmProgram,"nojitter");
+                 break;
+ #endif
+@@ -2468,6 +2469,7 @@ mfxStatus  VideoVPPHW::Init(
+         CmDevice* pCmDevice = QueryCoreInterface<CmDevice>(m_pCore, MFXICORECM_GUID);
+ 
+         sts = m_SCD.Init(par->vpp.In.CropW, par->vpp.In.CropH, par->vpp.In.Width, par->vpp.In.PicStruct, pCmDevice, true);
++        m_pCore->GetHWType() <= MFX_HW_ADL_N
+         MFX_CHECK_STS(sts);
+ 
+         m_SCD.SetGoPSize(ns_asc::Immediate_GoP);
+diff --git a/_studio/shared/asc/src/asc.cpp b/_studio/shared/asc/src/asc.cpp
+index 2a39ba2..80bd3ae 100644
+--- a/_studio/shared/asc/src/asc.cpp
++++ b/_studio/shared/asc/src/asc.cpp
+@@ -305,6 +305,7 @@ mfxStatus ASC::InitGPUsurf(CmDevice* pCmDevice) {
+     case PLATFORM_INTEL_TGLLP:
+     case PLATFORM_INTEL_RKL:
+     case PLATFORM_INTEL_DG1:
++    case PLATFORM_INTEL_ADL_N:
+         res = m_device->LoadProgram((void *)genx_scd_gen12lp, sizeof(genx_scd_gen12lp), m_program, "nojitter");
+         break;
+     default:
+diff --git a/_studio/shared/include/mfxstructures-int.h b/_studio/shared/include/mfxstructures-int.h
+index 07ff71b..33cc609 100755
+--- a/_studio/shared/include/mfxstructures-int.h
++++ b/_studio/shared/include/mfxstructures-int.h
+@@ -79,6 +79,8 @@ enum eMFXHWType
+     MFX_HW_DG1       = MFX_HW_TGL_LP + 3,
+     MFX_HW_ADL_S     = MFX_HW_TGL_LP + 4,
+     MFX_HW_ADL_P     = MFX_HW_TGL_LP + 5,
++    MFX_HW_ADL_N     = MFX_HW_TGL_LP + 6,
++    MFX_HW_DG2       = MFX_HW_TGL_LP + 8,
+ 
+ };
+ 
+@@ -455,7 +457,27 @@ typedef struct {
+     { 0x46C2, MFX_HW_ADL_P, MFX_GT2 },//ADL-P
+     { 0x46C3, MFX_HW_ADL_P, MFX_GT2 },//ADL-P
+ 
+-
++    /* ADL-N */
++    { 0x46D0, MFX_HW_ADL_N, MFX_GT1 },//ADL-N
++    { 0x46D1, MFX_HW_ADL_N, MFX_GT1 },//ADL-N
++    { 0x46D2, MFX_HW_ADL_N, MFX_GT1 },//ADL-N
++    
++    /* RPL-S */
++    { 0xA780, MFX_HW_ADL_S, MFX_GT1 },//RPL-S
++    { 0xA781, MFX_HW_ADL_S, MFX_GT1 },//RPL-S
++    { 0xA782, MFX_HW_ADL_S, MFX_GT1 },//RPL-S
++    { 0xA783, MFX_HW_ADL_S, MFX_GT1 },//RPL-S
++    { 0xA784, MFX_HW_ADL_S, MFX_GT1 },//RPL-S
++    { 0xA785, MFX_HW_ADL_S, MFX_GT1 },//RPL-S
++    { 0xA786, MFX_HW_ADL_S, MFX_GT1 },//RPL-S
++    { 0xA787, MFX_HW_ADL_S, MFX_GT1 },//RPL-S
++    { 0xA788, MFX_HW_ADL_S, MFX_GT1 },//RPL-S
++    { 0xA789, MFX_HW_ADL_S, MFX_GT1 },//RPL-S
++    { 0xA78A, MFX_HW_ADL_S, MFX_GT1 },//RPL-S
++    { 0xA78B, MFX_HW_ADL_S, MFX_GT1 },//RPL-S
++    { 0xA78C, MFX_HW_ADL_S, MFX_GT1 },//RPL-S
++    { 0xA78D, MFX_HW_ADL_S, MFX_GT1 },//RPL-S
++    { 0xA78E, MFX_HW_ADL_S, MFX_GT1 },//RPL-S
+ };
+ 
+ /*
+diff --git a/_studio/shared/src/cm_mem_copy.cpp b/_studio/shared/src/cm_mem_copy.cpp
+index 0ae072a..941fef5 100755
+--- a/_studio/shared/src/cm_mem_copy.cpp
++++ b/_studio/shared/src/cm_mem_copy.cpp
+@@ -2523,6 +2523,7 @@ mfxStatus CmCopyWrapper::InitializeSwapKernels(eMFXHWType hwtype)
+     case MFX_HW_RKL:
+     case MFX_HW_ADL_S:
+     case MFX_HW_ADL_P:
++    case MFX_HW_ADL_N:
+         cmSts = m_pCmDevice->LoadProgram((void*)genx_copy_kernel_gen12lp,sizeof(genx_copy_kernel_gen12lp),m_pCmProgram,"nojitter");
+         break;
+ #endif
+diff --git a/_studio/shared/src/libmfx_core.cpp b/_studio/shared/src/libmfx_core.cpp
+index 47fab2f..79f59fd 100755
+--- a/_studio/shared/src/libmfx_core.cpp
++++ b/_studio/shared/src/libmfx_core.cpp
+@@ -591,6 +591,7 @@ static inline mfxPlatform MakePlatform(eMFXHWType type, mfxU16 device_id)
+                          platform.CodeName = MFX_PLATFORM_TIGERLAKE;     break;
+     case MFX_HW_ADL_S  : platform.CodeName = MFX_PLATFORM_ALDERLAKE_S;   break;
+     case MFX_HW_ADL_P  : platform.CodeName = MFX_PLATFORM_ALDERLAKE_P;   break;
++    case MFX_HW_ADL_N  : platform.CodeName = MFX_PLATFORM_ALDERLAKE_N;   break;
+     default:
+                          platform.MediaAdapterType = MFX_MEDIA_UNKNOWN;
+                          platform.CodeName = MFX_PLATFORM_UNKNOWN;       break;
+diff --git a/api/vpl/mfxcommon.h b/api/vpl/mfxcommon.h
+index 3845a53..3454ca4 100644
+--- a/api/vpl/mfxcommon.h
++++ b/api/vpl/mfxcommon.h
+@@ -197,6 +197,7 @@ enum {
+     MFX_PLATFORM_ALDERLAKE_P    = 44, /*!< Code name Alder Lake P. */
+     MFX_PLATFORM_ARCTICSOUND_P  = 45,
+     MFX_PLATFORM_XEHP           = 45, /*!< Code name Xe HP. */
++    MFX_PLATFORM_ALDERLAKE_N    = 55, /*!< Code name Alder Lake N. */
+     MFX_PLATFORM_KEEMBAY        = 50, /*!< Code name Keem Bay. */
+ };
+ 
+-- 
+2.17.1
+

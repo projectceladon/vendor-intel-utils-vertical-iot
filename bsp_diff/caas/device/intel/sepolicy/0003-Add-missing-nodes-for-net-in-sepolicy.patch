@@ -1,0 +1,24 @@
+From 2323da8e44470bcb321aed151f22ddf27cc0294c Mon Sep 17 00:00:00 2001
+From: vdanix <vishwanathx.dani@intel.com>
+Date: Fri, 9 Sep 2022 21:44:07 +0530
+Subject: [PATCH] Add missing nodes for */net in sepolicy
+
+Fix the VTS with adding missing nodes for
+/sys/*/net
+
+Tracked-On:
+Signed-off-by: vdanix <vishwanathx.dani@intel.com>
+
+diff --git a/ethernet/common/genfs_contexts b/ethernet/common/genfs_contexts
+index 2d17b6e..770ca8c 100644
+--- a/ethernet/common/genfs_contexts
++++ b/ethernet/common/genfs_contexts
+@@ -4,3 +4,5 @@ genfscon sysfs /devices/pci0000:00/0000:00:13.1/0000:02:00.0/net u:object_r:sysf
+ genfscon sysfs /devices/pci0000:00/0000:00:04.0/net u:object_r:sysfs_net:s0
+ genfscon sysfs /devices/pci0000:00/0000:00:07.0/net u:object_r:sysfs_net:s0
+ genfscon sysfs /devices/pci0000:00/0000:00:06.0/net u:object_r:sysfs_net:s0
++genfscon sysfs /devices/pci0000:00/0000:00:09.0/net u:object_r:sysfs_net:s0
++genfscon sysfs /devices/pci0000:00/0000:00:0a.0/net u:object_r:sysfs_net:s0
+-- 
+2.37.3
+

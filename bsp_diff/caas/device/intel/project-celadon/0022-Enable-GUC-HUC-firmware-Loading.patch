@@ -1,0 +1,27 @@
+From fa5861c945534d2bb6169ea5d00d7847a68af7a9 Mon Sep 17 00:00:00 2001
+From: "Kalenahally Madegowda, NandishaX"
+ <nandishax.kalenahally.madegowda@intel.com>
+Date: Wed, 16 Feb 2022 09:40:43 +0530
+Subject: [PATCH] Enable GUC-HUC firmware Loading
+
+Signed-off-by: Kalenahally Madegowda, NandishaX <nandishax.kalenahally.madegowda@intel.com>
+---
+ caas/mixins.spec | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/caas/mixins.spec b/caas/mixins.spec
+index f5e3f16..1467cf9 100755
+--- a/caas/mixins.spec
++++ b/caas/mixins.spec
+@@ -26,7 +26,7 @@ allow-missing-dependencies: true
+ dexpreopt: true
+ pstore: false
+ media: auto(enable_msdk_omx=false, add_sw_msdk=false, opensource_msdk=true, opensource_msdk_omx_il=false)
+-graphics: auto(gen9+=true,vulkan=true,minigbm=true,gralloc1=true,enable_guc=true)
++graphics: auto(gen9+=true,hwc2=true,vulkan=true,drmhwc=false,minigbm=true,gralloc1=true,enable_guc=true)
+ storage: sdcard-v-usb-only(adoptablesd=false,adoptableusb=false)
+ ethernet: dhcp
+ camera-ext: ext-camera-only
+-- 
+2.37.0
+

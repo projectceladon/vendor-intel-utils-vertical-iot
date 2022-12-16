@@ -1,0 +1,45 @@
+From 27f3c76b4f4034e6f5377b3cd880ec1995402076 Mon Sep 17 00:00:00 2001
+From: Yonggang Luo <luoyonggang@gmail.com>
+Date: Thu, 20 Oct 2022 11:37:14 +0800
+Subject: [PATCH] meson: upgrade zlib wrap
+
+Remove zlib.wrap first.
+Then using "meson wrap install zlib" to add it back
+
+Signed-off-by: Yonggang Luo <luoyonggang@gmail.com>
+Reviewed-by: Jesse Natalie <jenatali@microsoft.com>
+Part-of: <https://gitlab.freedesktop.org/mesa/mesa/-/merge_requests/19187>
+Tracked-On: OAM-104422
+Signed-off-by: Lu Yang A <yang.a.lu@intel.com>
+---
+ subprojects/zlib.wrap | 18 ++++++++++--------
+ 1 file changed, 10 insertions(+), 8 deletions(-)
+
+diff --git a/subprojects/zlib.wrap b/subprojects/zlib.wrap
+index 60e9d05771e..0482386869b 100644
+--- a/subprojects/zlib.wrap
++++ b/subprojects/zlib.wrap
+@@ -1,10 +1,12 @@
+ [wrap-file]
+-directory = zlib-1.2.11
++directory = zlib-1.2.13
++source_url = http://zlib.net/fossils/zlib-1.2.13.tar.gz
++source_filename = zlib-1.2.13.tar.gz
++source_hash = b3a24de97a8fdbc835b9833169501030b8977031bcb54b3b3ac13740f846ab30
++patch_filename = zlib_1.2.13-1_patch.zip
++patch_url = https://wrapdb.mesonbuild.com/v2/zlib_1.2.13-1/get_patch
++patch_hash = 73a0103df54133b10f8774f92e23da048bd22554523e2b833cdb72b2702c0628
++wrapdb_version = 1.2.13-1
+ 
+-source_url = http://zlib.net/fossils/zlib-1.2.11.tar.gz
+-source_filename = zlib-1.2.11.tar.gz
+-source_hash = c3e5e9fdd5004dcb542feda5ee4f0ff0744628baf8ed2dd5d66f8ca1197cb1a1
+-
+-patch_url = https://github.com/mesonbuild/zlib/releases/download/1.2.11-2/zlib.zip
+-patch_filename = zlib-1.2.11-2-wrap.zip
+-patch_hash = aed811a48707be2a374a230c01e2efa17b385fe7e88f4ac0ee122093766aab2b
++[provide]
++zlib = zlib_dep
+-- 
+2.38.1
+

@@ -1,0 +1,23 @@
+From febaa514935145083615b04a998aae5203296c53 Mon Sep 17 00:00:00 2001
+From: "Kothapeta, BikshapathiX" <bikshapathix.kothapeta@intel.com>
+Date: Wed, 30 Nov 2022 15:02:10 +0530
+Subject: [PATCH] Add mediatranscode sepolicy rules to public
+
+Tracked-On: OAM-105081
+Signed-off-by: Kothapeta, BikshapathiX <bikshapathix.kothapeta@intel.com>
+
+diff --git a/system_ext/public/mediatranscoding.te b/system_ext/public/mediatranscoding.te
+new file mode 100644
+index 0000000..82d29f5
+--- /dev/null
++++ b/system_ext/public/mediatranscoding.te
+@@ -0,0 +1,6 @@
++# mediatranscoding - daemon for transcoding video and image.
++allow mediatranscoding surfaceflinger_service:service_manager find;
++allow mediatranscoding gpu_device:dir { open read search };
++allow mediatranscoding gpu_device:chr_file { getattr ioctl map open read write };
++allow mediatranscoding graphics_device:chr_file { getattr };
++
+-- 
+2.38.1
+

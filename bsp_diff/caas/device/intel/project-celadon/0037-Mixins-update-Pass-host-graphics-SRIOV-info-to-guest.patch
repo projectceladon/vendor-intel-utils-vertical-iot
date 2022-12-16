@@ -1,0 +1,40 @@
+From 723752ee1fa33e0db31af29edf985d3c2307da63 Mon Sep 17 00:00:00 2001
+From: "Suresh, Prashanth" <prashanth.suresh@intel.com>
+Date: Mon, 26 Sep 2022 15:23:18 +0530
+Subject: [PATCH] Mixins-update Pass host graphics SRIOV info to guest.
+
+Add file in aaf folder to enable guest to know if host supports SRIOV.
+Set media coded to hardware based on this value.
+
+Tracked-On: OAM-104076
+Signed-off-by: Suresh, Prashanth <prashanth.suresh@intel.com>
+---
+ caas/extra_files/media/auto_hal.in | 12 ++++++++++--
+ 1 file changed, 10 insertions(+), 2 deletions(-)
+
+diff --git a/caas/extra_files/media/auto_hal.in b/caas/extra_files/media/auto_hal.in
+index 21eed01..4e68aec 100644
+--- a/caas/extra_files/media/auto_hal.in
++++ b/caas/extra_files/media/auto_hal.in
+@@ -13,8 +13,16 @@ case "$(cat /proc/fb)" in
+                 setprop vendor.intel.video.codec hardware
+                 ;;
+         *)
+-                echo "Intel SRIOV"
+-                setprop vendor.intel.video.codec hardware
++                case "$(cat /mnt/share/mixins.spec)" in
++                        *gpu-type:sriov*)
++	                        echo "Intel SRIOV"
++                                setprop vendor.intel.video.codec hardware
++                                ;;
++                        *)
++                                echo "Software codec"
++                                setprop vendor.intel.video.codec software
++                                ;;
++                esac
+                 ;;
+ esac
+ }
+-- 
+2.37.3
+

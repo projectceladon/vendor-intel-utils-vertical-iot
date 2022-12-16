@@ -1,0 +1,56 @@
+From 9f039040e5ca5e47eaa79f07d0469b7825a88a23 Mon Sep 17 00:00:00 2001
+From: "Kothapeta, BikshapathiX" <bikshapathix.kothapeta@intel.com>
+Date: Wed, 16 Nov 2022 11:22:59 +0530
+Subject: [PATCH] Mixin-update Revert "Include VHAL for camera".
+
+Revert "Include VHAL for camera"
+This reverts commit f2728440f58d4a54103e385970ef1bb886214623.
+
+Tracked-on: OAM-104782
+Signed-off-by: Kothapeta, BikshapathiX <bikshapathix.kothapeta@intel.com>
+
+diff --git a/caas/device.mk b/caas/device.mk
+index 6e2729c..a4d8a67 100644
+--- a/caas/device.mk
++++ b/caas/device.mk
+@@ -517,23 +517,10 @@ PRODUCT_COPY_FILES += \
+ 
+ # External camera service
+ PRODUCT_PACKAGES += android.hardware.camera.provider@2.4-external-service \
+-                    android.hardware.camera.provider@2.4-service_64 \
+                     android.hardware.camera.provider@2.4-impl
+-#VHAL camera
+-PRODUCT_PACKAGES += camera.$(TARGET_BOARD_PLATFORM) \
+-                    camera.$(TARGET_BOARD_PLATFORM).jpeg
+-
+-PRODUCT_PROPERTY_OVERRIDES += ro.vendor.remote.sf.fake_camera ="both" \
+-                              ro.vendor.camera.in_frame_format.h264=false \
+-                              ro.vendor.camera.in_frame_format.i420=true \
+-                              ro.vendor.camera.decode.vaapi=false \
+-                              ro.vendor.remote.sf.back_camera_hal= \
+-                              ro.vendor.remote.sf.front_camera_hal= \
+-                              ro.vendor.camera.transference="VSOCK" \
+-                              vendor.camera.external="VHAL"
+-#removing not required apps
++
+ # Only include test apps in eng or userdebug builds.
+-#PRODUCT_PACKAGES_DEBUG += TestingCamera
++PRODUCT_PACKAGES_DEBUG += TestingCamer
+ 
+ PRODUCT_PACKAGES += MultiCameraApp
+ ##############################################################
+diff --git a/caas/manifest.xml b/caas/manifest.xml
+index ca6844a..05eb152 100644
+--- a/caas/manifest.xml
++++ b/caas/manifest.xml
+@@ -129,7 +129,6 @@
+         <interface>
+             <name>ICameraProvider</name>
+             <instance>external/0</instance>
+-            <instance>legacy/0</instance>
+         </interface>
+     </hal>
+     <hal format="hidl">
+-- 
+2.38.1
+
