@@ -1,0 +1,30 @@
+From 0c09e948725924ef4afccdefe735e7106bfd0f98 Mon Sep 17 00:00:00 2001
+From: "Suresh, Prashanth" <prashanth.suresh@intel.com>
+Date: Fri, 3 Jun 2022 15:36:17 +0530
+Subject: [PATCH] Remove clearcpuid.
+
+Tracked-On: OAM-102239
+Signed-off-by: Suresh, Prashanth <prashanth.suresh@intel.com>
+---
+ groups/kernel/BoardConfig.mk | 6 ------
+ 1 file changed, 6 deletions(-)
+
+diff --git a/groups/kernel/BoardConfig.mk b/groups/kernel/BoardConfig.mk
+index 5c62ac6..1035968 100644
+--- a/groups/kernel/BoardConfig.mk
++++ b/groups/kernel/BoardConfig.mk
+@@ -68,11 +68,5 @@ BOARD_KERNEL_CMDLINE += \
+       mce=no_lmce
+ endif
+ 
+-ifeq ($(BASE_LTS2020_YOCTO_KERNEL), true)
+-BOARD_KERNEL_CMDLINE += \
+-      clearcpuid=517 \
+-      mce=no_lmce
+-endif
+-
+ BOARD_SEPOLICY_M4DEFS += module_kernel=true
+ BOARD_SEPOLICY_DIRS += $(INTEL_PATH_SEPOLICY)/kernel
+-- 
+2.36.1
+

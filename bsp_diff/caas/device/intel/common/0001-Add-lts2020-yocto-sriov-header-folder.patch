@@ -1,0 +1,31 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Basil Chew <basil.chew@intel.com>
+Date: Tue, 7 Sep 2021 10:39:15 +0800
+Subject: [PATCH] Add lts2020-yocto-sriov header folder
+
+---
+ kernel/lts2020-yocto-sriov/kernel-headers/linux/iwl-vendor-cmd.h | 1 +
+ kernel/lts2020-yocto-sriov/kernel-headers/linux/nl80211.h        | 1 +
+ 2 files changed, 2 insertions(+)
+ create mode 120000 kernel/lts2020-yocto-sriov/kernel-headers/linux/iwl-vendor-cmd.h
+ create mode 120000 kernel/lts2020-yocto-sriov/kernel-headers/linux/nl80211.h
+
+diff --git a/kernel/lts2020-yocto-sriov/kernel-headers/linux/iwl-vendor-cmd.h b/kernel/lts2020-yocto-sriov/kernel-headers/linux/iwl-vendor-cmd.h
+new file mode 120000
+index 0000000..9f824ef
+--- /dev/null
++++ b/kernel/lts2020-yocto-sriov/kernel-headers/linux/iwl-vendor-cmd.h
+@@ -0,0 +1 @@
++../../../lts2020-yocto/kernel-headers/linux/iwl-vendor-cmd.h
+\ No newline at end of file
+diff --git a/kernel/lts2020-yocto-sriov/kernel-headers/linux/nl80211.h b/kernel/lts2020-yocto-sriov/kernel-headers/linux/nl80211.h
+new file mode 120000
+index 0000000..5b95ea5
+--- /dev/null
++++ b/kernel/lts2020-yocto-sriov/kernel-headers/linux/nl80211.h
+@@ -0,0 +1 @@
++../../../lts2020-yocto/kernel-headers/linux/nl80211.h
+\ No newline at end of file
+-- 
+2.17.1
+

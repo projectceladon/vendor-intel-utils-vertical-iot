@@ -1,0 +1,31 @@
+From 8228ff3f0f9c0412e60cdffe217e34e750b41bb2 Mon Sep 17 00:00:00 2001
+From: gollarx <ratnakumarix.golla@intel.com>
+Date: Mon, 12 Sep 2022 17:29:36 +0530
+Subject: [PATCH] Configure rro overlay for connectivity to fix CTS issue
+
+configure the rro overlay for ServiceConnectivityResource to fix the Cts
+Net TC module issue.
+
+Tracked-On: OAM-102959
+Signed-off-by: gollarx <ratnakumarix.golla@intel.com>
+---
+ groups/wlan/iwlwifi/product.mk | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/groups/wlan/iwlwifi/product.mk b/groups/wlan/iwlwifi/product.mk
+index 1af7189..cb7a4c7 100644
+--- a/groups/wlan/iwlwifi/product.mk
++++ b/groups/wlan/iwlwifi/product.mk
+@@ -7,7 +7,8 @@ PRODUCT_PACKAGES += \
+     wpa_cli \
+     iw \
+     TetheringConfigOverlay \
+-    TetheringConfigOverlayGsi
++    TetheringConfigOverlayGsi \
++    ServiceConnectivityResourcesConfigOverlay
+ 
+ PRODUCT_PACKAGES += \
+     android.hardware.wifi@1.0-service
+-- 
+2.37.3
+

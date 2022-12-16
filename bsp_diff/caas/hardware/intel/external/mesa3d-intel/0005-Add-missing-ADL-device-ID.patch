@@ -1,0 +1,24 @@
+From 1ca72385f427c2925e68cdbb7f62ca7a2532b5f1 Mon Sep 17 00:00:00 2001
+From: "Kalenahally Madegowda, NandishaX"
+ <nandishax.kalenahally.madegowda@intel.com>
+Date: Wed, 16 Feb 2022 17:29:03 +0530
+Subject: [PATCH] Add missing ADL device ID
+
+Tracked-On: HSD-16015846020
+Signed-off-by: Kalenahally Madegowda, NandishaX <nandishax.kalenahally.madegowda@intel.com>
+
+diff --git a/include/pci_ids/iris_pci_ids.h b/include/pci_ids/iris_pci_ids.h
+index 1e8c433b491..ccaa02a841a 100644
+--- a/include/pci_ids/iris_pci_ids.h
++++ b/include/pci_ids/iris_pci_ids.h
+@@ -4,6 +4,7 @@ CHIPSET(0x4c8c, rkl_gt05, "RKL GT0.5", "Intel(R) Graphics")
+ CHIPSET(0x4c90, rkl_gt1, "RKL GT1", "Intel(R) Graphics")
+ CHIPSET(0x4c9a, rkl_gt1, "RKL GT1", "Intel(R) Graphics")
+ 
++CHIPSET(0x4600, adl_gt1, "ADL-S GT1", "Intel(R) Graphics")
+ CHIPSET(0x4680, adl_gt1, "ADL-S GT1", "Intel(R) Graphics")
+ CHIPSET(0x4681, adl_gt1, "ADL-S GT1", "Intel(R) Graphics")
+ CHIPSET(0x4682, adl_gt1, "ADL-S GT1", "Intel(R) Graphics")
+-- 
+2.35.1
+

@@ -1,0 +1,93 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Swee Yee Fonn <swee.yee.fonn@intel.com>
+Date: Fri, 22 Apr 2022 16:53:23 +0800
+Subject: [PATCH] WA: EVMM reset_platform on 5.15 host kernel
+
+In 5.15 host kernel, early cr4 check resulted in
+kvm vcpu set sregs failure during vcpu reset as
+vpcu still in vmxon state with EVMM running on
+top of KVM.
+
+Add vmxoff prior in reset_platform with proper
+handling for multi-core.
+
+Signed-off-by: Swee Yee Fonn <swee.yee.fonn@intel.com>
+---
+ vmm/utils/dbg.c | 45 +++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 45 insertions(+)
+
+diff --git a/vmm/utils/dbg.c b/vmm/utils/dbg.c
+index 4b7594f..1c35514 100644
+--- a/vmm/utils/dbg.c
++++ b/vmm/utils/dbg.c
+@@ -18,6 +18,8 @@
+ #include "lock.h"
+ #include "event.h"
+ 
++#include "modules/ipc.h"
++
+ #ifdef LIB_PRINT
+ vmm_lock_t vmm_print_lock;
+ #endif
+@@ -25,8 +27,50 @@ vmm_lock_t vmm_print_lock;
+ #define RESET_IO_PORT         0xCF9
+ 
+ #ifndef DEBUG
++
++typedef struct {
++    volatile uint8_t ready;
++    uint8_t padding[7];
++} reset_percpu_data_t;
++
++static reset_percpu_data_t reset_percpu_data[MAX_CPU_NUM];
++
++void prepare_reset_percpu(guest_cpu_handle_t gcpu_unused UNUSED, void *unused UNUSED)
++{
++	guest_cpu_handle_t gcpu = get_current_gcpu();
++	guest_cpu_handle_t gcpu_next = gcpu;
++
++	do {
++		vmcs_clr_ptr(gcpu_next->vmcs);
++
++		gcpu_next = gcpu_next->next_same_host_cpu;
++	} while (gcpu_next != gcpu);
++
++	vmx_off();
++	if (host_cpu_id() != 0){
++		reset_percpu_data[host_cpu_id()].ready = 1;
++		asm_wbinvd();
++
++		/*
++		 * Must use hlt-loop/busy-loop to stop CPU. This is because the CPU might
++		 * be waked up if there is a lapic timer set before suspend especially running
++		 * on top of KVM.
++		 */
++		__STOP_HERE__
++	}
++}
++
+ static void reset_platform(void)
+ {
++	uint8_t cpu_id;
++	/* kvm expects vmxoff prior to vcpu reset */
++	ipc_exec_on_all_other_cpus(prepare_reset_percpu, NULL);
++	prepare_reset_percpu(NULL, NULL);
++	for (cpu_id=1; cpu_id < host_cpu_num; cpu_id++) {
++		while(reset_percpu_data[cpu_id].ready != 1) {
++			asm_pause();
++		}
++	}
+ 
+ 	/* see io-controller-hub-10-family-datasheet
+ 	 * chapter 13 LPC Interface Bridge Registers
+@@ -137,6 +181,7 @@ final:
+ #ifndef DEBUG
+ 	reset_platform();
+ #endif
++	printf("BUG: reset_platform not working\n");
+ 	__STOP_HERE__;
+ 	//printf("BUG: should never see this log after deadloop\n");
+ }
+-- 
+2.17.1
+

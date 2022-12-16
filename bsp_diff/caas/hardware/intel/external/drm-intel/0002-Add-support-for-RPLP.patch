@@ -1,0 +1,61 @@
+From f7f6a368f2b19950e8bdc618450fdea7351b04a2 Mon Sep 17 00:00:00 2001
+From: "Suresh, Prashanth" <prashanth.suresh@intel.com>
+Date: Mon, 29 Aug 2022 18:57:53 +0530
+Subject: [PATCH] Add support for RPLP
+
+Add RPLP platform support and PCIIDs
+
+Tracked-On: OAM-103696
+Signed-off-by: Suresh, Prashanth <prashanth.suresh@intel.com>
+---
+ intel/i915_pciids.h   | 9 +++++++++
+ intel/intel_chipset.c | 1 +
+ xf86drm.h             | 2 +-
+ 3 files changed, 11 insertions(+), 1 deletion(-)
+
+diff --git a/intel/i915_pciids.h b/intel/i915_pciids.h
+index 43c3302c..5e1f6eda 100644
+--- a/intel/i915_pciids.h
++++ b/intel/i915_pciids.h
+@@ -516,4 +516,13 @@
+ 	INTEL_VGA_DEVICE(0xA78A, info), \
+ 	INTEL_VGA_DEVICE(0xA78B, info)
+ 
++/*RPL-P*/
++#define INTEL_RPLP_IDS(info) \
++	INTEL_VGA_DEVICE(0xA7A0, info), \
++	INTEL_VGA_DEVICE(0xA720, info), \
++	INTEL_VGA_DEVICE(0xA7A8, info), \
++	INTEL_VGA_DEVICE(0xA7A1, info), \
++	INTEL_VGA_DEVICE(0xA721, info), \
++	INTEL_VGA_DEVICE(0xA7A9, info)
++
+ #endif /* _I915_PCIIDS_H */
+diff --git a/intel/intel_chipset.c b/intel/intel_chipset.c
+index 0570ba2b..f349e411 100644
+--- a/intel/intel_chipset.c
++++ b/intel/intel_chipset.c
+@@ -35,6 +35,7 @@ static const struct pci_device {
+ 	uint16_t gen;
+ } pciids[] = {
+ 	/* Keep ids sorted by gen; latest gen first */
++	INTEL_RPLP_IDS(12),
+ 	INTEL_RPLS_IDS(12),
+ 	INTEL_ADLP_IDS(12),
+ 	INTEL_ADLS_IDS(12),
+diff --git a/xf86drm.h b/xf86drm.h
+index 3fb1d1ca..ebfe77f7 100644
+--- a/xf86drm.h
++++ b/xf86drm.h
+@@ -74,7 +74,7 @@ extern "C" {
+ /* Default /dev/dri directory permissions 0755 */
+ #define DRM_DEV_DIRMODE	 	\
+ 	(S_IRUSR|S_IWUSR|S_IXUSR|S_IRGRP|S_IXGRP|S_IROTH|S_IXOTH)
+-#define DRM_DEV_MODE	 (S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP)
++#define DRM_DEV_MODE	 (S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH)
+ 
+ #ifdef __OpenBSD__
+ #define DRM_DIR_NAME  "/dev"
+-- 
+2.37.2
+

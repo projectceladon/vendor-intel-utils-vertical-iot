@@ -1,0 +1,35 @@
+From 8127775f2d130310a131c87f544340f1ba6a18c4 Mon Sep 17 00:00:00 2001
+From: "Suresh, Prashanth" <prashanth.suresh@intel.com>
+Date: Mon, 29 Aug 2022 19:03:00 +0530
+Subject: [PATCH] Add RPL-P DIDs
+
+Add RPL-P device IDs to enable CIV on RPL-P
+
+Tracked-On: OAM-103696
+Signed-off-by: Suresh, Prashanth <prashanth.suresh@intel.com>
+---
+ Source/inc/common/igfxfmid.h | 8 ++++++++
+ 1 file changed, 8 insertions(+)
+
+diff --git a/Source/inc/common/igfxfmid.h b/Source/inc/common/igfxfmid.h
+index 5da1cc0..37fe520 100644
+--- a/Source/inc/common/igfxfmid.h
++++ b/Source/inc/common/igfxfmid.h
+@@ -1304,6 +1304,14 @@ typedef enum __NATIVEGTTYPE
+ #define DEV_ID_A782                             0xA782
+ #define DEV_ID_A783                             0xA783
+ 
++// RPL-P
++#define DEV_ID_A7A0                             0xA7A0
++#define DEV_ID_A7A1                             0xA7A1
++#define DEV_ID_A7A8                             0xA7A8
++#define DEV_ID_A7A9                             0xA7A9
++#define DEV_ID_A720                             0xA720
++#define DEV_ID_A721                             0xA721
++
+ //ICL PCH LP Device IDs
+ #define ICP_LP_RESERVED_FUSE_ID                 0x3480
+ #define ICP_LP_U_SUPER_SKU_ID                   0x3481
+-- 
+2.37.2
+

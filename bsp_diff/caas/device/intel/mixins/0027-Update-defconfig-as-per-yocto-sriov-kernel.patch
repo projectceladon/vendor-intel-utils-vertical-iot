@@ -1,0 +1,53 @@
+From 8288d4494b7c6aecb0e6b2ef4ecd579bc0d80df0 Mon Sep 17 00:00:00 2001
+From: "Suresh, Prashanth" <prashanth.suresh@intel.com>
+Date: Fri, 12 Aug 2022 17:35:46 +0530
+Subject: [PATCH] Update defconfig as per yocto-sriov kernel
+
+Update defconfig to build with latest 5.10 civ kernel.
+
+Tracked-On:
+Signed-off-by: Suresh, Prashanth <prashanth.suresh@intel.com>
+---
+ .../kernel/gmin64/config-lts/lts2020-yocto/x86_64_defconfig  | 5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
+
+diff --git a/groups/kernel/gmin64/config-lts/lts2020-yocto/x86_64_defconfig b/groups/kernel/gmin64/config-lts/lts2020-yocto/x86_64_defconfig
+index 09075d8..94fe6c7 100644
+--- a/groups/kernel/gmin64/config-lts/lts2020-yocto/x86_64_defconfig
++++ b/groups/kernel/gmin64/config-lts/lts2020-yocto/x86_64_defconfig
+@@ -591,7 +591,6 @@ CONFIG_X86_SYSFB=y
+ # Binary Emulations
+ #
+ CONFIG_IA32_EMULATION=y
+-# CONFIG_X86_X32 is not set
+ CONFIG_COMPAT_32=y
+ CONFIG_COMPAT=y
+ CONFIG_COMPAT_FOR_U64_ALIGNMENT=y
+@@ -1601,6 +1600,7 @@ CONFIG_HOTPLUG_PCI_ACPI=y
+ #
+ # Generic Driver Options
+ #
++# CONFIG_AUXILIARY_BUS is not set
+ CONFIG_UEVENT_HELPER=y
+ CONFIG_UEVENT_HELPER_PATH="/sbin/hotplug"
+ # CONFIG_DEVTMPFS is not set
+@@ -2434,7 +2434,6 @@ CONFIG_WLAN_VENDOR_QUANTENNA=y
+ # CONFIG_FUJITSU_ES is not set
+ CONFIG_NET_FAILOVER=y
+ # CONFIG_ISDN is not set
+-# CONFIG_NVM is not set
+ 
+ #
+ # Input device support
+@@ -6713,7 +6712,7 @@ CONFIG_CRYPTO_HASH_INFO=y
+ #
+ CONFIG_CRYPTO_LIB_AES=y
+ CONFIG_CRYPTO_LIB_ARC4=y
+-# CONFIG_CRYPTO_LIB_BLAKE2S is not set
++CONFIG_CRYPTO_LIB_BLAKE2S_GENERIC=y
+ # CONFIG_CRYPTO_LIB_CHACHA is not set
+ # CONFIG_CRYPTO_LIB_CURVE25519 is not set
+ CONFIG_CRYPTO_LIB_DES=y
+-- 
+2.37.2
+

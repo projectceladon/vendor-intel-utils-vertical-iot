@@ -1,0 +1,24 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: kalle <kalyan.alle@intel.com>
+Date: Thu, 13 Jan 2022 15:27:54 +0800
+Subject: [PATCH] onevpl changes to support rpl-s platform
+
+---
+ dispatcher/linux/device_ids.h | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/dispatcher/linux/device_ids.h b/dispatcher/linux/device_ids.h
+index d0f2afb..e113592 100644
+--- a/dispatcher/linux/device_ids.h
++++ b/dispatcher/linux/device_ids.h
+@@ -49,6 +49,7 @@ enum eMFXHWType {
+     MFX_HW_RKL    = MFX_HW_TGL_LP + 2,
+     MFX_HW_ADL_S  = MFX_HW_TGL_LP + 4,
+     MFX_HW_ADL_P  = MFX_HW_TGL_LP + 5,
++    MFX_HW_RPL_S  = MFX_HW_TGL_LP + 6,
+     MFX_HW_DG1    = 0x1600003,
+ };
+ 
+-- 
+2.17.1
+

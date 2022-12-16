@@ -1,0 +1,26 @@
+From 3dc29daae1e439f32b1b6a5517ce01ce99a5143f Mon Sep 17 00:00:00 2001
+From: "Kothapeta, BikshapathiX" <bikshapathix.kothapeta@intel.com>
+Date: Thu, 13 Oct 2022 23:26:44 +0530
+Subject: [PATCH] mixin-update-Fix VTS kernelAPI sysfs
+
+Fine tuned Kfence sample interval config to 500 from 100
+
+Tracked-On: OAM-104245
+Signed-off-by: Kothapeta, BikshapathiX <bikshapathix.kothapeta@intel.com>
+
+diff --git a/caas/config-lts/lts2020-yocto/x86_64_defconfig b/caas/config-lts/lts2020-yocto/x86_64_defconfig
+index 9c12943..8d2d382 100644
+--- a/caas/config-lts/lts2020-yocto/x86_64_defconfig
++++ b/caas/config-lts/lts2020-yocto/x86_64_defconfig
+@@ -6943,7 +6943,7 @@ CONFIG_CC_HAS_WORKING_NOSANITIZE_ADDRESS=y
+ # CONFIG_KASAN is not set
+ CONFIG_HAVE_ARCH_KFENCE=y
+ CONFIG_KFENCE=y
+-CONFIG_KFENCE_SAMPLE_INTERVAL=100
++CONFIG_KFENCE_SAMPLE_INTERVAL=500
+ CONFIG_KFENCE_NUM_OBJECTS=255
+ CONFIG_KFENCE_STRESS_TEST_FAULTS=0
+ 
+-- 
+2.38.0
+

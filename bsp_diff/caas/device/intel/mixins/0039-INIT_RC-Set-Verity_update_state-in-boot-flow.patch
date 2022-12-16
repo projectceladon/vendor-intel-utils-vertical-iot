@@ -1,0 +1,30 @@
+From 72d13a7a4748c27954017648ce9f8c77610cf85c Mon Sep 17 00:00:00 2001
+From: vdanix <vishwanathx.dani@intel.com>
+Date: Wed, 16 Nov 2022 16:39:39 +0530
+Subject: [PATCH] [INIT_RC]Set Verity_update_state in boot flow.
+
+This is required because CtsNativeVerifiedBootTestCaese will read
+property "partition.${partition}.verified.hash_alg" to check that
+sha1 is not used.
+
+Tracked-On: OAM-104656
+Signed-off-by: sushre2x <sushreex.panda@intel.com>
+Signed-off-by: vdanix <vishwanathx.dani@intel.com>
+
+diff --git a/groups/device-specific/caas/init.rc b/groups/device-specific/caas/init.rc
+index ea10bd9..a006a99 100644
+--- a/groups/device-specific/caas/init.rc
++++ b/groups/device-specific/caas/init.rc
+@@ -8,6 +8,9 @@ on boot
+     write /sys/devices/platform/INT33BB:00/power/control on
+     write /sys/devices/pci0000\:00/0000\:00\:15.0/power/control auto
+ 
++# Update dm-verity state and set partition.*.verified properties.
++    verity_update_state
++
+ on post-fs
+     #Accelerometer: X & Z inverted
+     setprop ro.vendor.iio.accel.x.opt_scale    -1
+-- 
+2.38.1
+

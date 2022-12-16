@@ -1,0 +1,25 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Basil Chew <basil.chew@intel.com>
+Date: Thu, 19 May 2022 15:40:08 +0800
+Subject: [PATCH] Remove redundant script to setup SRIOV on host
+
+Change:
+- removed sriov_setup_host.sh from product.mk
+---
+ groups/device-specific/caas/product.mk | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/groups/device-specific/caas/product.mk b/groups/device-specific/caas/product.mk
+index fefcb4d..3b172f4 100755
+--- a/groups/device-specific/caas/product.mk
++++ b/groups/device-specific/caas/product.mk
+@@ -58,6 +58,5 @@ PRODUCT_COPY_FILES += device/intel/civ/host/vm-manager/scripts/start_civ.sh:$(PR
+ PRODUCT_COPY_FILES += device/intel/civ/host/vm-manager/scripts/setup_host.sh:$(PRODUCT_OUT)/scripts/setup_host.sh
+ PRODUCT_COPY_FILES += device/intel/civ/host/vm-manager/scripts/guest_time_keeping.sh:$(PRODUCT_OUT)/scripts/guest_time_keeping.sh
+ PRODUCT_COPY_FILES += device/intel/civ/host/vm-manager/scripts/start_flash_usb.sh:$(PRODUCT_OUT)/scripts/start_flash_usb.sh
+-PRODUCT_COPY_FILES += device/intel/civ/host/vm-manager/scripts/sriov_setup_host.sh:$(PRODUCT_OUT)/scripts/sriov_setup_host.sh
+ PRODUCT_COPY_FILES += vendor/intel/fw/trusty-release-binaries/rpmb_dev:$(PRODUCT_OUT)/scripts/rpmb_dev
+ PRODUCT_COPY_FILES += $(LOCAL_PATH)/wakeup.py:$(PRODUCT_OUT)/scripts/wakeup.py
+-- 
+2.17.1
+

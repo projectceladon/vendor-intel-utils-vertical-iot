@@ -1,0 +1,63 @@
+From 6a507c523c8411dd7235992f5d441b3425826d3f Mon Sep 17 00:00:00 2001
+From: buildslave <ctbbot@intel.com>
+Date: Thu, 3 Nov 2022 18:33:17 +0000
+Subject: [PATCH] mixin updates
+
+Add sepolicy folder for system private domain
+Fix avc denied error for mediatranscoding, when running cts
+case CtsMediaProviderTranscodeTests. 'mediatranscoding' is a
+system defined private domain.
+As media.transcoding service need access to gpu device and find
+surfaceflinger, added sepolicies to fix the CTS issue.
+
+Tracked-On: OAM-104121
+Mixin-Reviewed-On: https://github.com/projectceladon/device-androidia-mixins/pull/1505
+Signed-off-by: chenyanxzhu <chenyanx.zhu@intel.com>
+---
+ caas/BoardConfig.mk        | 2 ++
+ caas_cfc/BoardConfig.mk    | 2 ++
+ celadon_ivi/BoardConfig.mk | 2 ++
+ 3 files changed, 6 insertions(+)
+
+diff --git a/caas/BoardConfig.mk b/caas/BoardConfig.mk
+index b672ed6..bf0798b 100644
+--- a/caas/BoardConfig.mk
++++ b/caas/BoardConfig.mk
+@@ -484,6 +484,8 @@ WITH_DEXPREOPT := true
+ ##############################################################
+ # Source: device/intel/mixins/groups/media/auto/BoardConfig.mk
+ ##############################################################
++SYSTEM_EXT_PRIVATE_SEPOLICY_DIRS += $(INTEL_PATH_SEPOLICY)/system_ext/private
++
+ ##############################################################
+ # Source: device/intel/mixins/groups/graphics/auto/BoardConfig.mk
+ ##############################################################
+diff --git a/caas_cfc/BoardConfig.mk b/caas_cfc/BoardConfig.mk
+index 146ae4b..fd3c134 100644
+--- a/caas_cfc/BoardConfig.mk
++++ b/caas_cfc/BoardConfig.mk
+@@ -433,6 +433,8 @@ WITH_DEXPREOPT := true
+ ##############################################################
+ # Source: device/intel/mixins/groups/media/auto/BoardConfig.mk
+ ##############################################################
++SYSTEM_EXT_PRIVATE_SEPOLICY_DIRS += $(INTEL_PATH_SEPOLICY)/system_ext/private
++
+ INTEL_STAGEFRIGHT := true
+ 
+ # Settings for the Media SDK library and plug-ins:
+diff --git a/celadon_ivi/BoardConfig.mk b/celadon_ivi/BoardConfig.mk
+index 7a60581..5a911d9 100644
+--- a/celadon_ivi/BoardConfig.mk
++++ b/celadon_ivi/BoardConfig.mk
+@@ -495,6 +495,8 @@ WITH_DEXPREOPT := true
+ ##############################################################
+ # Source: device/intel/mixins/groups/media/auto/BoardConfig.mk
+ ##############################################################
++SYSTEM_EXT_PRIVATE_SEPOLICY_DIRS += $(INTEL_PATH_SEPOLICY)/system_ext/private
++
+ ##############################################################
+ # Source: device/intel/mixins/groups/graphics/auto/BoardConfig.mk
+ ##############################################################
+-- 
+2.38.1
+

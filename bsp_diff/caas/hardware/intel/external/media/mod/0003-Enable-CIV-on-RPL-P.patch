@@ -1,0 +1,45 @@
+From bbca65f130c0fb0643fcfe749038903925c9c60a Mon Sep 17 00:00:00 2001
+From: "Suresh, Prashanth" <prashanth.suresh@intel.com>
+Date: Mon, 29 Aug 2022 19:06:29 +0530
+Subject: [PATCH] Enable CIV on RPL-P
+
+This patch is mainly for RPLP CIV
+
+Tracked-On: OAM-103696
+Signed-off-by: Suresh, Prashanth <prashanth.suresh@intel.com>
+---
+ .../linux/gen12/ddi/media_sysinfo_g12.cpp      | 18 ++++++++++++++++++
+ 1 file changed, 18 insertions(+)
+
+diff --git a/media_driver/linux/gen12/ddi/media_sysinfo_g12.cpp b/media_driver/linux/gen12/ddi/media_sysinfo_g12.cpp
+index d6bc0322a..1fcf39c36 100644
+--- a/media_driver/linux/gen12/ddi/media_sysinfo_g12.cpp
++++ b/media_driver/linux/gen12/ddi/media_sysinfo_g12.cpp
+@@ -458,6 +458,24 @@ static bool adlpGt2Device462A = DeviceInfoFactory<GfxDeviceInfo>::
+ static bool adlpGt2Device4626 = DeviceInfoFactory<GfxDeviceInfo>::
+     RegisterDevice(0x4626, &adlpGt2Info);
+ 
++static bool rplpGt2DeviceA7A0 = DeviceInfoFactory<GfxDeviceInfo>::
++    RegisterDevice(0xA7A0, &adlpGt2Info);
++
++static bool rplpGt2DeviceA720 = DeviceInfoFactory<GfxDeviceInfo>::
++    RegisterDevice(0xA720, &adlpGt2Info);
++
++static bool rplpGt2DeviceA7A8 = DeviceInfoFactory<GfxDeviceInfo>::
++    RegisterDevice(0xA7A8, &adlpGt2Info);
++
++static bool rplpGt2DeviceA7A1 = DeviceInfoFactory<GfxDeviceInfo>::
++    RegisterDevice(0xA7A1, &adlpGt2Info);
++
++static bool rplpGt2DeviceA721 = DeviceInfoFactory<GfxDeviceInfo>::
++    RegisterDevice(0xA721, &adlpGt2Info);
++
++static bool rplpGt2DeviceA7A9 = DeviceInfoFactory<GfxDeviceInfo>::
++    RegisterDevice(0xA7A9, &adlpGt2Info);
++
+ #endif
+ 
+ #ifdef IGFX_GEN12_RPLS_SUPPORTED
+-- 
+2.37.2
+

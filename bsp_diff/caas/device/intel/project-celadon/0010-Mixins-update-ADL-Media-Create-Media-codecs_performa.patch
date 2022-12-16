@@ -1,0 +1,27 @@
+From 2d19a65e801087c02b5ca4412155ecc8e248d3a6 Mon Sep 17 00:00:00 2001
+From: "Suresh, Prashanth" <prashanth.suresh@intel.com>
+Date: Wed, 11 May 2022 17:21:10 +0530
+Subject: [PATCH] Mixins update - [ADL][Media]Create Media
+ codecs_performance.xml
+
+---
+ caas/extra_files/codecs/auto_hal.in | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/caas/extra_files/codecs/auto_hal.in b/caas/extra_files/codecs/auto_hal.in
+index 2d96b50..281a348 100644
+--- a/caas/extra_files/codecs/auto_hal.in
++++ b/caas/extra_files/codecs/auto_hal.in
+@@ -9,6 +9,9 @@ if [ $value_model == 166 ]; then
+ elif [ $value_model == 141 ]; then
+     setprop ro.vendor.media.target_variant "_gen12"
+     setprop ro.vendor.media.target_variant_platform "_tgl"
++elif [ $value_model == 151 ]; then
++    setprop ro.vendor.media.target_variant "_gen12"
++    setprop ro.vendor.media.target_variant_platform "_adl"
+ elif [ $value_model == 154 ]; then
+     setprop ro.vendor.media.target_variant "_gen12"
+     setprop ro.vendor.media.target_variant_platform "_adl"
+-- 
+2.37.0
+

@@ -1,0 +1,68 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Basil Chew <basil.chew@intel.com>
+Date: Thu, 28 Oct 2021 16:51:27 +0800
+Subject: [PATCH] Revert "Config Changes for enabling iwl7000 module"
+
+This reverts commit aac742407e50663bbd04c6db26ed118d29017d64.
+---
+ .../lts2019-chromium/x86_64_defconfig          | 18 ++++++++++++++----
+ groups/wlan/iwlwifi/init.rc                    |  4 ++--
+ 2 files changed, 16 insertions(+), 6 deletions(-)
+
+diff --git a/groups/kernel/gmin64/config-lts/lts2019-chromium/x86_64_defconfig b/groups/kernel/gmin64/config-lts/lts2019-chromium/x86_64_defconfig
+index fc4f9b1..c674ccb 100644
+--- a/groups/kernel/gmin64/config-lts/lts2019-chromium/x86_64_defconfig
++++ b/groups/kernel/gmin64/config-lts/lts2019-chromium/x86_64_defconfig
+@@ -2317,16 +2317,26 @@ CONFIG_WLAN_VENDOR_INTEL=y
+ # CONFIG_IPW2200 is not set
+ # CONFIG_IWL4965 is not set
+ # CONFIG_IWL3945 is not set
++CONFIG_IWLWIFI=m
++CONFIG_IWLWIFI_LEDS=y
++CONFIG_IWLDVM=m
++CONFIG_IWLMVM=m
++CONFIG_IWLWIFI_OPMODE_MODULAR=y
++# CONFIG_IWLWIFI_BCAST_FILTERING is not set
++
++#
++# Debugging Options
++#
++# CONFIG_IWLWIFI_DEBUG is not set
++CONFIG_IWLWIFI_DEVICE_TRACING=y
++# end of Debugging Options
+ 
+ CONFIG_WLAN_VENDOR_INTERSIL=y
+ # CONFIG_HOSTAP is not set
+ # CONFIG_HERMES is not set
+ # CONFIG_P54_COMMON is not set
+ # CONFIG_PRISM54 is not set
+-CONFIG_IWL7000=m
+-CONFIG_IWL7000_LEDS=y
+-CONFIG_IWL7000_TRACING=y
+-CONFIG_IWL7000_VENDOR_CMDS=y
++# CONFIG_IWL7000 is not set
+ CONFIG_WLAN_VENDOR_MARVELL=y
+ # CONFIG_LIBERTAS is not set
+ # CONFIG_LIBERTAS_THINFIRM is not set
+diff --git a/groups/wlan/iwlwifi/init.rc b/groups/wlan/iwlwifi/init.rc
+index 29e29d7..4d1af0d 100644
+--- a/groups/wlan/iwlwifi/init.rc
++++ b/groups/wlan/iwlwifi/init.rc
+@@ -3,12 +3,12 @@ on post-fs-data
+     setprop wifi.interface wlan0
+     setprop wifi.direct.interface p2p-dev-wlan0
+ 
+-on early-boot
++on post-fs
+ {{^iwl_upstream_drv}}
+     insmod /vendor/lib/modules/compat.ko
+ {{/iwl_upstream_drv}} 
+     insmod /vendor/lib/modules/cfg80211.ko
+-    insmod /vendor/lib/modules/iwl7000_mac80211.ko
++    insmod /vendor/lib/modules/mac80211.ko
+     insmod /vendor/lib/modules/iwlwifi.ko
+     insmod /vendor/lib/modules/iwlmvm.ko power_scheme=1
+ 
+-- 
+2.17.1
+

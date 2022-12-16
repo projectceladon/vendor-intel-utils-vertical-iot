@@ -1,0 +1,35 @@
+From 762f25bf4de0227fa0ac547aac60c97a84e5e7ac Mon Sep 17 00:00:00 2001
+From: "Suresh, Prashanth" <prashanth.suresh@intel.com>
+Date: Mon, 29 Aug 2022 19:11:18 +0530
+Subject: [PATCH] Add device IDs for RPL-P
+
+Enable CIV on RPL-P platform.
+
+Tracked-On: OAM-103696
+Signed-off-by: Suresh, Prashanth <prashanth.suresh@intel.com>
+---
+ _studio/shared/include/mfxstructures-int.h | 8 ++++++++
+ 1 file changed, 8 insertions(+)
+
+diff --git a/_studio/shared/include/mfxstructures-int.h b/_studio/shared/include/mfxstructures-int.h
+index 33cc609..6330467 100755
+--- a/_studio/shared/include/mfxstructures-int.h
++++ b/_studio/shared/include/mfxstructures-int.h
+@@ -457,6 +457,14 @@ typedef struct {
+     { 0x46C2, MFX_HW_ADL_P, MFX_GT2 },//ADL-P
+     { 0x46C3, MFX_HW_ADL_P, MFX_GT2 },//ADL-P
+ 
++    /*RPL-P*/
++    { 0xA7A0, MFX_HW_ADL_P, MFX_GT2 },//RPL-P
++    { 0xA720, MFX_HW_ADL_P, MFX_GT2 },//RPL-P
++    { 0xA7A8, MFX_HW_ADL_P, MFX_GT2 },//RPL-P
++    { 0xA7A1, MFX_HW_ADL_P, MFX_GT2 },//RPL-P
++    { 0xA721, MFX_HW_ADL_P, MFX_GT2 },//RPL-P
++    { 0xA7A9, MFX_HW_ADL_P, MFX_GT2 },//RPL-P
++
+     /* ADL-N */
+     { 0x46D0, MFX_HW_ADL_N, MFX_GT1 },//ADL-N
+     { 0x46D1, MFX_HW_ADL_N, MFX_GT1 },//ADL-N
+-- 
+2.37.2
+

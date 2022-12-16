@@ -1,0 +1,29 @@
+From 954fb89e212df35c684b0d4802bd3ec57a472c5a Mon Sep 17 00:00:00 2001
+From: "Kothapeta, BikshapathiX" <bikshapathix.kothapeta@intel.com>
+Date: Mon, 14 Nov 2022 12:17:15 +0530
+Subject: [PATCH] Remove unsupported Diagnostics Element in xml
+
+Element 'Diagnostics': This element is not expected
+Against the schema: "/data/local/tmp/media_codecs.xsd"
+fixing vts_mediaCodecs_validate_test
+
+Tracked-On: OAM-104733
+Signed-off-by: Kothapeta, BikshapathiX bikshapathix.kothapeta@intel.com
+Signed-off-by: Kothapeta, BikshapathiX <bikshapathix.kothapeta@intel.com>
+
+diff --git a/c2_store/data/media_codecs_intel_c2_video.xml b/c2_store/data/media_codecs_intel_c2_video.xml
+index a0b0c4d..bfc9cfd 100644
+--- a/c2_store/data/media_codecs_intel_c2_video.xml
++++ b/c2_store/data/media_codecs_intel_c2_video.xml
+@@ -94,8 +94,6 @@ and updated to vendor media codecs.
+             <Limit name="blocks-per-second" range="1-245760" />
+             <Limit name="bitrate" range="1-12000000" />
+             <Limit name="performance-point-3840x2160" value="30" />
+-            <!--Feature name="intra-refresh" /-->
+-            <Diagnostics dumpOutput="false" />
+         </MediaCodec>
+         <MediaCodec name="c2.intel.hevc.encoder" type="video/hevc" >
+             <Limit name="size" min="176x144" max="8192x8192" />
+-- 
+2.38.1
+

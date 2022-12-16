@@ -1,0 +1,122 @@
+From 927b5936bfd1219095e753fd3c50decd8ef0f2ad Mon Sep 17 00:00:00 2001
+From: gollarx <ratnakumarix.golla@intel.com>
+Date: Thu, 15 Sep 2022 18:16:20 +0530
+Subject: [PATCH] Configure rro overlay for connectivity to address CTS issue
+
+configure the rro overlay for ServiceConnectivityResource to fix the Cts
+Net TC: testSocketKeepaliveUnprivileged
+
+Tracked-On: OAM-102959
+Signed-off-by: gollarx <ratnakumarix.golla@intel.com>
+---
+ .../Android.bp                                | 23 ++++++++++++++
+ .../AndroidManifest.xml                       | 30 +++++++++++++++++++
+ .../res/values/config.xml                     | 29 ++++++++++++++++++
+ 3 files changed, 82 insertions(+)
+ create mode 100644 rro_overlays/ServiceConnectivityResourcesOverlay/Android.bp
+ create mode 100644 rro_overlays/ServiceConnectivityResourcesOverlay/AndroidManifest.xml
+ create mode 100644 rro_overlays/ServiceConnectivityResourcesOverlay/res/values/config.xml
+
+diff --git a/rro_overlays/ServiceConnectivityResourcesOverlay/Android.bp b/rro_overlays/ServiceConnectivityResourcesOverlay/Android.bp
+new file mode 100644
+index 0000000..5ed47e3
+--- /dev/null
++++ b/rro_overlays/ServiceConnectivityResourcesOverlay/Android.bp
+@@ -0,0 +1,23 @@
++//
++// Copyright (C) 2022 The Android Open Source Project
++//
++// Licensed under the Apache License, Version 2.0 (the "License");
++// you may not use this file except in compliance with the License.
++// You may obtain a copy of the License at
++//
++//      http://www.apache.org/licenses/LICENSE-2.0
++//
++// Unless required by applicable law or agreed to in writing, software
++// distributed under the License is distributed on an "AS IS" BASIS,
++// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++// See the License for the specific language governing permissions and
++// limitations under the License.
++//
++
++runtime_resource_overlay {
++    name: "ServiceConnectivityResourcesConfigOverlay",
++    sdk_version: "current",
++    resource_dirs: ["res"],
++    product_specific: true,
++}
++
+diff --git a/rro_overlays/ServiceConnectivityResourcesOverlay/AndroidManifest.xml b/rro_overlays/ServiceConnectivityResourcesOverlay/AndroidManifest.xml
+new file mode 100644
+index 0000000..9887008
+--- /dev/null
++++ b/rro_overlays/ServiceConnectivityResourcesOverlay/AndroidManifest.xml
+@@ -0,0 +1,30 @@
++<?xml version="1.0" encoding="utf-8"?>
++<!--
++/*
++ * Copyright (C) 2022 The Android Open Source Project
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++-->
++<!-- Manifest for connectivity resources APK -->
++<manifest xmlns:android="http://schemas.android.com/apk/res/android"
++          package="com.android.connectivity.resources.celadon"
++          android:versionCode="1"
++          android:versionName="1.0">
++    <application android:hasCode="false" />
++     <overlay
++      android:targetPackage="com.android.connectivity.resources"
++      android:targetName="ServiceConnectivityResourcesConfig"
++      android:isStatic="true"
++      android:priority="0"/>    
++</manifest>
+diff --git a/rro_overlays/ServiceConnectivityResourcesOverlay/res/values/config.xml b/rro_overlays/ServiceConnectivityResourcesOverlay/res/values/config.xml
+new file mode 100644
+index 0000000..c3089be
+--- /dev/null
++++ b/rro_overlays/ServiceConnectivityResourcesOverlay/res/values/config.xml
+@@ -0,0 +1,29 @@
++<?xml version="1.0" encoding="utf-8"?>
++<!--
++  ~ Copyright (C) 2022 The Android Open Source Project
++  ~
++  ~ Licensed under the Apache License, Version 2.0 (the "License");
++  ~ you may not use this file except in compliance with the License.
++  ~ You may obtain a copy of the License at
++  ~
++  ~      http://www.apache.org/licenses/LICENSE-2.0
++  ~
++  ~ Unless required by applicable law or agreed to in writing, software
++  ~ distributed under the License is distributed on an "AS IS" BASIS,
++  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++  ~ See the License for the specific language governing permissions and
++  ~ limitations under the License.
++  -->
++
++<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
++
++
++    <!-- Default supported concurrent socket keepalive slots per transport type, used by
++         ConnectivityManager.createSocketKeepalive() for calculating the number of keepalive
++         offload slots that should be reserved for privileged access. This string array should be
++         overridden by the device to present the capability of creating socket keepalives. -->
++    <!-- An Array of "[NetworkCapabilities.TRANSPORT_*],[supported keepalives] -->
++    <string-array translatable="false" name="config_networkSupportedKeepaliveCount">
++    </string-array>
++
++</resources>
+-- 
+2.37.3
+

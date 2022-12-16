@@ -1,0 +1,42 @@
+From 7419dcc3ebb7df6d37459333f58ec23d8c096fda Mon Sep 17 00:00:00 2001
+From: "Suresh, Prashanth" <prashanth.suresh@intel.com>
+Date: Wed, 11 May 2022 14:38:51 +0530
+Subject: [PATCH] Subject: [PATCH] Use new exception OSError for qemu6.0 qmp.py
+
+Instead of qemu.error, qemu6.0's qmp.py file raises
+OSError on socket connection errors. This exception
+need to be handled.
+---
+ groups/device-specific/caas/guest_pm_control | 2 ++
+ groups/device-specific/caas/wakeup.py        | 2 ++
+ 2 files changed, 4 insertions(+)
+
+diff --git a/groups/device-specific/caas/guest_pm_control b/groups/device-specific/caas/guest_pm_control
+index b5017d2..529cdd4 100755
+--- a/groups/device-specific/caas/guest_pm_control
++++ b/groups/device-specific/caas/guest_pm_control
+@@ -91,6 +91,8 @@ def main():
+             print('Could not negotiate capabilities with QEMU QMP server')
+         except qmp.QMPTimeoutError:
+             print('Connection Timeout Error')
++        except OSError:
++            print
+         else:
+             print("connected to QEMU QMP server")
+             break
+diff --git a/groups/device-specific/caas/wakeup.py b/groups/device-specific/caas/wakeup.py
+index 9565fba..0ee3c0e 100755
+--- a/groups/device-specific/caas/wakeup.py
++++ b/groups/device-specific/caas/wakeup.py
+@@ -23,6 +23,8 @@ def main():
+             print('Didn\'t get QMP greeting message from QEMU QMP server')
+         except qmp.QMPCapabilitiesError:
+             print('Could not negotiate capabilities with QEMU QMP server')
++        except OSError:
++            print
+ 
+         if time.time() >= timeout + timeout_start:
+             print("connection timeout error")
+-- 
+2.36.1
+

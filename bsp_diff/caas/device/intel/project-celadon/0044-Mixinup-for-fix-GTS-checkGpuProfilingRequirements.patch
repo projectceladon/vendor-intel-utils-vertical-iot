@@ -1,0 +1,25 @@
+From 667d490710507cd2c96d791ccad3933e1c943eb2 Mon Sep 17 00:00:00 2001
+From: vdanix <vishwanathx.dani@intel.com>
+Date: Wed, 23 Nov 2022 15:33:16 +0530
+Subject: [PATCH] Mixinup for fix GTS checkGpuProfilingRequirements
+
+Tracked-On: OAM-104957
+Signed-off-by: vdanix <vishwanathx.dani@intel.com>
+
+diff --git a/caas/caas.mk b/caas/caas.mk
+index c56de03..a5036f6 100644
+--- a/caas/caas.mk
++++ b/caas/caas.mk
+@@ -60,6 +60,9 @@ PRODUCT_AAPT_PREF_CONFIG := mdpi
+ PRODUCT_VENDOR_PROPERTIES += \
+     ro.soc.manufacturer=$(PRODUCT_MANUFACTURER)
+ 
++PRODUCT_VENDOR_PROPERTIES += \
++    graphics.gpu.profiler.support=true
++
+ PRODUCT_RESTRICT_VENDOR_FILES := false
+ PRODUCT_SET_DEBUGFS_RESTRICTIONS := false
+ PRODUCT_SHIPPING_API_LEVEL := 31
+-- 
+2.38.1
+

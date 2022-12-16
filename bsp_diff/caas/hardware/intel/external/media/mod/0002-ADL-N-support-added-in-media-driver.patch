@@ -1,0 +1,417 @@
+From b42fc335b93b0432bada586e5b08cddc6f4caa52 Mon Sep 17 00:00:00 2001
+From: kalle <kalyan.alle@intel.com>
+Date: Wed, 10 Aug 2022 23:46:54 +0530
+Subject: [PATCH] ADL-N support added
+
+Adding ADL-N Support as per the upstream media-driver
+
+Tracked-On: OAM-103486
+Signed-off-by: Alle, Kalyan <kalyan.alle@intel.com>
+Change-Id: I03fc21be99b8225546e835ce9b9945752ec0aa50
+
+---
+ media_driver/Android.mk                       |   3 +
+ .../cmake/linux/media_gen_flags_linux.cmake   |   8 ++
+ .../linux/gen12/ddi/media_libva_caps_g12.cpp  |   5 +
+ .../linux/gen12/ddi/media_sku_wa_g12.cpp      |  48 ++++++++
+ .../linux/gen12/ddi/media_sysinfo_g12.cpp     |  31 +++++
+ .../media_interfaces_g12_adln.cpp             | 106 ++++++++++++++++++
+ .../media_interfaces_g12_adln.h               |  45 ++++++++
+ .../media_srcs.cmake                          |  49 ++++++++
+ 8 files changed, 295 insertions(+)
+ create mode 100644 media_driver/media_interface/media_interfaces_m12_adln/media_interfaces_g12_adln.cpp
+ create mode 100644 media_driver/media_interface/media_interfaces_m12_adln/media_interfaces_g12_adln.h
+ create mode 100644 media_driver/media_interface/media_interfaces_m12_adln/media_srcs.cmake
+
+diff --git a/media_driver/Android.mk b/media_driver/Android.mk
+index 4c0e7d939..c14bcb9ad 100644
+--- a/media_driver/Android.mk
++++ b/media_driver/Android.mk
+@@ -806,6 +806,7 @@ LOCAL_SRC_FILES := \
+     media_interface/media_interfaces_m11_icllp/media_interfaces_g11_icllp.cpp \
+     media_interface/media_interfaces_m11_jsl_ehl/media_interfaces_g11_jsl_ehl.cpp \
+     media_interface/media_interfaces_m12_adlp/media_interfaces_g12_adlp.cpp \
++    media_interface/media_interfaces_m12_adln/media_interfaces_g12_adln.cpp \
+     media_interface/media_interfaces_m12_adls/media_interfaces_g12_adls.cpp \
+     media_interface/media_interfaces_m12_rkl/media_interfaces_g12_rkl.cpp \
+     media_interface/media_interfaces_m12_tgllp/media_interfaces_g12_tgllp.cpp \
+@@ -885,6 +886,7 @@ LOCAL_CPPFLAGS := \
+     -DIGFX_GEN12_TGLLP_SUPPORTED \
+     -DIGFX_GEN12_TGLLP_SWSB_SUPPORTED \
+     -DIGFX_GEN12_RPLS_SUPPORTED \
++    -DIGFX_GEN12_ADLN_SUPPORTED \
+     -DIGFX_GEN8_BDW_SUPPORTED \
+     -DIGFX_GEN8_SUPPORTED \
+     -DIGFX_GEN9_BXT_SUPPORTED \
+@@ -1075,6 +1077,7 @@ LOCAL_C_INCLUDES  = \
+     $(LOCAL_PATH)/media_interface/media_interfaces_m12_rkl \
+     $(LOCAL_PATH)/media_interface/media_interfaces_m12_adls \
+     $(LOCAL_PATH)/media_interface/media_interfaces_m12_adlp \
++    $(LOCAL_PATH)/media_interface/media_interfaces_m12_adln \
+     $(LOCAL_PATH)/../media_common/agnostic/common/os \
+     $(LOCAL_PATH)/../media_common/agnostic/common/codec/shared \
+     $(LOCAL_PATH)/../media_common/linux/common/os \
+diff --git a/media_driver/cmake/linux/media_gen_flags_linux.cmake b/media_driver/cmake/linux/media_gen_flags_linux.cmake
+index ade162a1b..1c29cd455 100644
+--- a/media_driver/cmake/linux/media_gen_flags_linux.cmake
++++ b/media_driver/cmake/linux/media_gen_flags_linux.cmake
+@@ -81,6 +81,10 @@ cmake_dependent_option(GEN12_ADLP
+     "Enabled ADLP support (Gen12)" ON
+     "GEN12_TGLLP" OFF)
+ 
++cmake_dependent_option(GEN12_ADLN
++    "Enabled ADLN support (Gen12)" ON
++    "GEN12_TGLLP" OFF)
++
+ cmake_dependent_option(GEN12_RPLS
+      "Enabled RPLS support (Gen12)" ON
+      "GEN12_TGLLP" OFF)
+@@ -172,6 +176,10 @@ if(GEN12_ADLP)
+     add_definitions(-DIGFX_GEN12_ADLP_SUPPORTED)
+ endif()
+ 
++if(GEN12_ADLN)
++    add_definitions(-DIGFX_GEN12_ADLN_SUPPORTED)
++endif()
++
+ if(GEN12_RPLS)
+ 	add_definitions(-DIGFX_GEN12_RPLS_SUPPORTED)
+ endif()
+diff --git a/media_driver/linux/gen12/ddi/media_libva_caps_g12.cpp b/media_driver/linux/gen12/ddi/media_libva_caps_g12.cpp
+index e5f3403a2..e12f3eb71 100644
+--- a/media_driver/linux/gen12/ddi/media_libva_caps_g12.cpp
++++ b/media_driver/linux/gen12/ddi/media_libva_caps_g12.cpp
+@@ -2656,6 +2656,11 @@ static bool adlpRegistered = MediaLibvaCapsFactory<MediaLibvaCaps, DDI_MEDIA_CON
+     RegisterCaps<MediaLibvaCapsG12>((uint32_t)IGFX_ALDERLAKE_P);
+ #endif
+ 
++#ifdef IGFX_GEN12_ADLN_SUPPORTED
++static bool adlnRegistered = MediaLibvaCapsFactory<MediaLibvaCaps, DDI_MEDIA_CONTEXT>::
++    RegisterCaps<MediaLibvaCapsG12>((uint32_t)IGFX_ALDERLAKE_N);
++#endif
++
+ #ifdef IGFX_GEN12_RPLS_SUPPORTED
+ static bool rplsRegistered = MediaLibvaCapsFactory<MediaLibvaCaps, DDI_MEDIA_CONTEXT>::
+      RegisterCaps<MediaLibvaCapsG12>((uint32_t)IGFX_RAPTORLAKE_S);
+diff --git a/media_driver/linux/gen12/ddi/media_sku_wa_g12.cpp b/media_driver/linux/gen12/ddi/media_sku_wa_g12.cpp
+index cfb6998e2..48be2f310 100644
+--- a/media_driver/linux/gen12/ddi/media_sku_wa_g12.cpp
++++ b/media_driver/linux/gen12/ddi/media_sku_wa_g12.cpp
+@@ -636,6 +636,54 @@ static bool rplsDeviceRegister = DeviceInfoFactory<LinuxDeviceInit>::
+      RegisterDevice(IGFX_RAPTORLAKE_S, &rplsDeviceInit);
+ #endif
+ 
++#ifdef IGFX_GEN12_ADLN_SUPPORTED
++static bool InitAdlnMediaSku(struct GfxDeviceInfo *devInfo,
++    MediaFeatureTable *                            skuTable,
++    struct LinuxDriverInfo *                       drvInfo)
++{
++    if (!InitTglMediaSku(devInfo, skuTable, drvInfo))
++    {
++        return false;
++    }
++
++    if (devInfo->eGTType == GTTYPE_GT0_5)
++    {
++        MEDIA_WR_SKU(skuTable, FtrGT0_5, 1);
++    }
++
++    MEDIA_WR_SKU(skuTable, FtrAV1VLDLSTDecoding, 1);
++    MEDIA_WR_SKU(skuTable, FtrGucSubmission, 1);
++
++    return true;
++}
++
++static bool InitAdlnMediaWa(struct GfxDeviceInfo *devInfo,
++    MediaWaTable *                                waTable,
++    struct LinuxDriverInfo *                      drvInfo)
++{
++    if (!InitTglMediaWa(devInfo, waTable, drvInfo))
++    {
++        return false;
++    }
++
++    //ADL-N keeps below setting same as ADL-S/ADL-P
++    MEDIA_WR_WA(waTable, Wa_1409820462, 0);
++
++    return true;
++}
++
++static struct LinuxDeviceInit adlnDeviceInit =
++    {
++        .productFamily    = IGFX_ALDERLAKE_N,
++        .InitMediaFeature = InitAdlnMediaSku,
++        .InitMediaWa      = InitAdlnMediaWa,
++};
++
++static bool adlnDeviceRegister = DeviceInfoFactory<LinuxDeviceInit>::
++    RegisterDevice(IGFX_ALDERLAKE_N, &adlnDeviceInit);
++
++#endif
++
+ static struct LinuxDeviceInit tgllpDeviceInit =
+ {
+     .productFamily    = IGFX_TIGERLAKE_LP,
+diff --git a/media_driver/linux/gen12/ddi/media_sysinfo_g12.cpp b/media_driver/linux/gen12/ddi/media_sysinfo_g12.cpp
+index d5c2e6fe2..d6bc0322a 100644
+--- a/media_driver/linux/gen12/ddi/media_sysinfo_g12.cpp
++++ b/media_driver/linux/gen12/ddi/media_sysinfo_g12.cpp
+@@ -516,6 +516,37 @@ static bool rplsGt1DeviceA783 = DeviceInfoFactory<GfxDeviceInfo>::
+     RegisterDevice(0xA783, &rplsGt1fInfo);
+ #endif
+ 
++#ifdef IGFX_GEN12_ADLN_SUPPORTED
++static struct GfxDeviceInfo adlnGt1Info = {
++    .platformType     = PLATFORM_MOBILE,
++    .productFamily    = IGFX_ALDERLAKE_N,
++    .displayFamily    = IGFX_GEN12_CORE,
++    .renderFamily     = IGFX_GEN12_CORE,
++    .eGTType          = GTTYPE_GT1,
++    .L3CacheSizeInKb  = 0,
++    .L3BankCount      = 8,
++    .EUCount          = 0,
++    .SliceCount       = 0,
++    .SubSliceCount    = 0,
++    .MaxEuPerSubSlice = 0,
++    .isLCIA           = 0,
++    .hasLLC           = 0,
++    .hasERAM          = 0,
++    .InitMediaSysInfo = InitTglMediaSysInfo,
++    .InitShadowSku    = InitTglShadowSku,
++    .InitShadowWa     = InitTglShadowWa,
++};
++
++static bool adlnGt1Device46D0 = DeviceInfoFactory<GfxDeviceInfo>::
++    RegisterDevice(0x46D0, &adlnGt1Info);
++
++static bool adlnGt1Device46D1 = DeviceInfoFactory<GfxDeviceInfo>::
++    RegisterDevice(0x46D1, &adlnGt1Info);
++
++static bool adlnGt1Device46D2 = DeviceInfoFactory<GfxDeviceInfo>::
++    RegisterDevice(0x46D2, &adlnGt1Info);
++#endif
++
+ static bool tgllpGt2Device9a40 = DeviceInfoFactory<GfxDeviceInfo>::
+     RegisterDevice(0x9A40, &tgllpGt2Info);
+ 
+diff --git a/media_driver/media_interface/media_interfaces_m12_adln/media_interfaces_g12_adln.cpp b/media_driver/media_interface/media_interfaces_m12_adln/media_interfaces_g12_adln.cpp
+new file mode 100644
+index 000000000..089c8a51c
+--- /dev/null
++++ b/media_driver/media_interface/media_interfaces_m12_adln/media_interfaces_g12_adln.cpp
+@@ -0,0 +1,106 @@
++/*
++* Copyright (c) 2011-2022, Intel Corporation
++*
++* Permission is hereby granted, free of charge, to any person obtaining a
++* copy of this software and associated documentation files (the "Software"),
++* to deal in the Software without restriction, including without limitation
++* the rights to use, copy, modify, merge, publish, distribute, sublicense,
++* and/or sell copies of the Software, and to permit persons to whom the
++* Software is furnished to do so, subject to the following conditions:
++*
++* The above copyright notice and this permission notice shall be included
++* in all copies or substantial portions of the Software.
++*
++* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
++* OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
++* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
++* THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR
++* OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
++* ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
++* OTHER DEALINGS IN THE SOFTWARE.
++*/
++
++//!
++//! \file     media_interfaces_g12_adln.cpp
++
++//! \brief    Helps with Gen12 ADL-N factory creation.
++//!
++
++#include "media_interfaces_g12_adln.h"
++
++extern template class MediaInterfacesFactory<MhwInterfaces>;
++extern template class MediaInterfacesFactory<MmdDevice>;
++extern template class MediaInterfacesFactory<MosUtilDevice>;
++extern template class MediaInterfacesFactory<CodechalDevice>;
++extern template class MediaInterfacesFactory<CMHalDevice>;
++extern template class MediaInterfacesFactory<VphalDevice>;
++extern template class MediaInterfacesFactory<RenderHalDevice>;
++extern template class MediaInterfacesFactory<Nv12ToP010Device>;
++extern template class MediaInterfacesFactory<DecodeHistogramDevice>;
++
++static bool adlnRegisteredVphal =
++MediaInterfacesFactory<VphalDevice>::
++RegisterHal<VphalInterfacesG12Tgllp>((uint32_t)IGFX_ALDERLAKE_N);
++
++static bool adlnRegisteredMhw =
++    MediaInterfacesFactory<MhwInterfaces>::
++    RegisterHal<MhwInterfacesG12Tgllp>((uint32_t)IGFX_ALDERLAKE_N);
++
++#ifdef _MMC_SUPPORTED
++static bool adlnRegisteredMmd =
++    MediaInterfacesFactory<MmdDevice>::
++    RegisterHal<MmdDeviceG12Tgllp>((uint32_t)IGFX_ALDERLAKE_N);
++#endif
++
++#define PLATFORM_INTEL_ADLN   24
++#define GENX_TGLLP            12
++
++static bool adlnRegisteredNv12ToP010 =
++    MediaInterfacesFactory<Nv12ToP010Device>::
++    RegisterHal<Nv12ToP010DeviceG12Tgllp>((uint32_t)IGFX_ALDERLAKE_N);
++
++static bool adlnRegisteredCodecHal =
++    MediaInterfacesFactory<CodechalDevice>::
++    RegisterHal<CodechalInterfacesG12Tgllp>((uint32_t)IGFX_ALDERLAKE_N);
++
++static bool adlnRegisteredCMHal =
++    MediaInterfacesFactory<CMHalDevice>::
++    RegisterHal<CMHalInterfacesG12Adln>((uint32_t)IGFX_ALDERLAKE_N);
++
++
++MOS_STATUS CMHalInterfacesG12Adln::Initialize(CM_HAL_STATE *pCmState)
++{
++    if (pCmState == nullptr)
++    {
++        MHW_ASSERTMESSAGE("pCmState is nullptr.")
++        return MOS_STATUS_INVALID_PARAMETER;
++    }
++
++    m_cmhalDevice = MOS_New(CMHal, pCmState);
++    if (m_cmhalDevice == nullptr)
++    {
++        MHW_ASSERTMESSAGE("Create CM Hal interfaces failed.")
++        return MOS_STATUS_NO_SPACE;
++    }
++
++    m_cmhalDevice->SetGenPlatformInfo(PLATFORM_INTEL_ADLN, PLATFORM_INTEL_GT1, "TGLLP");
++    uint32_t cisaIDs[] = { GENX_TGLLP };
++    m_cmhalDevice->AddSupportedCisaIDs(cisaIDs, sizeof(cisaIDs)/sizeof(uint32_t));
++    m_cmhalDevice->m_l3Plane = TGL_L3_PLANE;
++    m_cmhalDevice->m_l3ConfigCount = TGL_L3_CONFIG_NUM;
++    return MOS_STATUS_SUCCESS;
++}
++
++static bool adlnRegisteredMosUtil =
++    MediaInterfacesFactory<MosUtilDevice>::
++    RegisterHal<MosUtilDeviceG12Tgllp>((uint32_t)IGFX_ALDERLAKE_N);
++
++
++static bool adlnRegisteredRenderHal =
++    MediaInterfacesFactory<RenderHalDevice>::
++    RegisterHal<RenderHalInterfacesG12Tgllp>((uint32_t)IGFX_ALDERLAKE_N);
++
++static bool adlnRegisteredDecodeHistogram =
++    MediaInterfacesFactory<DecodeHistogramDevice>::
++    RegisterHal<DecodeHistogramDeviceG12Tgllp>((uint32_t)IGFX_ALDERLAKE_N);
++
+diff --git a/media_driver/media_interface/media_interfaces_m12_adln/media_interfaces_g12_adln.h b/media_driver/media_interface/media_interfaces_m12_adln/media_interfaces_g12_adln.h
+new file mode 100644
+index 000000000..a1f9c0d40
+--- /dev/null
++++ b/media_driver/media_interface/media_interfaces_m12_adln/media_interfaces_g12_adln.h
+@@ -0,0 +1,45 @@
++/*
++* Copyright (c) 2011-2022, Intel Corporation
++*
++* Permission is hereby granted, free of charge, to any person obtaining a
++* copy of this software and associated documentation files (the "Software"),
++* to deal in the Software without restriction, including without limitation
++* the rights to use, copy, modify, merge, publish, distribute, sublicense,
++* and/or sell copies of the Software, and to permit persons to whom the
++* Software is furnished to do so, subject to the following conditions:
++*
++* The above copyright notice and this permission notice shall be included
++* in all copies or substantial portions of the Software.
++*
++* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
++* OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
++* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
++* THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR
++* OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
++* ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
++* OTHER DEALINGS IN THE SOFTWARE.
++*/
++
++//!
++//! \file     media_interfaces_gen12_adln.h
++//! \brief    All interfaces used for Gen12 ADL-N that require factory creation
++//!
++
++#ifndef __MEDIA_INTERFACES_G12_adln_H__
++#define __MEDIA_INTERFACES_G12_adln_H__
++
++
++#include "media_interfaces_g12_tgllp.h"
++#include "renderhal_g12_base.h"
++
++
++class CMHalInterfacesG12Adln : public CMHalDevice
++{
++protected:
++    using CMHal = CM_HAL_G12_X;
++    MOS_STATUS Initialize(
++        CM_HAL_STATE *pCmState);
++};
++
++#endif // __MEDIA_INTERFACES_G12_adln_H__
++
+diff --git a/media_driver/media_interface/media_interfaces_m12_adln/media_srcs.cmake b/media_driver/media_interface/media_interfaces_m12_adln/media_srcs.cmake
+new file mode 100644
+index 000000000..834c2298a
+--- /dev/null
++++ b/media_driver/media_interface/media_interfaces_m12_adln/media_srcs.cmake
+@@ -0,0 +1,49 @@
++# Copyright (c) 2022, Intel Corporation
++#
++# Permission is hereby granted, free of charge, to any person obtaining a
++# copy of this software and associated documentation files (the "Software"),
++# to deal in the Software without restriction, including without limitation
++# the rights to use, copy, modify, merge, publish, distribute, sublicense,
++# and/or sell copies of the Software, and to permit persons to whom the
++# Software is furnished to do so, subject to the following conditions:
++#
++# The above copyright notice and this permission notice shall be included
++# in all copies or substantial portions of the Software.
++#
++# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
++# OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
++# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
++# THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR
++# OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
++# ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
++# OTHER DEALINGS IN THE SOFTWARE.
++
++set(TMP_SOURCES_
++    ${CMAKE_CURRENT_LIST_DIR}/media_interfaces_g12_adln.cpp
++)
++
++set(TMP_HEADERS_
++    ${CMAKE_CURRENT_LIST_DIR}/media_interfaces_g12_adln.h
++)
++
++set(SOURCES_
++    ${SOURCES_}
++    ${TMP_SOURCES_}
++)
++
++set(HEADERS_
++    ${HEADERS_}
++    ${TMP_HEADERS_}
++)
++
++set(COMMON_SOURCES_
++    ${COMMON_SOURCES_}
++    ${TMP_SOURCES_}
++)
++
++set(COMMON_HEADERS_
++    ${COMMON_HEADERS_}
++    ${TMP_HEADERS_}
++)
++
++media_add_curr_to_include_path()
+-- 
+2.17.1
+

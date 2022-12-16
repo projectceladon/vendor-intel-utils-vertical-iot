@@ -1,0 +1,27 @@
+From 875a3211eb119418a478e5966122501937907c7e Mon Sep 17 00:00:00 2001
+From: "Vasoya,Nikhilx" <nikhilx.vasoya@intel.com>
+Date: Tue, 22 Nov 2022 16:25:45 +0530
+Subject: [PATCH] Added permission for GPU access in dumpstate.
+
+Dumpstate calls screencap, which grabs a screenshot
+for that need GPU access so given permission to access GPU.
+
+Tracked-On: OAM-104929
+Signed-off-by: Vasoya,Nikhilx <nikhilx.vasoya@intel.com>
+---
+ vendor/dumpstate.te | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/vendor/dumpstate.te b/vendor/dumpstate.te
+index 9427504..d09ace5 100644
+--- a/vendor/dumpstate.te
++++ b/vendor/dumpstate.te
+@@ -3,3 +3,5 @@ dontaudit dumpstate device:file write;
+ dontaudit dumpstate unlabeled:file read;
+ allow dumpstate hal_power_default:binder call;
+ allow dumpstate hal_light_default:binder call;
++allow dumpstate gpu_device:dir r_dir_perms;
++allow dumpstate gpu_device:dir { search };
+-- 
+2.38.1
+

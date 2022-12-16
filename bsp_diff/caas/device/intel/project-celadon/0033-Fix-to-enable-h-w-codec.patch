@@ -1,0 +1,36 @@
+From 9133919cb2a7aac24a6ca85ded0ae6ca0d8845f2 Mon Sep 17 00:00:00 2001
+From: gollarx <ratnakumarix.golla@intel.com>
+Date: Mon, 12 Sep 2022 15:59:08 +0530
+Subject: [PATCH] Fix to enable h/w codec
+
+enable h/w codec be default.
+
+Tracked-On: OAM-103615
+Signed-off-by: gollarx <ratnakumarix.golla@intel.com>
+---
+ caas/extra_files/media/auto_hal.in | 9 ++-------
+ 1 file changed, 2 insertions(+), 7 deletions(-)
+
+diff --git a/caas/extra_files/media/auto_hal.in b/caas/extra_files/media/auto_hal.in
+index c305683..21eed01 100644
+--- a/caas/extra_files/media/auto_hal.in
++++ b/caas/extra_files/media/auto_hal.in
+@@ -13,13 +13,8 @@ case "$(cat /proc/fb)" in
+                 setprop vendor.intel.video.codec hardware
+                 ;;
+         *)
+-                if [ "$(cat /sys/kernel/debug/dri/0/i915_sriov_info |grep virtualization |awk '{print $2}')" = "enabled" ];then
+-                       echo "Intel SRIOV"
+-                       setprop vendor.intel.video.codec hardware
+-                else
+-                       echo "software codec"
+-                       setprop vendor.intel.video.codec software
+-                fi
++                echo "Intel SRIOV"
++                setprop vendor.intel.video.codec hardware
+                 ;;
+ esac
+ }
+-- 
+2.37.3
+

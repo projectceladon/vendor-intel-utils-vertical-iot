@@ -1,0 +1,213 @@
+From 3c3690ce2bfcb9182685b9d5054688e3fa5a4da5 Mon Sep 17 00:00:00 2001
+From: "Kothapeta, BikshapathiX" <bikshapathix.kothapeta@intel.com>
+Date: Thu, 14 Jul 2022 09:05:51 +0530
+Subject: [PATCH] Revert of OAM-102361 because of conflicts
+
+Revert "start host camera service from vm-manager"
+
+This reverts commit e639ed807bf1429fd0fdc56b5e9601e23054867d.
+---
+ sample/guest01.ini        |   1 -
+ scripts/setup_host.sh     | 103 --------------------------------------
+ src/guest/guest.c         |   2 +-
+ src/guest/start.c         |  11 +---
+ src/include/guest/guest.h |   1 -
+ 5 files changed, 2 insertions(+), 116 deletions(-)
+
+diff --git a/sample/guest01.ini b/sample/guest01.ini
+index e6dcc29..0542a20 100644
+--- a/sample/guest01.ini
++++ b/sample/guest01.ini
+@@ -78,7 +78,6 @@ passthrough_pci=0000:00:14.0,
+ [mediation]
+ #battery_med=/home/gvt/caas/scripts/batsys
+ #thermal_med=/home/gvt/caas/scripts/thermsys
+-#camera_med=y
+ 
+ [guest_control]
+ #time_keep=/home/gvt/caas/scripts/guest_time_keeping.sh
+diff --git a/scripts/setup_host.sh b/scripts/setup_host.sh
+index 1a9ddb6..214fc8f 100755
+--- a/scripts/setup_host.sh
++++ b/scripts/setup_host.sh
+@@ -22,106 +22,6 @@ function error() {
+     echo "$BASH_SOURCE Failed at line($line): $cmd"
+ }
+ 
+-
+-function install_virtualcamera_service() {
+-    service_file=virtualcamera.service
+-    touch $service_file
+-    cat /dev/null > $service_file
+-
+-    echo "[Unit]" > $service_file
+-    echo -e "Description=Virtual Camera Auto Start\n" >> $service_file
+-    echo -e "After=default.target\n" >> $service_file
+-    echo "[Service]" >> $service_file
+-    echo -e "ExecStartPre=/usr/sbin/modprobe v4l2loopback devices=2 video_nr=6,7 card_label=\"VCam0\",\"VCam1\" exclusive_caps=1,1\n" >> $service_file
+-    echo -e "ExecStart=/usr/bin/IntelCameraService -i /dev/video0 -o /dev/video6 -o /dev/video7 -w 1920 -h 1080 -f MJPG\n" >> $service_file
+-    echo -e "SuccessExitStatus=255\n" >> $service_file
+-    echo -e "Restart=always\n" >> $service_file
+-    echo -e "RestartSec=10\n" >> $service_file
+-    echo "[Install]" >> $service_file
+-    echo -e "WantedBy=default.target\n" >> $service_file
+-
+-    cat $service_file
+-    sudo mv $service_file /etc/systemd/system/
+-    sudo systemctl enable virtualcamera.service
+-    sudo systemctl restart virtualcamera.service
+-}
+-
+-function install_virtual_camera() {
+-    KERNELRELEASE=`uname -r`
+-    KERNEL_DIR=/lib/modules/${KERNELRELEASE}/kernel/drivers/media/v4l2-core/
+-    CURRENT_DIR=`pwd`
+-
+-    sudo -E apt install linux-headers-`uname -r`
+-
+-    echo "Clean environment..."
+-    if [ -x v4l2loopback ]; then
+-        rm -rf v4l2loopback
+-    fi
+-    IS_SERVICE_RUNNING=`ps -fe | grep IntelCameraService | grep -v "grep" | wc -l`
+-    if [ $IS_SERVICE_RUNNING == 1 ]; then
+-        echo "Stop running IntelCameraService"
+-        sudo systemctl stop virtualcamera.service
+-    fi
+-    IS_V4L2LOOPBACK_EXIST=`lsmod | grep "v4l2loopback" | wc -l`
+-    if [ $IS_V4L2LOOPBACK_EXIST != 0 ]; then
+-        echo "rmmod v4l2loopback..."
+-        sudo rmmod v4l2loopback
+-    fi
+-
+-    echo "Install v4l2loopback driver..."
+-    git clone https://github.com/umlaeute/v4l2loopback.git
+-    cd v4l2loopback
+-    git checkout 81b8df79107d1fbf392fdcbaa051bd227a9c94c1
+-
+-    git apply ../scripts/cam_sharing/0001-Netlink-sync.patch
+-    make
+-
+-    echo "cp " ${DRIVER} ${KERNEL_DIR}/v4l2loopback.ko
+-    if [ -f ${KERNEL_DIR}/v4l2loopback.ko ]; then
+-        echo "Backup original v4l2loopback.ko"
+-        mv ${KERNEL_DIR}/v4l2loopback.ko ${KERNEL_DIR}/v4l2loopback.ko.orig
+-    fi
+-    sudo cp v4l2loopback.ko ${KERNEL_DIR}
+-    depmod
+-    cd ..
+-    if [ -x v4l2loopback ]; then
+-        rm -rf v4l2loopback
+-    fi
+-
+-    echo "Install IntelCameraService in /usr/bin/ ..."
+-    sudo chmod 777 scripts/cam_sharing/IntelCameraService
+-    sudo cp ./scripts/cam_sharing/IntelCameraService /usr/bin/
+-
+-    echo "Install virtualcamera.service in /lib/systemd/system/ ..."
+-    install_virtualcamera_service
+-
+-    echo "Complete virtual camera installation."
+-
+-}
+-
+-function install_host_service() {
+-    sudo apt-get install libavcodec-dev libavformat-dev libavutil-dev libswscale-dev libavresample-dev libavdevice-dev -y
+-    sudo apt-get install ffmpeg -y
+-    sudo apt-get install build-essential clang -y
+-
+-    sudo apt install git
+-
+-    sudo apt-get install --yes cmake
+-    mkdir -p host_camera
+-    cd host_camera
+-    git clone https://github.com/projectceladon/host-camera-server.git
+-    cd host-camera-server
+-    git checkout ba2707587e8f3ad03714d5e3ed47844e83cde7c0
+-    mkdir build
+-    cd build
+-    cmake ..
+-    cmake --build .
+-    sudo cp source/libvhal-client.so* /usr/lib
+-    sudo cp host_camera_service/stream /usr/local/bin/
+-    cd ../../..
+-    sudo rm -rf host_camera
+-}
+-
+ function ubu_changes_require(){
+     echo "Please make sure your apt is working"
+     echo "If you run the installation first time, reboot is required"
+@@ -670,9 +570,6 @@ check_network
+ check_kernel_version
+ 
+ ubu_changes_require
+-install_host_service
+-install_virtual_camera
+-
+ ubu_install_qemu_gvt
+ ubu_build_ovmf_gvt
+ ubu_enable_host_gvt
+diff --git a/src/guest/guest.c b/src/guest/guest.c
+index 4d2bcf4..2cc8e68 100644
+--- a/src/guest/guest.c
++++ b/src/guest/guest.c
+@@ -32,7 +32,7 @@ keyfile_group_t g_group[] = {
+ 	{ "vtpm",     { "bin_path", "data_dir", NULL } },
+ 	{ "rpmb",     { "bin_path", "data_dir", NULL } },
+ 	{ "passthrough", { "passthrough_pci", NULL}},
+-	{ "mediation", { "battery_med", "thermal_med", "camera_med",NULL }},
++	{ "mediation", { "battery_med", "thermal_med", NULL }},
+ 	{ "aaf",      { "path", "support_suspend", "audio_type", NULL } },
+ 	{ "guest_control", { "time_keep", "pm_control", NULL }},
+ 	{ "extra",    { "cmd", "service", NULL } },
+diff --git a/src/guest/start.c b/src/guest/start.c
+index 2f05c19..46d33bf 100644
+--- a/src/guest/start.c
++++ b/src/guest/start.c
+@@ -761,10 +761,6 @@ static int run_thermal_mediation_daemon(char *path) {
+ 	return execute_cmd(path, NULL, 0, 1);
+ }
+ 
+-static int run_camera_mediation_daemon(char *path) {
+-	return execute_cmd(path, NULL, 0, 1);
+-}
+-
+ static int run_guest_timekeep(char *path, char *p, size_t size, char *pipe_name) {
+ 	int cx = 0; 
+ 	const char *pipe = pipe_name ? pipe_name : "qmp-time-keep-pipe";
+@@ -1157,11 +1153,6 @@ SKIP_PT:
+ 	if (val != NULL && (strcmp("", val) != 0))
+ 		run_thermal_mediation_daemon(val);
+ 
+-	val = g_key_file_get_string(gkf, g->name, g->key[CAMERA_MED], NULL);
+-	if (val != NULL && (strcasecmp("y", val) == 0)) {
+-		run_camera_mediation_daemon("/usr/local/bin/stream");
+-	}
+-
+ 	/* run guest pm */
+ 	g = &g_group[GROUP_GUEST_SERVICE];
+ 
+@@ -1211,7 +1202,7 @@ SKIP_PT:
+ 	cx = snprintf(p, size, "%s", fixed_cmd);
+ 	p += cx; size -= cx;
+ 
+-        run_vtpm_daemon();
++	run_vtpm_daemon();
+ 
+ 	cleanup_rpmb();
+ 	run_rpmb_daemon();
+diff --git a/src/include/guest/guest.h b/src/include/guest/guest.h
+index 0165d9a..a943296 100644
+--- a/src/include/guest/guest.h
++++ b/src/include/guest/guest.h
+@@ -197,7 +197,6 @@ enum {
+ 	/* Sub key of group mediation */
+ 	BATTERY_MED = 0,
+ 	THERMAL_MED,
+-	CAMERA_MED,
+ 
+   	/* Sub key of group aaf */
+ 	AAF_PATH = 0,
+-- 
+2.37.3
+

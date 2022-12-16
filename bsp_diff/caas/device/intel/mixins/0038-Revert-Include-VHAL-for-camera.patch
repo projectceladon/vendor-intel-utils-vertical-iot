@@ -1,0 +1,53 @@
+From 082f32a5f2e5c97b42e5080d1cf09260e66de4f4 Mon Sep 17 00:00:00 2001
+From: "Kothapeta, BikshapathiX" <bikshapathix.kothapeta@intel.com>
+Date: Mon, 14 Nov 2022 18:00:31 +0530
+Subject: [PATCH] Revert "Include VHAL for camera"
+
+This reverts commit f2728440f58d4a54103e385970ef1bb886214623.
+
+Tracked-on: OAM-104782
+Signed-off-by: Kothapeta, BikshapathiX <bikshapathix.kothapeta@intel.com>
+
+diff --git a/groups/camera-ext/ext-camera-only/product.mk b/groups/camera-ext/ext-camera-only/product.mk
+index c715410..5f207f8 100644
+--- a/groups/camera-ext/ext-camera-only/product.mk
++++ b/groups/camera-ext/ext-camera-only/product.mk
+@@ -7,22 +7,9 @@ PRODUCT_COPY_FILES += \
+ 
+ # External camera service
+ PRODUCT_PACKAGES += android.hardware.camera.provider@2.4-external-service \
+-                    android.hardware.camera.provider@2.4-service_64 \
+                     android.hardware.camera.provider@2.4-impl
+-#VHAL camera
+-PRODUCT_PACKAGES += camera.$(TARGET_BOARD_PLATFORM) \
+-                    camera.$(TARGET_BOARD_PLATFORM).jpeg
+ 
+-PRODUCT_PROPERTY_OVERRIDES += ro.vendor.remote.sf.fake_camera ="both" \
+-                              ro.vendor.camera.in_frame_format.h264=false \
+-                              ro.vendor.camera.in_frame_format.i420=true \
+-                              ro.vendor.camera.decode.vaapi=false \
+-                              ro.vendor.remote.sf.back_camera_hal= \
+-                              ro.vendor.remote.sf.front_camera_hal= \
+-                              ro.vendor.camera.transference="VSOCK" \
+-                              vendor.camera.external="VHAL"
+-#removing not required apps
+ # Only include test apps in eng or userdebug builds.
+-#PRODUCT_PACKAGES_DEBUG += TestingCamera
++PRODUCT_PACKAGES_DEBUG += TestingCamera
+ 
+ PRODUCT_PACKAGES += MultiCameraApp
+diff --git a/groups/device-specific/caas/manifest.xml b/groups/device-specific/caas/manifest.xml
+index 8094502..2e54a9e 100644
+--- a/groups/device-specific/caas/manifest.xml
++++ b/groups/device-specific/caas/manifest.xml
+@@ -134,7 +134,6 @@
+         <interface>
+             <name>ICameraProvider</name>
+             <instance>external/0</instance>
+-            <instance>legacy/0</instance>
+         </interface>
+     </hal>
+     <hal format="hidl">
+-- 
+2.38.1
+

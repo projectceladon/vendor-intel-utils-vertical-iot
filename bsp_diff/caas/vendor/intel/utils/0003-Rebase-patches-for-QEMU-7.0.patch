@@ -1,0 +1,180 @@
+From 287cebd3e0201ba1c7d410d1df3bf8dcf31cd302 Mon Sep 17 00:00:00 2001
+From: "Suresh, Prashanth" <prashanth.suresh@intel.com>
+Date: Tue, 20 Sep 2022 20:46:21 +0530
+Subject: [PATCH] Update host setup to QEMU 7.1 on Android 12
+
+Update Host setup and corresponding scripts to QEMU 7.1
+
+Tracked-On:
+---
+ .../0001-OvmfPkg-add-IgdAssignmentDxe.patch   | 28 +++++++++----------
+ ...io-pci-quirks.c-Disable-stolen-memor.patch |  8 +++---
+ ...-fence-poll-time-by-current-workload.patch | 10 +++----
+ ...Disable-EDID-auto-generation-in-QEMU.patch | 16 +++++------
+ 4 files changed, 31 insertions(+), 31 deletions(-)
+
+diff --git a/host/ovmf/0001-OvmfPkg-add-IgdAssignmentDxe.patch b/host/ovmf/0001-OvmfPkg-add-IgdAssignmentDxe.patch
+index c032cfe..e08eb6e 100644
+--- a/host/ovmf/0001-OvmfPkg-add-IgdAssignmentDxe.patch
++++ b/host/ovmf/0001-OvmfPkg-add-IgdAssignmentDxe.patch
+@@ -1,6 +1,6 @@
+-From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+-From: Laszlo Ersek <lersek@redhat.com>
+-Date: Thu, 5 Mar 2020 16:36:06 +0800
++From 0a32145bc7a851c55cbd54a29e059a96205a5510 Mon Sep 17 00:00:00 2001
++From: He Yue <yue.he@intel.com>
++Date: Fri, 15 Jul 2022 12:27:41 +0800
+ Subject: [PATCH] OvmfPkg: add IgdAssignmentDxe
+ 
+ Add a DXE_DRIVER that enables Intel Graphics Device (IGD) assignment with
+@@ -729,29 +729,29 @@ index 0000000000..a6f2e55f99
+ +
+ +#endif // _ASSIGNED_IGD_H_
+ diff --git a/OvmfPkg/OvmfPkgX64.dsc b/OvmfPkg/OvmfPkgX64.dsc
+-index b80710fbdc..565e0573b2 100644
++index 52f7598cf1..441f6e1a53 100644
+ --- a/OvmfPkg/OvmfPkgX64.dsc
+ +++ b/OvmfPkg/OvmfPkgX64.dsc
+-@@ -783,6 +783,7 @@
+-   OvmfPkg/XenIoPciDxe/XenIoPciDxe.inf
+-   OvmfPkg/XenBusDxe/XenBusDxe.inf
+-   OvmfPkg/XenPvBlkDxe/XenPvBlkDxe.inf
++@@ -813,6 +813,7 @@
++   OvmfPkg/VirtioBlkDxe/VirtioBlk.inf
++   OvmfPkg/VirtioScsiDxe/VirtioScsi.inf
++   OvmfPkg/VirtioRngDxe/VirtioRng.inf
+ +  OvmfPkg/IgdAssignmentDxe/IgdAssignment.inf
+  !if $(PVSCSI_ENABLE) == TRUE
+    OvmfPkg/PvScsiDxe/PvScsiDxe.inf
+  !endif
+ diff --git a/OvmfPkg/OvmfPkgX64.fdf b/OvmfPkg/OvmfPkgX64.fdf
+-index 8da59037e5..00098b18d9 100644
++index b6cc3cabdd..6d1dc5f275 100644
+ --- a/OvmfPkg/OvmfPkgX64.fdf
+ +++ b/OvmfPkg/OvmfPkgX64.fdf
+-@@ -240,6 +240,7 @@ INF  OvmfPkg/VirtioRngDxe/VirtioRng.inf
+- INF  OvmfPkg/XenIoPciDxe/XenIoPciDxe.inf
+- INF  OvmfPkg/XenBusDxe/XenBusDxe.inf
+- INF  OvmfPkg/XenPvBlkDxe/XenPvBlkDxe.inf
++@@ -249,6 +249,7 @@ INF  OvmfPkg/Virtio10Dxe/Virtio10.inf
++ INF  OvmfPkg/VirtioBlkDxe/VirtioBlk.inf
++ INF  OvmfPkg/VirtioScsiDxe/VirtioScsi.inf
++ INF  OvmfPkg/VirtioRngDxe/VirtioRng.inf
+ +INF  OvmfPkg/IgdAssignmentDxe/IgdAssignment.inf
+  !if $(PVSCSI_ENABLE) == TRUE
+  INF  OvmfPkg/PvScsiDxe/PvScsiDxe.inf
+  !endif
+ -- 
+-2.17.1
++2.25.1
+ 
+diff --git a/host/qemu/0001-Revert-Revert-vfio-pci-quirks.c-Disable-stolen-memor.patch b/host/qemu/0001-Revert-Revert-vfio-pci-quirks.c-Disable-stolen-memor.patch
+index 905469f..238df8e 100644
+--- a/host/qemu/0001-Revert-Revert-vfio-pci-quirks.c-Disable-stolen-memor.patch
++++ b/host/qemu/0001-Revert-Revert-vfio-pci-quirks.c-Disable-stolen-memor.patch
+@@ -1,8 +1,8 @@
+-From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
++From fb40ddf85f5c1d5d494e87aed212fb460bb6a101 Mon Sep 17 00:00:00 2001
+ From: lyintel <yang.a.lu@intel.com>
+ Date: Wed, 4 Mar 2020 15:19:57 +0800
+-Subject: [PATCH] Revert "Revert "vfio/pci-quirks.c: Disable stolen memory for
+- igd VFIO""
++Subject: [PATCH 1/7] Revert "Revert "vfio/pci-quirks.c: Disable stolen memory
++ for igd VFIO""
+ 
+ This reverts commit 93587e3af3a259deac89c12863d93653d69d22b8.
+ ---
+@@ -10,7 +10,7 @@ This reverts commit 93587e3af3a259deac89c12863d93653d69d22b8.
+  1 file changed, 37 insertions(+), 27 deletions(-)
+ 
+ diff --git a/hw/vfio/igd.c b/hw/vfio/igd.c
+-index 470205f487..bf26ae2aa4 100644
++index afe3fe7efc40..f58d629266c9 100644
+ --- a/hw/vfio/igd.c
+ +++ b/hw/vfio/igd.c
+ @@ -377,14 +377,45 @@ void vfio_probe_igd_bar4_quirk(VFIOPCIDevice *vdev, int nr)
+diff --git a/host/qemu/0002-qemu-change-fence-poll-time-by-current-workload.patch b/host/qemu/0002-qemu-change-fence-poll-time-by-current-workload.patch
+index 1512598..87878a6 100644
+--- a/host/qemu/0002-qemu-change-fence-poll-time-by-current-workload.patch
++++ b/host/qemu/0002-qemu-change-fence-poll-time-by-current-workload.patch
+@@ -1,7 +1,7 @@
+-From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+-From: AOSP Crosvm Builder <nobody@android.com>
+-Date: Fri, 25 Dec 2020 10:29:50 +0800
+-Subject: [PATCH] qemu: change fence poll time by current workload
++From d6c827e662c8e9741485aec781f803b7aebc05ee Mon Sep 17 00:00:00 2001
++From: HeYue <yue.he@intel.com>
++Date: Mon, 11 Jul 2022 10:56:38 +0800
++Subject: [PATCH 2/7] qemu: change fence poll time by current workload
+ 
+ This will improve performance while waiting the fence in 3D renderering
+ ---
+@@ -9,7 +9,7 @@ This will improve performance while waiting the fence in 3D renderering
+  1 file changed, 19 insertions(+), 1 deletion(-)
+ 
+ diff --git a/hw/display/virtio-gpu-virgl.c b/hw/display/virtio-gpu-virgl.c
+-index 18d054922f..afd0891560 100644
++index 73cb92c8d5c6..b7b463bc54b4 100644
+ --- a/hw/display/virtio-gpu-virgl.c
+ +++ b/hw/display/virtio-gpu-virgl.c
+ @@ -572,6 +572,21 @@ static void virtio_gpu_print_stats(void *opaque)
+diff --git a/host/qemu/0003-Disable-EDID-auto-generation-in-QEMU.patch b/host/qemu/0003-Disable-EDID-auto-generation-in-QEMU.patch
+index 6a202a0..5d55914 100644
+--- a/host/qemu/0003-Disable-EDID-auto-generation-in-QEMU.patch
++++ b/host/qemu/0003-Disable-EDID-auto-generation-in-QEMU.patch
+@@ -1,17 +1,17 @@
+-From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
++From f4481164c63fcd76a57abc02c5a07ee8943957ed Mon Sep 17 00:00:00 2001
+ From: Basil Chew <basil.chew@intel.com>
+ Date: Tue, 31 Aug 2021 17:33:28 +0800
+-Subject: [PATCH] Disable EDID auto generation in QEMU
++Subject: [PATCH 3/7] Disable EDID auto generation in QEMU
+ 
+ ---
+  hw/vfio/display.c | 16 ++++++++++++++++
+  1 file changed, 16 insertions(+)
+ 
+ diff --git a/hw/vfio/display.c b/hw/vfio/display.c
+-index f04473e3ce..797dedf0f1 100644
++index 89bc90508fb8..a84126bd7d55 100644
+ --- a/hw/vfio/display.c
+ +++ b/hw/vfio/display.c
+-@@ -26,6 +26,10 @@
++@@ -25,6 +25,10 @@
+  # define DRM_PLANE_TYPE_CURSOR  2
+  #endif
+  
+@@ -22,7 +22,7 @@ index f04473e3ce..797dedf0f1 100644
+  #define pread_field(_fd, _reg, _ptr, _fld)                              \
+      (sizeof(_ptr->_fld) !=                                              \
+       pread(_fd, &(_ptr->_fld), sizeof(_ptr->_fld),                      \
+-@@ -113,6 +117,10 @@ static int vfio_display_edid_ui_info(void *opaque, uint32_t idx,
++@@ -112,6 +116,10 @@ static int vfio_display_edid_ui_info(void *opaque, uint32_t idx,
+      VFIOPCIDevice *vdev = opaque;
+      VFIODisplay *dpy = vdev->dpy;
+  
+@@ -33,18 +33,18 @@ index f04473e3ce..797dedf0f1 100644
+      if (!dpy->edid_regs) {
+          return 0;
+      }
+-@@ -132,6 +140,10 @@ static void vfio_display_edid_init(VFIOPCIDevice *vdev)
++@@ -131,6 +139,10 @@ static void vfio_display_edid_init(VFIOPCIDevice *vdev)
+      int fd = vdev->vbasedev.fd;
+      int ret;
+  
+ +    #if defined(DISABLE_EDID_AUTO_GENERATION)
+ +    return;
+ +    #endif
+-+    
+++
+      ret = vfio_get_dev_region_info(&vdev->vbasedev,
+                                     VFIO_REGION_TYPE_GFX,
+                                     VFIO_REGION_SUBTYPE_GFX_EDID,
+-@@ -180,6 +192,10 @@ err:
++@@ -179,6 +191,10 @@ err:
+  
+  static void vfio_display_edid_exit(VFIODisplay *dpy)
+  {
+-- 
+2.37.3
+

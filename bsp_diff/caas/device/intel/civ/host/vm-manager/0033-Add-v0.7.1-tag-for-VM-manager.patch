@@ -1,0 +1,50 @@
+From 8d5e8f41a38fd57a3e3873673f604aa27475809f Mon Sep 17 00:00:00 2001
+From: "Suresh, Prashanth" <prashanth.suresh@intel.com>
+Date: Thu, 1 Sep 2022 10:18:53 +0530
+Subject: [PATCH] Add v0.7.1 tag for VM-manager
+
+Add tag for VM manager so there is not issue later with incompatible versions.
+
+Tracked-On: OAM-103724
+Signed-off-by: Suresh, Prashanth <prashanth.suresh@intel.com>
+---
+ scripts/setup_host.sh | 9 +++++++--
+ 1 file changed, 7 insertions(+), 2 deletions(-)
+
+diff --git a/scripts/setup_host.sh b/scripts/setup_host.sh
+index 84a886a..26dd568 100755
+--- a/scripts/setup_host.sh
++++ b/scripts/setup_host.sh
+@@ -13,6 +13,7 @@ QEMU_REL="qemu-6.2.0"
+ CIV_WORK_DIR=$(pwd)
+ CIV_GOP_DIR=$CIV_WORK_DIR/GOP_PKG
+ CIV_VERTICAl_DIR=$CIV_WORK_DIR/vertical_patches/host
++VM_MANAGER_VERSION=v0.7.1
+ 
+ #---------      Functions    -------------------
+ function error() {
+@@ -147,7 +148,11 @@ function install_vm_manager_deb(){
+ function install_vm_manager_src() {
+     #Try to build from source code
+     sudo apt-get install --yes make gcc
+-    git clone https://github.com/projectceladon/vm_manager.git || return -1
++    if [ ! -z $VM_MANAGER_VERSION ]; then
++        git clone -b $VM_MANAGER_VERSION --single-branch https://github.com/projectceladon/vm_manager.git
++    else
++        git clone https://github.com/projectceladon/vm_manager.git || return -1
++    fi
+     cd vm_manager/
+     make || return -1
+     sudo make install || return -1
+@@ -158,7 +163,7 @@ function install_vm_manager_src() {
+ function install_vm_manager() {
+     sudo apt-get update
+     sudo apt-get install --yes libglib2.0-dev libncurses-dev libuuid1 uuid-dev libjson-c-dev wget lsb-release git
+-    install_vm_manager_deb || install_vm_manager_src
++    install_vm_manager_src
+     if [ "$?" -ne 0 ]; then
+         echo "Failed to install vm-manager!"
+         echo "Please download and install mannually from: https://github.com/projectceladon/vm_manager/releases/latest"
+-- 
+2.37.2
+

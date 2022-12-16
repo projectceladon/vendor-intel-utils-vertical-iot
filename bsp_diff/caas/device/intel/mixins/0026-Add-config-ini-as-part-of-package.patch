@@ -1,0 +1,58 @@
+From be2001dc9842ed395961a9489f28ec4eaf404530 Mon Sep 17 00:00:00 2001
+From: "Suresh, Prashanth" <prashanth.suresh@intel.com>
+Date: Tue, 12 Jul 2022 09:34:49 +0530
+Subject: [PATCH] Add config ini as part of package.
+
+Add ini file as part of config and update paths.
+
+Tracked-On: OAM-102826
+Signed-off-by: Suresh, Prashanth <prashanth.suresh@intel.com>
+---
+ groups/device-specific/caas/AndroidBoard.mk | 7 ++++++-
+ groups/device-specific/caas/BoardConfig.mk  | 2 ++
+ groups/device-specific/caas/product.mk      | 2 ++
+ 3 files changed, 10 insertions(+), 1 deletion(-)
+
+diff --git a/groups/device-specific/caas/AndroidBoard.mk b/groups/device-specific/caas/AndroidBoard.mk
+index 052fad5..e9d8594 100644
+--- a/groups/device-specific/caas/AndroidBoard.mk
++++ b/groups/device-specific/caas/AndroidBoard.mk
+@@ -26,5 +26,10 @@ em-host-utilities:
+ 	cd device/intel/civ/host/backend/thermal/vm_thermal_utility && $(LOCAL_MAKE)
+ 	cp device/intel/civ/host/backend/thermal/vm_thermal_utility/thermsys $(PRODUCT_OUT)/scripts/
+ 
++.PHONY: ini-sample
++ini-sample:
++	cp device/intel/civ/host/vm-manager/sample/guest01.ini $(PRODUCT_OUT)/scripts/civ-1.ini
++	cp device/intel/civ/host/vm-manager/scripts/setup_civ_ini.sh $(PRODUCT_OUT)/scripts/setup_civ_ini.sh
++
+ .PHONY: host-pkg
+-host-pkg: em-host-utilities vinput-manager
++host-pkg: em-host-utilities vinput-manager ini-sample
+diff --git a/groups/device-specific/caas/BoardConfig.mk b/groups/device-specific/caas/BoardConfig.mk
+index e99d31c..81c7a88 100644
+--- a/groups/device-specific/caas/BoardConfig.mk
++++ b/groups/device-specific/caas/BoardConfig.mk
+@@ -25,6 +25,8 @@ BOARD_FLASHFILES += $(PRODUCT_OUT)/scripts/guest_pm_control
+ BOARD_FLASHFILES += $(PRODUCT_OUT)/scripts/intel-thermal-conf.xml
+ BOARD_FLASHFILES += $(PRODUCT_OUT)/scripts/thermald.service
+ BOARD_FLASHFILES += $(PRODUCT_OUT)/scripts/rpmb_dev
++BOARD_FLASHFILES += $(PRODUCT_OUT)/scripts/civ-1.ini
++BOARD_FLASHFILES += $(PRODUCT_OUT)/scripts/setup_civ_ini.sh
+ 
+ # for USB OTG WA
+ BOARD_SEPOLICY_DIRS += $(INTEL_PATH_SEPOLICY)/bxt_usb
+diff --git a/groups/device-specific/caas/product.mk b/groups/device-specific/caas/product.mk
+index 002a991..9b27209 100755
+--- a/groups/device-specific/caas/product.mk
++++ b/groups/device-specific/caas/product.mk
+@@ -58,4 +58,6 @@ PRODUCT_COPY_FILES += device/intel/civ/host/vm-manager/scripts/setup_host.sh:$(P
+ PRODUCT_COPY_FILES += device/intel/civ/host/vm-manager/scripts/guest_time_keeping.sh:$(PRODUCT_OUT)/scripts/guest_time_keeping.sh
+ PRODUCT_COPY_FILES += device/intel/civ/host/vm-manager/scripts/start_flash_usb.sh:$(PRODUCT_OUT)/scripts/start_flash_usb.sh
+ PRODUCT_COPY_FILES += vendor/intel/fw/trusty-release-binaries/rpmb_dev:$(PRODUCT_OUT)/scripts/rpmb_dev
++PRODUCT_COPY_FILES += device/intel/civ/host/vm-manager/sample/guest01.ini:$(PRODUCT_OUT)/scripts/civ-1.ini
++PRODUCT_COPY_FILES += device/intel/civ/host/vm-manager/scripts/setup_civ_ini.sh:$(PRODUCT_OUT)/scripts/setup_civ_ini.sh
+ PRODUCT_COPY_FILES += $(LOCAL_PATH)/wakeup.py:$(PRODUCT_OUT)/scripts/wakeup.py
+-- 
+2.37.1
+

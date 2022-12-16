@@ -1,0 +1,440 @@
+From 3b87bdb1faa77ccabf5aa6dde2d5d13cb8d794e4 Mon Sep 17 00:00:00 2001
+From: kalle <kalyan.alle@intel.com>
+Date: Thu, 13 Jan 2022 15:16:12 +0800
+Subject: [PATCH] media driver changes for GEN12 rpl platform
+
+---
+ media_driver/Android.mk                       |   3 +
+ .../cmake/linux/media_gen_flags_linux.cmake   |   8 ++
+ .../linux/gen12/ddi/media_libva_caps_g12.cpp  |   5 +
+ .../linux/gen12/ddi/media_sku_wa_g12.cpp      |  49 +++++++++
+ .../linux/gen12/ddi/media_sysinfo_g12.cpp     |  56 ++++++++++
+ .../media_interfaces_g12_rpls.cpp             | 101 ++++++++++++++++++
+ .../media_interfaces_g12_rpls.h               |  44 ++++++++
+ .../media_srcs.cmake                          |  49 +++++++++
+ media_driver/media_interface/media_srcs.cmake |   4 +
+ 9 files changed, 319 insertions(+)
+ create mode 100644 media_driver/media_interface/media_interfaces_m12_rpls/media_interfaces_g12_rpls.cpp
+ create mode 100644 media_driver/media_interface/media_interfaces_m12_rpls/media_interfaces_g12_rpls.h
+ create mode 100644 media_driver/media_interface/media_interfaces_m12_rpls/media_srcs.cmake
+
+diff --git a/media_driver/Android.mk b/media_driver/Android.mk
+index 850c08794..4c0e7d939 100644
+--- a/media_driver/Android.mk
++++ b/media_driver/Android.mk
+@@ -809,6 +809,7 @@ LOCAL_SRC_FILES := \
+     media_interface/media_interfaces_m12_adls/media_interfaces_g12_adls.cpp \
+     media_interface/media_interfaces_m12_rkl/media_interfaces_g12_rkl.cpp \
+     media_interface/media_interfaces_m12_tgllp/media_interfaces_g12_tgllp.cpp \
++    media_interface/media_interfaces_m12_rpls/media_interfaces_g12_rpls.cpp \
+     media_interface/media_interfaces_m8_bdw/media_interfaces_g8_bdw.cpp \
+     media_interface/media_interfaces_m9_bxt/media_interfaces_g9_bxt.cpp \
+     media_interface/media_interfaces_m9_cfl/media_interfaces_g9_cfl.cpp \
+@@ -883,6 +884,7 @@ LOCAL_CPPFLAGS := \
+     -DIGFX_GEN12_TGLLP_CMFC_SUPPORTED \
+     -DIGFX_GEN12_TGLLP_SUPPORTED \
+     -DIGFX_GEN12_TGLLP_SWSB_SUPPORTED \
++    -DIGFX_GEN12_RPLS_SUPPORTED \
+     -DIGFX_GEN8_BDW_SUPPORTED \
+     -DIGFX_GEN8_SUPPORTED \
+     -DIGFX_GEN9_BXT_SUPPORTED \
+@@ -1069,6 +1071,7 @@ LOCAL_C_INCLUDES  = \
+     $(LOCAL_PATH)/media_interface/media_interfaces_m11_icllp \
+     $(LOCAL_PATH)/media_interface/media_interfaces_m11_jsl_ehl \
+     $(LOCAL_PATH)/media_interface/media_interfaces_m12_tgllp \
++    $(LOCAL_PATH)/media_interface/media_interfaces_m12_rpls \
+     $(LOCAL_PATH)/media_interface/media_interfaces_m12_rkl \
+     $(LOCAL_PATH)/media_interface/media_interfaces_m12_adls \
+     $(LOCAL_PATH)/media_interface/media_interfaces_m12_adlp \
+diff --git a/media_driver/cmake/linux/media_gen_flags_linux.cmake b/media_driver/cmake/linux/media_gen_flags_linux.cmake
+index d0ae90202..ade162a1b 100644
+--- a/media_driver/cmake/linux/media_gen_flags_linux.cmake
++++ b/media_driver/cmake/linux/media_gen_flags_linux.cmake
+@@ -81,6 +81,10 @@ cmake_dependent_option(GEN12_ADLP
+     "Enabled ADLP support (Gen12)" ON
+     "GEN12_TGLLP" OFF)
+ 
++cmake_dependent_option(GEN12_RPLS
++     "Enabled RPLS support (Gen12)" ON
++     "GEN12_TGLLP" OFF)
++
+ if(GEN8)
+     add_definitions(-DIGFX_GEN8_SUPPORTED)
+ endif()
+@@ -168,4 +172,8 @@ if(GEN12_ADLP)
+     add_definitions(-DIGFX_GEN12_ADLP_SUPPORTED)
+ endif()
+ 
++if(GEN12_RPLS)
++	add_definitions(-DIGFX_GEN12_RPLS_SUPPORTED)
++endif()
++
+ include(${MEDIA_EXT_CMAKE}/ext/linux/media_gen_flags_linux_ext.cmake OPTIONAL)
+diff --git a/media_driver/linux/gen12/ddi/media_libva_caps_g12.cpp b/media_driver/linux/gen12/ddi/media_libva_caps_g12.cpp
+index c9a9d2d13..e5f3403a2 100644
+--- a/media_driver/linux/gen12/ddi/media_libva_caps_g12.cpp
++++ b/media_driver/linux/gen12/ddi/media_libva_caps_g12.cpp
+@@ -2656,3 +2656,8 @@ static bool adlpRegistered = MediaLibvaCapsFactory<MediaLibvaCaps, DDI_MEDIA_CON
+     RegisterCaps<MediaLibvaCapsG12>((uint32_t)IGFX_ALDERLAKE_P);
+ #endif
+ 
++#ifdef IGFX_GEN12_RPLS_SUPPORTED
++static bool rplsRegistered = MediaLibvaCapsFactory<MediaLibvaCaps, DDI_MEDIA_CONTEXT>::
++     RegisterCaps<MediaLibvaCapsG12>((uint32_t)IGFX_RAPTORLAKE_S);
++#endif
++
+diff --git a/media_driver/linux/gen12/ddi/media_sku_wa_g12.cpp b/media_driver/linux/gen12/ddi/media_sku_wa_g12.cpp
+index 3749ed0db..cfb6998e2 100644
+--- a/media_driver/linux/gen12/ddi/media_sku_wa_g12.cpp
++++ b/media_driver/linux/gen12/ddi/media_sku_wa_g12.cpp
+@@ -587,6 +587,55 @@ static bool adlpDeviceRegister = DeviceInfoFactory<LinuxDeviceInit>::
+ #endif
+ 
+ 
++#ifdef IGFX_GEN12_RPLS_SUPPORTED
++static bool InitRplsMediaSku(struct GfxDeviceInfo *devInfo,
++                             MediaFeatureTable *skuTable,
++                             struct LinuxDriverInfo *drvInfo)
++{
++    if (!InitTglMediaSku(devInfo, skuTable, drvInfo))
++    {
++        return false;
++    }
++
++    if (devInfo->eGTType == GTTYPE_GT0_5)
++    {
++        MEDIA_WR_SKU(skuTable, FtrGT0_5, 1);
++    }
++
++    MEDIA_WR_SKU(skuTable, FtrAV1VLDLSTDecoding, 1);
++
++    //Disable VP8 for RPLS
++    MEDIA_WR_SKU(skuTable, FtrIntelVP8VLDDecoding, 0);
++
++    return true;
++}
++
++static bool InitRplsMediaWa(struct GfxDeviceInfo* devInfo,
++                            MediaWaTable* waTable,
++                            struct LinuxDriverInfo* drvInfo)
++{
++    if (!InitTglMediaWa(devInfo, waTable, drvInfo))
++    {
++        return false;
++    }
++
++    //RPL-S not need this
++    MEDIA_WR_WA(waTable, Wa_1409820462, 0);
++
++    return true;
++}
++
++static struct LinuxDeviceInit rplsDeviceInit =
++{
++    .productFamily    = IGFX_RAPTORLAKE_S,
++    .InitMediaFeature = InitRplsMediaSku,
++    .InitMediaWa = InitRplsMediaWa,
++};
++
++static bool rplsDeviceRegister = DeviceInfoFactory<LinuxDeviceInit>::
++     RegisterDevice(IGFX_RAPTORLAKE_S, &rplsDeviceInit);
++#endif
++
+ static struct LinuxDeviceInit tgllpDeviceInit =
+ {
+     .productFamily    = IGFX_TIGERLAKE_LP,
+diff --git a/media_driver/linux/gen12/ddi/media_sysinfo_g12.cpp b/media_driver/linux/gen12/ddi/media_sysinfo_g12.cpp
+index 32491837d..d5c2e6fe2 100644
+--- a/media_driver/linux/gen12/ddi/media_sysinfo_g12.cpp
++++ b/media_driver/linux/gen12/ddi/media_sysinfo_g12.cpp
+@@ -460,6 +460,62 @@ static bool adlpGt2Device4626 = DeviceInfoFactory<GfxDeviceInfo>::
+ 
+ #endif
+ 
++#ifdef IGFX_GEN12_RPLS_SUPPORTED
++static struct GfxDeviceInfo rplsGt1Info = {
++    .platformType     = PLATFORM_DESKTOP,
++    .productFamily    = IGFX_RAPTORLAKE_S,
++    .displayFamily    = IGFX_GEN12_CORE,
++    .renderFamily     = IGFX_GEN12_CORE,
++    .eGTType          = GTTYPE_GT1,
++    .L3CacheSizeInKb  = 0,
++    .L3BankCount      = 0,
++    .EUCount          = 0,
++    .SliceCount       = 0,
++    .SubSliceCount    = 0,
++    .MaxEuPerSubSlice = 0,
++    .isLCIA           = 0,
++    .hasLLC           = 0,
++    .hasERAM          = 0,
++    .InitMediaSysInfo = InitTglMediaSysInfo,
++    .InitShadowSku    = InitTglShadowSku,
++    .InitShadowWa     = InitTglShadowWa,
++};
++
++
++static struct GfxDeviceInfo rplsGt1fInfo = {
++    .platformType     = PLATFORM_DESKTOP,
++    .productFamily    = IGFX_RAPTORLAKE_S,
++    .displayFamily    = IGFX_GEN12_CORE,
++    .renderFamily     = IGFX_GEN12_CORE,
++    .eGTType          = GTTYPE_GT0_5,
++    .L3CacheSizeInKb  = 0,
++    .L3BankCount      = 0,
++    .EUCount          = 0,
++    .SliceCount       = 0,
++    .SubSliceCount    = 0,
++    .MaxEuPerSubSlice = 0,
++    .isLCIA           = 0,
++    .hasLLC           = 0,
++    .hasERAM          = 0,
++    .InitMediaSysInfo = InitTglMediaSysInfo,
++    .InitShadowSku    = InitTglShadowSku,
++    .InitShadowWa     = InitTglShadowWa,
++};
++
++
++static bool rplsGt1DeviceA780 = DeviceInfoFactory<GfxDeviceInfo>::
++    RegisterDevice(0xA780, &rplsGt1Info);
++
++static bool rplsGt1DeviceA781 = DeviceInfoFactory<GfxDeviceInfo>::
++    RegisterDevice(0xA781, &rplsGt1Info);
++
++static bool rplsGt1DeviceA782 = DeviceInfoFactory<GfxDeviceInfo>::
++    RegisterDevice(0xA782, &rplsGt1Info);
++
++static bool rplsGt1DeviceA783 = DeviceInfoFactory<GfxDeviceInfo>::
++    RegisterDevice(0xA783, &rplsGt1fInfo);
++#endif
++
+ static bool tgllpGt2Device9a40 = DeviceInfoFactory<GfxDeviceInfo>::
+     RegisterDevice(0x9A40, &tgllpGt2Info);
+ 
+diff --git a/media_driver/media_interface/media_interfaces_m12_rpls/media_interfaces_g12_rpls.cpp b/media_driver/media_interface/media_interfaces_m12_rpls/media_interfaces_g12_rpls.cpp
+new file mode 100644
+index 000000000..c75f70270
+--- /dev/null
++++ b/media_driver/media_interface/media_interfaces_m12_rpls/media_interfaces_g12_rpls.cpp
+@@ -0,0 +1,101 @@
++/*
++* Copyright (c) 2011-2020, Intel Corporation
++*
++* Permission is hereby granted, free of charge, to any person obtaining a
++* copy of this software and associated documentation files (the "Software"),
++* to deal in the Software without restriction, including without limitation
++* the rights to use, copy, modify, merge, publish, distribute, sublicense,
++* and/or sell copies of the Software, and to permit persons to whom the
++* Software is furnished to do so, subject to the following conditions:
++*
++* The above copyright notice and this permission notice shall be included
++* in all copies or substantial portions of the Software.
++*
++* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
++* OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
++* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
++* THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR
++* OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
++* ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
++* OTHER DEALINGS IN THE SOFTWARE.
++*/
++//!
++//! \file     media_interfaces_g12_rpls.cpp
++//! \brief    Helps with Gen12 RPLS factory creation.
++//!
++
++#include "media_interfaces_g12_rpls.h"
++
++extern template class MediaInterfacesFactory<MhwInterfaces>;
++extern template class MediaInterfacesFactory<MmdDevice>;
++extern template class MediaInterfacesFactory<MosUtilDevice>;
++extern template class MediaInterfacesFactory<CodechalDevice>;
++extern template class MediaInterfacesFactory<CMHalDevice>;
++extern template class MediaInterfacesFactory<VphalDevice>;
++extern template class MediaInterfacesFactory<RenderHalDevice>;
++extern template class MediaInterfacesFactory<Nv12ToP010Device>;
++extern template class MediaInterfacesFactory<DecodeHistogramDevice>;
++
++static bool rplsRegisteredVphal =
++    MediaInterfacesFactory<VphalDevice>::
++    RegisterHal<VphalInterfacesG12Tgllp>((uint32_t)IGFX_RAPTORLAKE_S);
++
++static bool rplsRegisteredMhw =
++    MediaInterfacesFactory<MhwInterfaces>::
++    RegisterHal<MhwInterfacesG12Tgllp>((uint32_t)IGFX_RAPTORLAKE_S);
++
++#ifdef _MMC_SUPPORTED
++static bool rplsRegisteredMmd =
++    MediaInterfacesFactory<MmdDevice>::
++        RegisterHal<MmdDeviceG12Tgllp>((uint32_t)IGFX_RAPTORLAKE_S);
++#endif
++
++static bool rplsRegisteredNv12ToP010 =
++    MediaInterfacesFactory<Nv12ToP010Device>::
++    RegisterHal<Nv12ToP010DeviceG12Tgllp>((uint32_t)IGFX_RAPTORLAKE_S);
++
++static bool rplsRegisteredCodecHal =
++    MediaInterfacesFactory<CodechalDevice>::
++    RegisterHal<CodechalInterfacesG12Tgllp>((uint32_t)IGFX_RAPTORLAKE_S);
++
++static bool rplsRegisteredCMHal =
++    MediaInterfacesFactory<CMHalDevice>::
++    RegisterHal<CMHalInterfacesG12Rpls>((uint32_t)IGFX_RAPTORLAKE_S);
++
++static bool rplsRegisteredMosUtil =
++    MediaInterfacesFactory<MosUtilDevice>::
++    RegisterHal<MosUtilDeviceG12Tgllp>((uint32_t)IGFX_RAPTORLAKE_S);
++
++static bool rplsRegisteredRenderHal =
++    MediaInterfacesFactory<RenderHalDevice>::
++    RegisterHal<RenderHalInterfacesG12Tgllp>((uint32_t)IGFX_RAPTORLAKE_S);
++
++static bool rplsRegisteredDecodeHistogram =
++    MediaInterfacesFactory<DecodeHistogramDevice>::
++    RegisterHal<DecodeHistogramDeviceG12Tgllp>((uint32_t)IGFX_RAPTORLAKE_S);
++
++#define PLATFORM_INTEL_RPLS 25
++#define GENX_TGLLP 12
++
++MOS_STATUS CMHalInterfacesG12Rpls::Initialize(CM_HAL_STATE *pCmState)
++{
++    if (pCmState == nullptr)
++    {
++        MHW_ASSERTMESSAGE("pCmState is nullptr.")
++        return MOS_STATUS_INVALID_PARAMETER;
++    }
++
++    m_cmhalDevice = MOS_New(CMHal, pCmState);
++    if (m_cmhalDevice == nullptr)
++    {
++        MHW_ASSERTMESSAGE("Create CM Hal interfaces failed.")
++        return MOS_STATUS_NO_SPACE;
++    }
++
++    m_cmhalDevice->SetGenPlatformInfo(PLATFORM_INTEL_RPLS, PLATFORM_INTEL_GT2, "TGLLP");
++    uint32_t cisaIDs[] = {GENX_TGLLP};
++    m_cmhalDevice->AddSupportedCisaIDs(cisaIDs, sizeof(cisaIDs) / sizeof(uint32_t));
++    m_cmhalDevice->m_l3Plane       = TGL_L3_PLANE;
++    m_cmhalDevice->m_l3ConfigCount = TGL_L3_CONFIG_NUM;
++    return MOS_STATUS_SUCCESS;
++}
+diff --git a/media_driver/media_interface/media_interfaces_m12_rpls/media_interfaces_g12_rpls.h b/media_driver/media_interface/media_interfaces_m12_rpls/media_interfaces_g12_rpls.h
+new file mode 100644
+index 000000000..194964c8f
+--- /dev/null
++++ b/media_driver/media_interface/media_interfaces_m12_rpls/media_interfaces_g12_rpls.h
+@@ -0,0 +1,44 @@
++/*
++* Copyright (c) 2011-2021, Intel Corporation
++*
++* Permission is hereby granted, free of charge, to any person obtaining a
++* copy of this software and associated documentation files (the "Software"),
++* to deal in the Software without restriction, including without limitation
++* the rights to use, copy, modify, merge, publish, distribute, sublicense,
++* and/or sell copies of the Software, and to permit persons to whom the
++* Software is furnished to do so, subject to the following conditions:
++*
++* The above copyright notice and this permission notice shall be included
++* in all copies or substantial portions of the Software.
++*
++* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
++* OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
++* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
++* THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR
++* OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
++* ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
++* OTHER DEALINGS IN THE SOFTWARE.
++*/
++
++//!
++//! \file     media_interfaces_g12_rpls.h
++//! \brief    All interfaces used for rpls that require factory creation
++//!
++
++#ifndef __MEDIA_INTERFACES_G12_rpls_H__
++#define __MEDIA_INTERFACES_G12_rpls_H__
++
++#include "media_interfaces_g12_tgllp.h"
++#include "renderhal_g12_base.h"
++
++class CMHalInterfacesG12Rpls : public CMHalDevice
++{
++protected:
++    using CMHal = CM_HAL_G12_X;
++    MOS_STATUS Initialize(
++        CM_HAL_STATE *pCmState);
++};
++
++
++
++#endif // __MEDIA_INTERFACES_G12_rkl_H__
+diff --git a/media_driver/media_interface/media_interfaces_m12_rpls/media_srcs.cmake b/media_driver/media_interface/media_interfaces_m12_rpls/media_srcs.cmake
+new file mode 100644
+index 000000000..4b686e479
+--- /dev/null
++++ b/media_driver/media_interface/media_interfaces_m12_rpls/media_srcs.cmake
+@@ -0,0 +1,49 @@
++# Copyright (c) 2020, Intel Corporation
++#
++# Permission is hereby granted, free of charge, to any person obtaining a
++# copy of this software and associated documentation files (the "Software"),
++# to deal in the Software without restriction, including without limitation
++# the rights to use, copy, modify, merge, publish, distribute, sublicense,
++# and/or sell copies of the Software, and to permit persons to whom the
++# Software is furnished to do so, subject to the following conditions:
++#
++# The above copyright notice and this permission notice shall be included
++# in all copies or substantial portions of the Software.
++#
++# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
++# OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
++# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
++# THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR
++# OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
++# ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
++# OTHER DEALINGS IN THE SOFTWARE.
++
++set(TMP_SOURCES_
++    ${CMAKE_CURRENT_LIST_DIR}/media_interfaces_g12_rpls.cpp
++)
++
++set(TMP_HEADERS_
++    ${CMAKE_CURRENT_LIST_DIR}/media_interfaces_g12_rpls.h
++)
++
++set(SOURCES_
++    ${SOURCES_}
++    ${TMP_SOURCES_}
++)
++
++set(HEADERS_
++    ${HEADERS_}
++    ${TMP_HEADERS_}
++)
++
++set(COMMON_SOURCES_
++    ${COMMON_SOURCES_}
++    ${TMP_SOURCES_}
++)
++
++set(COMMON_HEADERS_
++    ${COMMON_HEADERS_}
++    ${TMP_HEADERS_}
++)
++
++media_add_curr_to_include_path()
+diff --git a/media_driver/media_interface/media_srcs.cmake b/media_driver/media_interface/media_srcs.cmake
+index d854f1fb5..14e913def 100644
+--- a/media_driver/media_interface/media_srcs.cmake
++++ b/media_driver/media_interface/media_srcs.cmake
+@@ -75,4 +75,8 @@ if(GEN12_ADLP)
+     media_include_subdirectory(media_interfaces_m12_adlp)
+ endif()
+ 
++if(GEN12_RPLS)
++    media_include_subdirectory(media_interfaces_m12_rpls)
++endif()
++
+ include(${MEDIA_EXT}/media_interface/media_srcs.cmake OPTIONAL)
+-- 
+2.17.1
+

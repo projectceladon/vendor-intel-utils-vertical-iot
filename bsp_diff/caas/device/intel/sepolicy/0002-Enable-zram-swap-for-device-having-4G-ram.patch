@@ -1,0 +1,23 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Kishan Mochi <kishan.mochi@intel.com>
+Date: Tue, 30 Nov 2021 21:54:11 +0530
+Subject: [PATCH] Enable zram swap for device having <= 4G ram
+
+change prop name for devices having <= 4G ram
+
+Tracked-On: OAM-100202
+Signed-off-by: Kishan Mochi <kishan.mochi@intel.com>
+---
+ low-mem/property_contexts | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/low-mem/property_contexts b/low-mem/property_contexts
+index 54d233d..22eeb2b 100644
+--- a/low-mem/property_contexts
++++ b/low-mem/property_contexts
+@@ -1 +1 @@
+-vendor.low_ram        u:object_r:vendor_mem_prop:s0
++vendor.le_4g_ram        u:object_r:vendor_mem_prop:s0
+-- 
+2.17.1
+

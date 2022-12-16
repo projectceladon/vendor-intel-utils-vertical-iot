@@ -1,0 +1,41 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Basil Chew <basil.chew@intel.com>
+Date: Fri, 29 Apr 2022 11:02:55 +0800
+Subject: [PATCH] Update scripts for QEMU 6.2
+
+Change:
+- updated path for qemu 6.2 in scripts
+---
+ groups/device-specific/caas/guest_pm_control | 2 +-
+ groups/device-specific/caas/wakeup.py        | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/groups/device-specific/caas/guest_pm_control b/groups/device-specific/caas/guest_pm_control
+index c57f675..129a24b 100755
+--- a/groups/device-specific/caas/guest_pm_control
++++ b/groups/device-specific/caas/guest_pm_control
+@@ -21,7 +21,7 @@ import glob
+ import signal
+ from sys import argv,exit
+ 
+-sys.path.append(os.path.join(os.path.dirname(__file__), '../qemu-6.0.0/python'))
++sys.path.append(os.path.join(os.path.dirname(__file__), '../qemu-6.2.0/python'))
+ from qemu import qmp
+ 
+ rtc_wakeup = 0
+diff --git a/groups/device-specific/caas/wakeup.py b/groups/device-specific/caas/wakeup.py
+index fef0b03..1db43f6 100755
+--- a/groups/device-specific/caas/wakeup.py
++++ b/groups/device-specific/caas/wakeup.py
+@@ -8,7 +8,7 @@ from sys import argv,exit
+ 
+ timeout = 60
+ 
+-sys.path.append(os.path.join(os.path.dirname(__file__), '../qemu-6.0.0/python'))
++sys.path.append(os.path.join(os.path.dirname(__file__), '../qemu-6.2.0/python'))
+ 
+ from qemu import qmp
+ 
+-- 
+2.17.1
+

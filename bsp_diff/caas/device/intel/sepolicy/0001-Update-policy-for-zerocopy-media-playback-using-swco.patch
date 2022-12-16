@@ -1,0 +1,22 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Basil Chew <basil.chew@intel.com>
+Date: Thu, 16 Sep 2021 13:16:51 +0800
+Subject: [PATCH] Update policy for zerocopy media playback using swcodec
+
+---
+ graphics/mesa/mediaswcodec.te | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/graphics/mesa/mediaswcodec.te b/graphics/mesa/mediaswcodec.te
+index d44372a..e7f999f 100644
+--- a/graphics/mesa/mediaswcodec.te
++++ b/graphics/mesa/mediaswcodec.te
+@@ -7,4 +7,4 @@
+ 
+ allow mediaswcodec hal_graphics_allocator_default_tmpfs:file { read write map };
+ allow mediaswcodec gpu_device:dir search;
+-allow mediaswcodec gpu_device:chr_file { open read write ioctl };
++allow mediaswcodec gpu_device:chr_file { open read write ioctl map };
+-- 
+2.17.1
+

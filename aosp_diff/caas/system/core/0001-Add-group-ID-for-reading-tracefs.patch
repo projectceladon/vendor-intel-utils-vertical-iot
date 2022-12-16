@@ -1,0 +1,44 @@
+From e99b2af1940940dbb0accdd01150d09d14948dca Mon Sep 17 00:00:00 2001
+From: "Vasoya,Nikhilx" <nikhilx.vasoya@intel.com>
+Date: Mon, 28 Nov 2022 15:24:36 +0530
+Subject: [PATCH] Add group ID for reading tracefs
+
+Add AID_READTRACEFS and mount tracefs with gid=AID_READTRACEFS
+
+Tracked-On: OAM-104011
+Signed-off-by: Vasoya,Nikhilx <nikhilx.vasoya@intel.com>
+---
+ libcutils/include/private/android_filesystem_config.h | 1 +
+ rootdir/init.rc                                       | 4 ++--
+ 2 files changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/libcutils/include/private/android_filesystem_config.h b/libcutils/include/private/android_filesystem_config.h
+index 8f22d8983..ffd4d1285 100644
+--- a/libcutils/include/private/android_filesystem_config.h
++++ b/libcutils/include/private/android_filesystem_config.h
+@@ -157,6 +157,7 @@
+ #define AID_READPROC 3009     /* Allow /proc read access */
+ #define AID_WAKELOCK 3010     /* Allow system wakelock read/write access */
+ #define AID_UHID 3011         /* Allow read/write to /dev/uhid node */
++#define AID_READTRACEFS 3012  /* Allow tracefs read */
+ 
+ /* The range 5000-5999 is also reserved for vendor partition. */
+ #define AID_OEM_RESERVED_2_START 5000
+diff --git a/rootdir/init.rc b/rootdir/init.rc
+index d10689a01..0c82f5d4a 100644
+--- a/rootdir/init.rc
++++ b/rootdir/init.rc
+@@ -78,8 +78,8 @@ on early-init
+     mkdir /dev/boringssl 0755 root root
+     mkdir /dev/boringssl/selftest 0755 root root
+ 
+-    # Mount tracefs
+-    mount tracefs tracefs /sys/kernel/tracing
++    # Mount tracefs (with GID=AID_READTRACEFS)
++    mount tracefs tracefs /sys/kernel/tracing gid=3012
+ 
+     # create sys dirctory
+     mkdir /dev/sys 0755 system system
+-- 
+2.38.1
+

@@ -1,0 +1,254 @@
+From 8f9df8885374994fbcce2907a45019ea40839b09 Mon Sep 17 00:00:00 2001
+From: "Suresh, Prashanth" <prashanth.suresh@intel.com>
+Date: Wed, 11 May 2022 15:59:47 +0530
+Subject: [PATCH] Create Media codecs_performance.xml
+
+Tracked-On: GFXSRIOV-218
+---
+ groups/codecs/configurable/auto_hal.in        |   3 +
+ groups/codecs/configurable/files.spec         |   1 +
+ .../media_codecs_performance_adl.xml          | 191 ++++++++++++++++++
+ groups/codecs/configurable/product.mk         |   3 +-
+ 4 files changed, 197 insertions(+), 1 deletion(-)
+ create mode 100644 groups/codecs/configurable/media_codecs_performance_adl.xml
+
+diff --git a/groups/codecs/configurable/auto_hal.in b/groups/codecs/configurable/auto_hal.in
+index 2d96b50..281a348 100644
+--- a/groups/codecs/configurable/auto_hal.in
++++ b/groups/codecs/configurable/auto_hal.in
+@@ -9,6 +9,9 @@ if [ $value_model == 166 ]; then
+ elif [ $value_model == 141 ]; then
+     setprop ro.vendor.media.target_variant "_gen12"
+     setprop ro.vendor.media.target_variant_platform "_tgl"
++elif [ $value_model == 151 ]; then
++    setprop ro.vendor.media.target_variant "_gen12"
++    setprop ro.vendor.media.target_variant_platform "_adl"
+ elif [ $value_model == 154 ]; then
+     setprop ro.vendor.media.target_variant "_gen12"
+     setprop ro.vendor.media.target_variant_platform "_adl"
+diff --git a/groups/codecs/configurable/files.spec b/groups/codecs/configurable/files.spec
+index e462830..ec3ea24 100644
+--- a/groups/codecs/configurable/files.spec
++++ b/groups/codecs/configurable/files.spec
+@@ -6,6 +6,7 @@ media_profiles.xml: "Media profile file"
+ media_profiles_1080p.xml: "Media profile file with 1080p support"
+ media_codecs_performance_cml.xml: "Media codecs performance file for cml"
+ media_codecs_performance_tgl.xml: "Media codecs performance file for tgl"
++media_codecs_performance_adl.xml: "Media codecs performance file for adl"
+ media_codecs_performance_{{platform}}_xen.xml: "Media codecs performance file for xen"
+ media_codecs_vp9.xml: "vp9 support"
+ mfx_omxil_core_vp9.conf: "vp9 support"
+diff --git a/groups/codecs/configurable/media_codecs_performance_adl.xml b/groups/codecs/configurable/media_codecs_performance_adl.xml
+new file mode 100644
+index 0000000..b3d9f50
+--- /dev/null
++++ b/groups/codecs/configurable/media_codecs_performance_adl.xml
+@@ -0,0 +1,191 @@
++<?xml version="1.0" encoding="utf-8" ?>
++<!-- Copyright 2015 The Android Open Source Project
++
++     Licensed under the Apache License, Version 2.0 (the "License");
++     you may not use this file except in compliance with the License.
++     You may obtain a copy of the License at
++
++          http://www.apache.org/licenses/LICENSE-2.0
++
++     Unless required by applicable law or agreed to in writing, software
++     distributed under the License is distributed on an "AS IS" BASIS,
++     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++     See the License for the specific language governing permissions and
++     limitations under the License.
++-->
++
++<MediaCodecs>
++    <Decoders>
++        <MediaCodec name="c2.android.h263.decoder" type="video/3gpp" update="true">
++            <Limit name="measured-frame-rate-176x144" range="1972-3864" />
++            <Limit name="measured-frame-rate-352x288" range="1386-2648" />
++        </MediaCodec>
++        <MediaCodec name="c2.android.avc.decoder" type="video/avc" update="true">
++            <Limit name="measured-frame-rate-320x240" range="336-760" />
++            <Limit name="measured-frame-rate-720x480" range="448-720" />
++            <Limit name="measured-frame-rate-1280x720" range="152-240" />
++            <Limit name="measured-frame-rate-1920x1080" range="68-106" />
++        </MediaCodec>
++        <MediaCodec name="c2.android.hevc.decoder" type="video/hevc" update="true">
++            <Limit name="measured-frame-rate-352x288" range="324-998" />
++            <Limit name="measured-frame-rate-640x360" range="634-978" />
++            <Limit name="measured-frame-rate-720x480" range="584-930" />
++            <Limit name="measured-frame-rate-1280x720" range="288-462" />
++            <Limit name="measured-frame-rate-1920x1080" range="158-360" />
++        </MediaCodec>
++        <MediaCodec name="c2.android.mpeg4.decoder" type="video/mp4v-es" update="true">
++            <Limit name="measured-frame-rate-176x144" range="2246-4372" />
++        </MediaCodec>
++        <MediaCodec name="c2.android.vp8.decoder" type="video/x-vnd.on2.vp8" update="true">
++            <Limit name="measured-frame-rate-320x180" range="860-930" />
++            <Limit name="measured-frame-rate-640x360" range="652-1002" />
++            <Limit name="measured-frame-rate-1280x720" range="132-284" />
++            <Limit name="measured-frame-rate-1920x1080" range="64-114" />
++        </MediaCodec>
++        <MediaCodec name="c2.android.vp9.decoder" type="video/x-vnd.on2.vp9" update="true">
++            <Limit name="measured-frame-rate-320x180" range="404-722" />
++            <Limit name="measured-frame-rate-640x360" range="632-998" />
++            <Limit name="measured-frame-rate-1280x720" range="308-492" />
++            <Limit name="measured-frame-rate-1920x1080" range="214-334" />
++        </MediaCodec>
++        <MediaCodec name="OMX.Intel.hw_vd.h264" type="video/avc" update="true">
++            <Limit name="measured-frame-rate-320x240" range="3864-6146" />
++            <Limit name="measured-frame-rate-720x480" range="3526-5368" />
++            <Limit name="measured-frame-rate-1280x720" range="1585-2378" />
++            <Limit name="measured-frame-rate-1920x1080" range="632-1172" />
++        </MediaCodec>
++        <MediaCodec name="OMX.Intel.hw_vd.h265" type="video/hevc" update="true">
++            <Limit name="measured-frame-rate-352x288" range="2936-4562" />
++            <Limit name="measured-frame-rate-640x360" range="2402-3852" />
++            <Limit name="measured-frame-rate-720x480" range="2216-3484" />
++            <Limit name="measured-frame-rate-1280x720" range="1448-2286" />
++            <Limit name="measured-frame-rate-1920x1080" range="718-1584" />
++            <Limit name="measured-frame-rate-3840x2160" range="272-492" />
++        </MediaCodec>
++        <MediaCodec name="OMX.Intel.hw_vd.vp8" type="video/x-vnd.on2.vp8" update="true">
++            <Limit name="measured-frame-rate-320x180" range="2941-5290" />
++            <Limit name="measured-frame-rate-640x360" range="2264-3658" />
++            <Limit name="measured-frame-rate-1280x720" range="1136-1792" />
++            <Limit name="measured-frame-rate-1920x1080" range="408-852" />
++        </MediaCodec>
++        <MediaCodec name="OMX.Intel.hw_vd.vp9" type="video/x-vnd.on2.vp9" update="true">
++            <Limit name="measured-frame-rate-320x180" range="3228-5688" />
++            <Limit name="measured-frame-rate-640x360" range="2916-4582" />
++            <Limit name="measured-frame-rate-1280x720" range="1498-2374" />
++            <Limit name="measured-frame-rate-1920x1080" range="1108-1700" />
++            <Limit name="measured-frame-rate-3840x2160" range="303-492" />
++        </MediaCodec>
++        <MediaCodec name="c2.intel.h264.decoder" type="video/avc" update="true">
++            <Limit name="measured-frame-rate-320x240" range="3864-6146" />
++            <Limit name="measured-frame-rate-720x480" range="3526-5368" />
++            <Limit name="measured-frame-rate-1280x720" range="1585-2378" />
++            <Limit name="measured-frame-rate-1920x1080" range="632-1172" />
++        </MediaCodec>
++        <MediaCodec name="c2.intel.h265.decoder" type="video/hevc" update="true">
++            <Limit name="measured-frame-rate-352x288" range="2936-4562" />
++            <Limit name="measured-frame-rate-640x360" range="2402-3852" />
++            <Limit name="measured-frame-rate-720x480" range="2216-3484" />
++            <Limit name="measured-frame-rate-1280x720" range="1448-2286" />
++            <Limit name="measured-frame-rate-1920x1080" range="718-1584" />
++            <Limit name="measured-frame-rate-3840x2160" range="272-492" />
++        </MediaCodec>
++        <MediaCodec name="c2.intel.vp8.decoder" type="video/x-vnd.on2.vp8" update="true">
++            <Limit name="measured-frame-rate-320x180" range="2941-5290" />
++            <Limit name="measured-frame-rate-640x360" range="2264-3658" />
++            <Limit name="measured-frame-rate-1280x720" range="1136-1792" />
++            <Limit name="measured-frame-rate-1920x1080" range="408-852" />
++        </MediaCodec>
++        <MediaCodec name="c2.intel.vp9.decoder" type="video/x-vnd.on2.vp9" update="true">
++            <Limit name="measured-frame-rate-320x180" range="3228-5688" />
++            <Limit name="measured-frame-rate-640x360" range="2916-4582" />
++            <Limit name="measured-frame-rate-1280x720" range="1498-2374" />
++            <Limit name="measured-frame-rate-1920x1080" range="298-521" />
++            <Limit name="measured-frame-rate-3840x2160" range="251-492" />
++        </MediaCodec>
++        <MediaCodec name="c2.intel.avc.decoder" type="video/avc" update="true">
++            <Limit name="measured-frame-rate-320x240" range="3760-4450" />
++            <Limit name="measured-frame-rate-720x480" range="3785-4360" />
++            <Limit name="measured-frame-rate-1280x720" range="2044-2318" />
++            <Limit name="measured-frame-rate-1920x1080" range="833-998" />
++        </MediaCodec>
++        <MediaCodec name="c2.intel.hevc.decoder" type="video/hevc" update="true">
++            <Limit name="measured-frame-rate-352x288" range="2127-2550" />
++            <Limit name="measured-frame-rate-640x360" range="634-978" />
++            <Limit name="measured-frame-rate-720x480" range="584-930" />
++            <Limit name="measured-frame-rate-1280x720" range="288-462" />
++            <Limit name="measured-frame-rate-1920x1080" range="158-360" />
++        </MediaCodec>
++    </Decoders>
++    <Encoders>
++        <MediaCodec name="c2.android.avc.encoder" type="video/avc" update="true">
++            <Limit name="measured-frame-rate-320x240" range="635-2624" />
++            <Limit name="measured-frame-rate-720x480" range="348-597" />
++            <Limit name="measured-frame-rate-1280x720" range="276-489" />
++            <Limit name="measured-frame-rate-1920x1080" range="156-276" />
++        </MediaCodec>
++        <MediaCodec name="c2.android.hevc.encoder" type="video/hevc" update="true">
++            <Limit name="measured-frame-rate-320x240" range="86-204" />
++            <Limit name="measured-frame-rate-720x480" range="28-68" />
++        </MediaCodec>
++        <MediaCodec name="c2.android.h263.encoder" type="video/3gpp" update="true">
++            <Limit name="measured-frame-rate-176x144" range="878-3682" />
++        </MediaCodec>
++        <MediaCodec name="c2.android.mpeg4.encoder" type="video/mp4v-es" update="true">
++            <Limit name="measured-frame-rate-176x144" range="964-3380" />
++        </MediaCodec>
++        <MediaCodec name="c2.android.vp8.encoder" type="video/x-vnd.on2.vp8" update="true">
++            <Limit name="measured-frame-rate-320x180" range="150-1124" />
++            <Limit name="measured-frame-rate-640x360" range="95-662" />
++            <Limit name="measured-frame-rate-1280x720" range="60-142" />
++            <Limit name="measured-frame-rate-1920x1080" range="22-25" />
++        </MediaCodec>
++        <MediaCodec name="c2.android.vp9.encoder" type="video/x-vnd.on2.vp9" update="true">
++            <Limit name="measured-frame-rate-320x180" range="96-106" />
++            <Limit name="measured-frame-rate-640x360" range="39-39" />
++            <Limit name="measured-frame-rate-1280x720" range="7-9" />
++        </MediaCodec>
++        <MediaCodec name="OMX.Intel.hw_ve.h264" type="video/avc" update="true">
++            <Limit name="measured-frame-rate-320x240" range="942-1540" />
++            <Limit name="measured-frame-rate-720x480" range="454-685" />
++            <Limit name="measured-frame-rate-1280x720" range="234-428" />
++            <Limit name="measured-frame-rate-1920x1080" range="96-208" />
++        </MediaCodec>
++        <MediaCodec name="OMX.Intel.hw_ve.h265" type="video/hevc" update="true">
++            <Limit name="measured-frame-rate-320x240" range="806-1432" />
++            <Limit name="measured-frame-rate-720x480" range="394-606" />
++            <Limit name="measured-frame-rate-1280x720" range="204-306" />
++            <Limit name="measured-frame-rate-1920x1080" range="98-147" />
++            <Limit name="measured-frame-rate-3840x2160" range="28-42" />
++        </MediaCodec>
++        <MediaCodec name="c2.intel.h264.encoder" type="video/avc" update="true">
++            <Limit name="measured-frame-rate-320x240" range="942-1540" />
++            <Limit name="measured-frame-rate-720x480" range="454-685" />
++            <Limit name="measured-frame-rate-1280x720" range="234-428" />
++            <Limit name="measured-frame-rate-1920x1080" range="96-208" />
++        </MediaCodec>
++        <MediaCodec name="c2.intel.h265.encoder" type="video/hevc" update="true">
++            <Limit name="measured-frame-rate-320x240" range="806-1432" />
++            <Limit name="measured-frame-rate-720x480" range="394-606" />
++            <Limit name="measured-frame-rate-1280x720" range="204-306" />
++            <Limit name="measured-frame-rate-1920x1080" range="98-147" />
++            <Limit name="measured-frame-rate-3840x2160" range="28-42" />
++        </MediaCodec>
++        <MediaCodec name="c2.intel.avc.encoder" type="video/avc" update="true">
++            <Limit name="measured-frame-rate-320x240" range="635-2624" />
++            <Limit name="measured-frame-rate-720x480" range="348-597" />
++            <Limit name="measured-frame-rate-1280x720" range="276-489" />
++            <Limit name="measured-frame-rate-1920x1080" range="156-276" />
++        </MediaCodec>
++        <MediaCodec name="c2.intel.av1.encoder" type="video/avc" update="true">
++            <Limit name="measured-frame-rate-320x240" range="635-2624" />
++            <Limit name="measured-frame-rate-720x480" range="348-597" />
++            <Limit name="measured-frame-rate-1280x720" range="276-489" />
++            <Limit name="measured-frame-rate-1920x1080" range="156-276" />
++        </MediaCodec>
++        <MediaCodec name="c2.intel.vp9.encoder" type="video/x-vnd.on2.vp9" update="true">
++            <Limit name="measured-frame-rate-320x180" range="96-106" />
++            <Limit name="measured-frame-rate-640x360" range="39-39" />
++            <Limit name="measured-frame-rate-1280x720" range="7-9" />
++        </MediaCodec>
++    </Encoders>
++</MediaCodecs>
+diff --git a/groups/codecs/configurable/product.mk b/groups/codecs/configurable/product.mk
+index fd27bc4..b12eee3 100644
+--- a/groups/codecs/configurable/product.mk
++++ b/groups/codecs/configurable/product.mk
+@@ -29,7 +29,8 @@ endif
+ PRODUCT_COPY_FILES += \
+     $(LOCAL_PATH)/{{_extra_dir}}/media_codecs_performance_{{platform}}.xml:vendor/etc/media_codecs_performance.xml \
+     $(LOCAL_PATH)/{{_extra_dir}}/media_codecs_performance_cml.xml:vendor/etc/media_codecs_performance_cml.xml \
+-    $(LOCAL_PATH)/{{_extra_dir}}/media_codecs_performance_tgl.xml:vendor/etc/media_codecs_performance_tgl.xml
++    $(LOCAL_PATH)/{{_extra_dir}}/media_codecs_performance_tgl.xml:vendor/etc/media_codecs_performance_tgl.xml \
++    $(LOCAL_PATH)/{{_extra_dir}}/media_codecs_performance_adl.xml:vendor/etc/media_codecs_performance_adl.xml
+ {{/hw_omx_video}}
+ {{/codec_perf_xen}}
+ 
+-- 
+2.37.0
+

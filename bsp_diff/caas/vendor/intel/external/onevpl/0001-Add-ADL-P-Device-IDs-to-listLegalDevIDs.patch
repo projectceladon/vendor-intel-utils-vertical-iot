@@ -1,0 +1,68 @@
+From 0cc1233ee80687517026455056208acba1b39d41 Mon Sep 17 00:00:00 2001
+From: "Kalenahally Madegowda, NandishaX"
+ <nandishax.kalenahally.madegowda@intel.com>
+Date: Fri, 18 Feb 2022 15:15:47 +0530
+Subject: [PATCH] Add ADL-P Device IDs to listLegalDevIDs
+
+Tracked-On: HSD-16015846020
+Signed-off-by: Kalenahally Madegowda, NandishaX <nandishax.kalenahally.madegowda@intel.com>
+
+diff --git a/dispatcher/linux/device_ids.h b/dispatcher/linux/device_ids.h
+index 410bed5..d0f2afb 100644
+--- a/dispatcher/linux/device_ids.h
++++ b/dispatcher/linux/device_ids.h
+@@ -48,6 +48,7 @@ enum eMFXHWType {
+     MFX_HW_TGL_LP = 0x1600000,
+     MFX_HW_RKL    = MFX_HW_TGL_LP + 2,
+     MFX_HW_ADL_S  = MFX_HW_TGL_LP + 4,
++    MFX_HW_ADL_P  = MFX_HW_TGL_LP + 5,
+     MFX_HW_DG1    = 0x1600003,
+ };
+ 
+@@ -397,12 +398,36 @@ static const mfx_device_item listLegalDevIDs[] = {
+     { 0x4600, MFX_HW_ADL_S, MFX_GT1 }, //ADL-S
+     { 0x4680, MFX_HW_ADL_S, MFX_GT1 }, //ADL-S
+     { 0x4681, MFX_HW_ADL_S, MFX_GT1 }, //ADL-S
++    { 0x4682, MFX_HW_ADL_S, MFX_GT1 }, //ADL-S
+     { 0x4683, MFX_HW_ADL_S, MFX_GT1 }, //ADL-S
++    { 0x4688, MFX_HW_ADL_S, MFX_GT1 }, //ADL-S
++    { 0x4689, MFX_HW_ADL_S, MFX_GT1 }, //ADL-S
+     { 0x4690, MFX_HW_ADL_S, MFX_GT1 }, //ADL-S
+     { 0x4691, MFX_HW_ADL_S, MFX_GT1 }, //ADL-S
++    { 0x4692, MFX_HW_ADL_S, MFX_GT1 }, //ADL-S
+     { 0x4693, MFX_HW_ADL_S, MFX_GT1 }, //ADL-S
+     { 0x4698, MFX_HW_ADL_S, MFX_GT1 }, //ADL-S
+     { 0x4699, MFX_HW_ADL_S, MFX_GT1 }, //ADL-S
++
++    /* ADL-P */
++    { 0x4626, MFX_HW_ADL_P, MFX_GT2 },//ADL-P
++    { 0x4628, MFX_HW_ADL_P, MFX_GT2 },//ADL-P
++    { 0x462A, MFX_HW_ADL_P, MFX_GT2 },//ADL-P
++    { 0x46A0, MFX_HW_ADL_P, MFX_GT2 },//ADL-P
++    { 0x46A1, MFX_HW_ADL_P, MFX_GT2 },//ADL-P
++    { 0x46A2, MFX_HW_ADL_P, MFX_GT2 },//ADL-P
++    { 0x46A3, MFX_HW_ADL_P, MFX_GT2 },//ADL-P
++    { 0x46A6, MFX_HW_ADL_P, MFX_GT2 },//ADL-P
++    { 0x46A8, MFX_HW_ADL_P, MFX_GT2 },//ADL-P
++    { 0x46AA, MFX_HW_ADL_P, MFX_GT2 },//ADL-P
++    { 0x46B0, MFX_HW_ADL_P, MFX_GT2 },//ADL-P
++    { 0x46B1, MFX_HW_ADL_P, MFX_GT2 },//ADL-P
++    { 0x46B2, MFX_HW_ADL_P, MFX_GT2 },//ADL-P
++    { 0x46B3, MFX_HW_ADL_P, MFX_GT2 },//ADL-P
++    { 0x46C0, MFX_HW_ADL_P, MFX_GT2 },//ADL-P
++    { 0x46C1, MFX_HW_ADL_P, MFX_GT2 },//ADL-P
++    { 0x46C2, MFX_HW_ADL_P, MFX_GT2 },//ADL-P
++    { 0x46C3, MFX_HW_ADL_P, MFX_GT2 },//ADL-P
+ };
+ 
+ typedef struct {
+@@ -468,4 +493,4 @@ static mfxStatus get_devices(std::vector<Device> &allDevices) {
+     return MFX_ERR_NONE;
+ }
+ 
+-#endif // DISPATCHER_LINUX_DEVICE_IDS_H_
+\ No newline at end of file
++#endif // DISPATCHER_LINUX_DEVICE_IDS_H_
+-- 
+2.35.1
+
