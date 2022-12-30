@@ -1,0 +1,36 @@
+From 0a624d63d24f29a2be44344fe9c1748757f43a29 Mon Sep 17 00:00:00 2001
+From: Y <sushreex.panda@intel.com>
+Date: Fri, 16 Dec 2022 11:24:03 +0530
+Subject: [PATCH 1/2] Revert "Modify IA perf variant of library to have same
+ name as original"
+
+This reverts commit ea6d2521098f679a0362887d1e2c9c45d82c4f94.
+
+diff --git a/runtime/Android.bp b/runtime/Android.bp
+index 7111a7eed..e67e1efba 100644
+--- a/runtime/Android.bp
++++ b/runtime/Android.bp
+@@ -191,8 +191,6 @@ cc_library_shared {
+ 
+ cc_library_shared {
+     name: "libneuralnetworks_avx2",
+-    override_lib_name: "libneuralnetworks",
+-    relative_install_path: "IA-Perf/avx2",
+     defaults: ["libneuralnetworks_generic"],
+     min_sdk_version: "30",
+     arch: {
+@@ -203,6 +201,11 @@ cc_library_shared {
+            cflags: [ "-mavx2", "-mfma", ],
+         },
+     },
++    target: {
++       android: {
++          relative_install_path: "IA-Perf/avx2",
++       },
++    },
+ }
+ 
+ // Required for tests (b/147158681)
+-- 
+2.39.0
+
