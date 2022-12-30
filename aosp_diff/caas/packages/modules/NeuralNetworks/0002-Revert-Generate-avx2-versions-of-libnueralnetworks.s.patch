@@ -1,0 +1,97 @@
+From 80bc4055960dd85563efb43bb80f1f412d5e4aff Mon Sep 17 00:00:00 2001
+From: Y <sushreex.panda@intel.com>
+Date: Fri, 16 Dec 2022 11:24:45 +0530
+Subject: [PATCH 2/2] Revert "Generate avx2 versions of libnueralnetworks.so"
+
+This reverts commit 39696e98a104e1c384dd0f64460755f42f8e61d9.
+
+diff --git a/Android.bp b/Android.bp
+index 297e37c79..3ea77275a 100644
+--- a/Android.bp
++++ b/Android.bp
+@@ -70,6 +70,24 @@ cc_defaults {
+         "-Werror",
+         "-Wextra",
+     ],
++    arch: {
++        x86: {
++            avx2: {
++                cflags: [
++                    "-mavx2",
++                    "-mfma",
++                ],
++            },
++        },
++        x86_64: {
++            avx2: {
++                cflags: [
++                    "-mavx2",
++                    "-mfma",
++                ],
++            },
++        },
++    },
+     product_variables: {
+         debuggable: { // eng and userdebug builds
+             cflags: ["-DNN_DEBUGGABLE"],
+diff --git a/apex/Android.bp b/apex/Android.bp
+index e457ffba8..f99dd5bcc 100644
+--- a/apex/Android.bp
++++ b/apex/Android.bp
+@@ -41,7 +41,6 @@ apex_defaults {
+     androidManifest: ":com.android.neuralnetworks-androidManifest",
+     native_shared_libs: [
+         "libneuralnetworks",
+-        "libneuralnetworks_avx2",
+     ],
+     compile_multilib: "both",
+     key: "com.android.neuralnetworks.key",
+diff --git a/runtime/Android.bp b/runtime/Android.bp
+index e67e1efba..52b3e9261 100644
+--- a/runtime/Android.bp
++++ b/runtime/Android.bp
+@@ -160,8 +160,8 @@ cc_defaults {
+     ],
+ }
+ 
+-cc_defaults {
+-    name: "libneuralnetworks_generic",
++cc_library_shared {
++    name: "libneuralnetworks",
+     llndk: {
+         symbol_file: "libneuralnetworks.map.txt",
+         override_export_include_dirs: ["include"],
+@@ -184,30 +184,6 @@ cc_defaults {
+     },
+ }
+ 
+-cc_library_shared {
+-    name: "libneuralnetworks",
+-    defaults: ["libneuralnetworks_generic"],
+-}
+-
+-cc_library_shared {
+-    name: "libneuralnetworks_avx2",
+-    defaults: ["libneuralnetworks_generic"],
+-    min_sdk_version: "30",
+-    arch: {
+-        x86: {
+-           cflags: [ "-mavx2", "-mfma", ],
+-        },
+-        x86_64: {
+-           cflags: [ "-mavx2", "-mfma", ],
+-        },
+-    },
+-    target: {
+-       android: {
+-          relative_install_path: "IA-Perf/avx2",
+-       },
+-    },
+-}
+-
+ // Required for tests (b/147158681)
+ cc_library_static {
+     name: "libneuralnetworks_static",
+-- 
+2.39.0
+
