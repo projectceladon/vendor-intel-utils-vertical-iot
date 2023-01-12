@@ -1,0 +1,44 @@
+From c21779fea92e4466dec02c1a96e086bed04dd454 Mon Sep 17 00:00:00 2001
+From: gollarx <ratnakumarix.golla@intel.com>
+Date: Thu, 12 Jan 2023 22:07:18 +0530
+Subject: [PATCH] Fix fetchGraphicBlock issue
+
+Added a condition to switch from Video memory to system memory when no
+surface available
+
+Tracked-On:
+Signed-off-by: gollarx <ratnakumarix.golla@intel.com>
+---
+ c2_components/src/mfx_c2_decoder_component.cpp | 2 +-
+ c2_components/src/mfx_c2_encoder_component.cpp | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/c2_components/src/mfx_c2_decoder_component.cpp b/c2_components/src/mfx_c2_decoder_component.cpp
+index b5e3c44..6bf9f66 100755
+--- a/c2_components/src/mfx_c2_decoder_component.cpp
++++ b/c2_components/src/mfx_c2_decoder_component.cpp
+@@ -919,7 +919,7 @@ mfxStatus MfxC2DecoderComponent::InitDecoder(std::shared_ptr<C2BlockPool> c2_all
+             uint64_t usage, igbp_id;
+             android::_UnwrapNativeCodec2GrallocMetadata(out_block->handle(), &width, &height, &format, &usage,
+                                                         &stride, &generation, &igbp_id, &igbp_slot);
+-            if (!igbp_id && !igbp_slot)
++            if (!igbp_id && !igbp_slot || !igbp_id && igbp_slot == 0xffffffff)
+             {
+                 // No surface & BQ
+                 m_mfxVideoParams.IOPattern = MFX_IOPATTERN_OUT_SYSTEM_MEMORY;
+diff --git a/c2_components/src/mfx_c2_encoder_component.cpp b/c2_components/src/mfx_c2_encoder_component.cpp
+index 64905e3..27434bf 100755
+--- a/c2_components/src/mfx_c2_encoder_component.cpp
++++ b/c2_components/src/mfx_c2_encoder_component.cpp
+@@ -780,7 +780,7 @@ mfxStatus MfxC2EncoderComponent::InitVPP(C2FrameData& buf_pack)
+         uint64_t usage, igbp_id;
+         android::_UnwrapNativeCodec2GrallocMetadata(c_graph_block->handle(), &width, &height, &format, &usage,
+                                                 &stride, &generation, &igbp_id, &igbp_slot);
+-        if (!igbp_id && !igbp_slot) {
++        if (!igbp_id && !igbp_slot || !igbp_id && igbp_slot == 0xffffffff) {
+             //No surface & BQ
+             m_mfxVideoParamsConfig.IOPattern = MFX_IOPATTERN_IN_SYSTEM_MEMORY;
+ #ifdef USE_ONEVPL
+-- 
+2.39.0
+
