@@ -1,4 +1,4 @@
-From 085b6bf10a894a83762fa75f28111019825aa76d Mon Sep 17 00:00:00 2001
+From 416b72ec4f1dd22713a87c64def4690226bc61a7 Mon Sep 17 00:00:00 2001
 From: vdanix <vishwanathx.dani@intel.com>
 Date: Wed, 23 Nov 2022 15:23:43 +0530
 Subject: [PATCH] Fix for GTS checkGpuProfilingRequirements TC
@@ -8,9 +8,12 @@ TC failing Error: API level S must support GPU profiling
 
 Tracked-On: OAM-104957
 Signed-off-by: vdanix <vishwanathx.dani@intel.com>
+---
+ groups/device-specific/caas/caas.mk | 3 +++
+ 1 file changed, 3 insertions(+)
 
 diff --git a/groups/device-specific/caas/caas.mk b/groups/device-specific/caas/caas.mk
-index 71a33f8..4d3a889 100644
+index 3ad0fc2..373266a 100644
 --- a/groups/device-specific/caas/caas.mk
 +++ b/groups/device-specific/caas/caas.mk
 @@ -65,6 +65,9 @@ PRODUCT_AAPT_PREF_CONFIG := mdpi
@@ -21,8 +24,8 @@ index 71a33f8..4d3a889 100644
 +    graphics.gpu.profiler.support=true
 +
  PRODUCT_RESTRICT_VENDOR_FILES := false
+ ifneq ($(TARGET_BUILD_VARIANT),user)
  PRODUCT_SET_DEBUGFS_RESTRICTIONS := false
- {{^ota-update}}
 -- 
-2.38.1
+2.39.1
 
