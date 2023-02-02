@@ -1,0 +1,28 @@
+From d88e36f411f82ca6e00edb3babacfc4d8c1b3ead Mon Sep 17 00:00:00 2001
+From: "Kothapeta, BikshapathiX" <bikshapathix.kothapeta@intel.com>
+Date: Thu, 2 Feb 2023 17:01:24 +0530
+Subject: [PATCH] [c2][parameter] Fix hevc testValidateProfileLevel
+
+Disable UNSUPPORTED PROFILE_HEVC_MAIN_10 as
+For HEVC_MAIN10 profile, the bitdepth value should be 10.
+and currently, we don't support 10bit hevc encoding in
+mediasdk codec2.0.
+
+Tracked-On: OAM-105460
+Signed-off-by: Kothapeta, BikshapathiX <bikshapathix.kothapeta@intel.com>
+
+diff --git a/c2_components/src/mfx_c2_encoder_component.cpp b/c2_components/src/mfx_c2_encoder_component.cpp
+index ff9d701..98bc199 100755
+--- a/c2_components/src/mfx_c2_encoder_component.cpp
++++ b/c2_components/src/mfx_c2_encoder_component.cpp
+@@ -344,7 +344,6 @@ MfxC2EncoderComponent::MfxC2EncoderComponent(const C2String name, const CreateCo
+                         .oneOf({
+                             PROFILE_HEVC_MAIN,
+                             PROFILE_HEVC_MAIN_STILL,
+-                            PROFILE_HEVC_MAIN_10,
+                         }),
+                     C2F(m_profileLevel, C2ProfileLevelStruct::level)
+                         .oneOf({
+-- 
+2.39.1
+
