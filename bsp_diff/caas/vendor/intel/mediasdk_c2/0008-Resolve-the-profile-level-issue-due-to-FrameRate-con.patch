@@ -1,6 +1,6 @@
-From dcaba50cc574991fc9ebf641c77c3d4fa5daa17d Mon Sep 17 00:00:00 2001
+From 5abd6eea376f9afa191ecb7e1520f03c58dfeac9 Mon Sep 17 00:00:00 2001
 From: gollarx <ratnakumarix.golla@intel.com>
-Date: Fri, 3 Feb 2023 13:15:06 +0530
+Date: Fri, 3 Feb 2023 16:21:52 +0530
 Subject: [PATCH] Resolve the profile level issue due to FrameRate
  configuration in encoder
 
@@ -14,15 +14,19 @@ is not getting configuring with the TC configration.
 Tracked-On: OAM-105719
 Signed-off-by: gollarx <ratnakumarix.golla@intel.com>
 ---
- c2_components/src/mfx_c2_encoder_component.cpp | 4 ----
- 1 file changed, 4 deletions(-)
+ c2_components/src/mfx_c2_encoder_component.cpp | 6 +-----
+ 1 file changed, 1 insertion(+), 5 deletions(-)
 
 diff --git a/c2_components/src/mfx_c2_encoder_component.cpp b/c2_components/src/mfx_c2_encoder_component.cpp
-index 2f81109..4d2453a 100755
+index 2f81109..4c3dd80 100755
 --- a/c2_components/src/mfx_c2_encoder_component.cpp
 +++ b/c2_components/src/mfx_c2_encoder_component.cpp
-@@ -1706,10 +1706,6 @@ void MfxC2EncoderComponent::DoUpdateMfxParam(const std::vector<C2Param*> &params
-                 else if (m_encoderType == ENCODER_H265 && framerate_value > MFX_MAX_H265_FRAMERATE) {
+@@ -1703,13 +1703,9 @@ void MfxC2EncoderComponent::DoUpdateMfxParam(const std::vector<C2Param*> &params
+                 if (m_encoderType == ENCODER_H264 && framerate_value > MFX_MAX_H264_FRAMERATE) {
+                     framerate_value = MFX_MAX_H264_FRAMERATE;
+                 }
+-                else if (m_encoderType == ENCODER_H265 && framerate_value > MFX_MAX_H265_FRAMERATE) {
++                if (m_encoderType == ENCODER_H265 && framerate_value > MFX_MAX_H265_FRAMERATE) {
                      framerate_value = MFX_MAX_H265_FRAMERATE;
                  }
 -                else {
