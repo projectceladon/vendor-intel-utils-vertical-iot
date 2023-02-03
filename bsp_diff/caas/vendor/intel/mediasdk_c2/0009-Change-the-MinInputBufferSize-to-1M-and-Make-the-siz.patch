@@ -1,0 +1,61 @@
+From f3028726a8ea29afefacdb092ce49707cfa0d5a9 Mon Sep 17 00:00:00 2001
+From: gollarx <ratnakumarix.golla@intel.com>
+Date: Fri, 3 Feb 2023 15:54:09 +0530
+Subject: [PATCH] Change the MinInputBufferSize to 1M and Make the size is
+ aligned with 64
+
+2M is used in Software Codec. and may cause memory overfllow in CTS.
+Reduce it to 1M.
+HEVC required 64 aligned, AVC required 16 aligned.
+We keep the size 64 aligned for all formats
+
+Tracked-On:
+Signed-off-by: gollarx <ratnakumarix.golla@intel.com>
+
+diff --git a/c2_components/src/mfx_c2_decoder_component.cpp b/c2_components/src/mfx_c2_decoder_component.cpp
+index 29545eb..1783654 100755
+--- a/c2_components/src/mfx_c2_decoder_component.cpp
++++ b/c2_components/src/mfx_c2_decoder_component.cpp
+@@ -42,7 +42,7 @@ using namespace android;
+ constexpr uint32_t MIN_W = 176;
+ constexpr uint32_t MIN_H = 144;
+ constexpr c2_nsecs_t TIMEOUT_NS = MFX_SECOND_NS;
+-constexpr uint64_t kMinInputBufferSize = 2 * WIDTH_2K * HEIGHT_2K;
++constexpr uint64_t kMinInputBufferSize = 1 * WIDTH_1K * HEIGHT_1K;
+ constexpr uint64_t kDefaultConsumerUsage =
+     (GRALLOC_USAGE_HW_TEXTURE | GRALLOC_USAGE_HW_COMPOSER);
+ 
+@@ -96,10 +96,13 @@ C2R MfxC2DecoderComponent::MaxInputSizeSetter(bool mayBlock, C2P<C2StreamMaxBuff
+                                 const C2P<C2StreamMaxPictureSizeTuning::output> &maxSize) {
+     (void)mayBlock;
+     // assume compression ratio of 2
+-    me.set().value = c2_max((((maxSize.v.width + 15) / 16)
+-            * ((maxSize.v.height + 15) / 16) * 192), kMinInputBufferSize);
++    //me.set().value = c2_max((((maxSize.v.width + 15) / 16)
++    //        * ((maxSize.v.height + 15) / 16) * 192), kMinInputBufferSize);
++    me.set().value = c2_max((((maxSize.v.width + 63) / 64) 
++	    * ((maxSize.v.height + 63) / 64) * 3072), kMinInputBufferSize);
++    
+     ALOGD("zyc, input size = %d", me.set().value);
+-    me.set().value = kMinInputBufferSize;
++    //me.set().value = kMinInputBufferSize;
+     return C2R::Ok();
+ }
+ 
+diff --git a/c2_utils/include/mfx_defs.h b/c2_utils/include/mfx_defs.h
+index 0743513..46bdb01 100755
+--- a/c2_utils/include/mfx_defs.h
++++ b/c2_utils/include/mfx_defs.h
+@@ -64,6 +64,9 @@ extern mfxVersion g_required_mfx_version;
+ #define WIDTH_2K 2048
+ #define HEIGHT_2K 2048
+ 
++#define WIDTH_1K 1024
++#define HEIGHT_1K 1024
++
+ #define MIN_WIDTH_4K 3840
+ #define MIN_HEIGHT_4K 2160
+ #define MIN_WIDTH_8K 7680
+-- 
+2.39.1
+
