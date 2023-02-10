@@ -1,29 +1,19 @@
-From c588b6976ba3700ddbcd902c5a265182b0094750 Mon Sep 17 00:00:00 2001
-From: Basanagouda Koppad <basanagoudax.n.koppad@intel.com>
-Date: Wed, 6 Jul 2022 00:23:14 +0530
-Subject: [PATCH 2/6] INTERNAL: Duplicate fd in iris driver instead of reuse
+From e5e00a118bbf5d248b67469928a873b3855da1f4 Mon Sep 17 00:00:00 2001
+From: "Kothapeta, BikshapathiX" <bikshapathix.kothapeta@intel.com>
+Date: Fri, 10 Feb 2023 12:44:43 +0530
+Subject: [PATCH] INTERNAL: Duplicate fd in iris driver instead of reuse
 
 Duplicate DRM file descriptor internally instead of reuse.
 
-Tracked-On: OAM-102839
+Tracked-On: OAM-105812
 Signed-of-by: Shekhar Chauhan <shekhar.chauhan@intel.com>
----
- src/gallium/drivers/iris/iris_screen.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+Signed-off-by: Kothapeta, BikshapathiX <bikshapathix.kothapeta@intel.com>
 
 diff --git a/src/gallium/drivers/iris/iris_screen.c b/src/gallium/drivers/iris/iris_screen.c
-index f1a98bb309e..c789acdbee5 100644
+index d079a80d895..4b34f00ca31 100644
 --- a/src/gallium/drivers/iris/iris_screen.c
 +++ b/src/gallium/drivers/iris/iris_screen.c
-@@ -37,6 +37,7 @@
- #include "pipe/p_state.h"
- #include "pipe/p_context.h"
- #include "pipe/p_screen.h"
-+#include "util/os_file.h"
- #include "util/debug.h"
- #include "util/u_inlines.h"
- #include "util/format/u_format.h"
-@@ -625,8 +626,7 @@ iris_screen_destroy(struct iris_screen *screen)
+@@ -625,8 +625,7 @@ iris_screen_destroy(struct iris_screen *screen)
     u_transfer_helper_destroy(screen->base.transfer_helper);
     iris_bufmgr_unref(screen->bufmgr);
     disk_cache_destroy(screen->disk_cache);
@@ -33,15 +23,6 @@ index f1a98bb309e..c789acdbee5 100644
     ralloc_free(screen);
  }
  
-@@ -806,7 +806,7 @@ iris_screen_create(int fd, const struct pipe_screen_config *config)
-       return NULL;
- 
-    screen->fd = iris_bufmgr_get_fd(screen->bufmgr);
--   screen->winsys_fd = fd;
-+   screen->winsys_fd = os_dupfd_cloexec(fd);
- 
-    if (getenv("INTEL_NO_HW") != NULL)
-       screen->no_hw = true;
 -- 
-2.17.1
+2.39.1
 
