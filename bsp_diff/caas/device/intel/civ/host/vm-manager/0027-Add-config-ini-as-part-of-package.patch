@@ -1,4 +1,4 @@
-From c96926989949c7cf0e98dd687d5f6071cdf8bbbf Mon Sep 17 00:00:00 2001
+From 609abd505f52bf39fd86facbfc588881ff428f2c Mon Sep 17 00:00:00 2001
 From: "Suresh, Prashanth" <prashanth.suresh@intel.com>
 Date: Tue, 12 Jul 2022 09:33:22 +0530
 Subject: [PATCH] Add config ini as part of package.
@@ -7,15 +7,10 @@ Add ini file as part of config and update paths.
 
 Tracked-On:
 Signed-off-by: Suresh, Prashanth <prashanth.suresh@intel.com>
----
- scripts/setup_civ_ini.sh | 44 ++++++++++++++++++++++++++++++++++++++++
- scripts/setup_host.sh    |  9 ++++++++
- 2 files changed, 53 insertions(+)
- create mode 100755 scripts/setup_civ_ini.sh
 
 diff --git a/scripts/setup_civ_ini.sh b/scripts/setup_civ_ini.sh
 new file mode 100755
-index 0000000..4409637
+index 0000000..aab7697
 --- /dev/null
 +++ b/scripts/setup_civ_ini.sh
 @@ -0,0 +1,44 @@
@@ -64,10 +59,10 @@ index 0000000..4409637
 +setup_civ_ini
 +
 diff --git a/scripts/setup_host.sh b/scripts/setup_host.sh
-index 454a2a2..d5acf97 100755
+index ad696fa..3a29e0d 100755
 --- a/scripts/setup_host.sh
 +++ b/scripts/setup_host.sh
-@@ -542,6 +542,13 @@ function parse_arg() {
+@@ -585,6 +585,10 @@ function parse_arg() {
      done
  }
  
@@ -75,21 +70,17 @@ index 454a2a2..d5acf97 100755
 +        $CIV_WORK_DIR/scripts/setup_civ_ini.sh
 +}
 +
-+function create_aaf_dir() {
-+	mkdir -p $CIV_WORK_DIR/scripts/aaf
-+}
- 
- #-------------    main processes    -------------
- 
-@@ -561,6 +568,8 @@ ubu_enable_host_gvt
- ubu_update_fw
+ function create_aaf_dir() {
+         mkdir -p $CIV_WORK_DIR/scripts/aaf
+ }
+@@ -609,6 +613,7 @@ ubu_update_fw
  
  install_vm_manager
-+create_aaf_dir
+ create_aaf_dir
 +setup_civ_ini
  
  prepare_required_scripts
  ubu_install_swtpm
 -- 
-2.37.1
+2.39.1
 

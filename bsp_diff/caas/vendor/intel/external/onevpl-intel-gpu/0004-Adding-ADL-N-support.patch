@@ -1,4 +1,4 @@
-From 04b4fd8b6bf340bf380fa0765d439492efe17a05 Mon Sep 17 00:00:00 2001
+From ee768be22b02984a70312a938157af08633e71bc Mon Sep 17 00:00:00 2001
 From: kalle <kalyan.alle@intel.com>
 Date: Wed, 10 Aug 2022 23:33:12 +0530
 Subject: [PATCH] Adding ADL-N support.
@@ -8,19 +8,6 @@ Adding support for ADL-N
 Tracked-On: OAM-103486
 Signed-off-by: Alle, Kalyan <kalyan.alle@intel.com>
 Change-Id: I322dc883510ce75b9e894389caaa6a2affea26c4
-
----
- .../include/cmrt_cross_platform.h             |  1 +
- .../h264/include/mfx_h264_encode_hw_utils.h   |  2 +-
- .../encode_hw/h264/src/mfx_h264_encode_cm.cpp |  1 +
- .../shared/src/mfx_h264_enc_common_hw.cpp     |  2 +-
- _studio/mfx_lib/vpp/src/mfx_vpp_hw.cpp        |  2 ++
- _studio/shared/asc/src/asc.cpp                |  1 +
- _studio/shared/include/mfxstructures-int.h    | 24 ++++++++++++++++++-
- _studio/shared/src/cm_mem_copy.cpp            |  1 +
- _studio/shared/src/libmfx_core.cpp            |  1 +
- api/vpl/mfxcommon.h                           |  1 +
- 10 files changed, 33 insertions(+), 3 deletions(-)
 
 diff --git a/_studio/mfx_lib/cmrt_cross_platform/include/cmrt_cross_platform.h b/_studio/mfx_lib/cmrt_cross_platform/include/cmrt_cross_platform.h
 index fc5c3e2..b339760 100644
@@ -105,7 +92,7 @@ index 2a39ba2..80bd3ae 100644
          break;
      default:
 diff --git a/_studio/shared/include/mfxstructures-int.h b/_studio/shared/include/mfxstructures-int.h
-index 07ff71b..33cc609 100755
+index ec7b5c2..dffb317 100755
 --- a/_studio/shared/include/mfxstructures-int.h
 +++ b/_studio/shared/include/mfxstructures-int.h
 @@ -79,6 +79,8 @@ enum eMFXHWType
@@ -117,16 +104,22 @@ index 07ff71b..33cc609 100755
  
  };
  
-@@ -455,7 +457,27 @@ typedef struct {
+@@ -455,6 +457,11 @@ typedef struct {
      { 0x46C2, MFX_HW_ADL_P, MFX_GT2 },//ADL-P
      { 0x46C3, MFX_HW_ADL_P, MFX_GT2 },//ADL-P
  
--
 +    /* ADL-N */
 +    { 0x46D0, MFX_HW_ADL_N, MFX_GT1 },//ADL-N
 +    { 0x46D1, MFX_HW_ADL_N, MFX_GT1 },//ADL-N
 +    { 0x46D2, MFX_HW_ADL_N, MFX_GT1 },//ADL-N
-+    
++
+     /*RPL-P*/
+     { 0xA7A0, MFX_HW_ADL_P, MFX_GT2 },//RPL-P
+     { 0xA720, MFX_HW_ADL_P, MFX_GT2 },//RPL-P
+@@ -463,6 +470,22 @@ typedef struct {
+     { 0xA721, MFX_HW_ADL_P, MFX_GT2 },//RPL-P
+     { 0xA7A9, MFX_HW_ADL_P, MFX_GT2 },//RPL-P
+ 
 +    /* RPL-S */
 +    { 0xA780, MFX_HW_ADL_S, MFX_GT1 },//RPL-S
 +    { 0xA781, MFX_HW_ADL_S, MFX_GT1 },//RPL-S
@@ -183,5 +176,5 @@ index 3845a53..3454ca4 100644
  };
  
 -- 
-2.17.1
+2.39.1
 
