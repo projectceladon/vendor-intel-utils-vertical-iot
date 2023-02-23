@@ -1,0 +1,41 @@
+From 6a103e0f3599e12f07f00da8c88c2f0c6a706642 Mon Sep 17 00:00:00 2001
+From: gollarx <ratnakumarix.golla@intel.com>
+Date: Thu, 23 Feb 2023 15:09:29 +0530
+Subject: [PATCH] Resolve the profile level issue due to FrameRate
+ configuration in encoder
+
+Media TC: testProfileAvcBaselineLevel1 is failed with incorrect level
+error due to FrameRateExtN is not configured with the TC config value.
+
+Remove the else condition from the kParamIndexFrameRate switch case as
+every valid framerate is considering as failure case and FrameRateExtN
+is not getting configuring with the TC configration.
+
+Tracked-On: OAM-105719
+Signed-off-by: gollarx <ratnakumarix.golla@intel.com>
+---
+ c2_components/src/mfx_c2_encoder_component.cpp | 6 +-----
+ 1 file changed, 1 insertion(+), 5 deletions(-)
+
+diff --git a/c2_components/src/mfx_c2_encoder_component.cpp b/c2_components/src/mfx_c2_encoder_component.cpp
+index 08f0962..3d22960 100755
+--- a/c2_components/src/mfx_c2_encoder_component.cpp
++++ b/c2_components/src/mfx_c2_encoder_component.cpp
+@@ -1709,13 +1709,9 @@ void MfxC2EncoderComponent::DoUpdateMfxParam(const std::vector<C2Param*> &params
+                 if (m_encoderType == ENCODER_H264 && framerate_value > MFX_MAX_H264_FRAMERATE) {
+                     framerate_value = MFX_MAX_H264_FRAMERATE;
+                 }
+-                else if (m_encoderType == ENCODER_H265 && framerate_value > MFX_MAX_H265_FRAMERATE) {
++                if (m_encoderType == ENCODER_H265 && framerate_value > MFX_MAX_H265_FRAMERATE) {
+                     framerate_value = MFX_MAX_H265_FRAMERATE;
+                 }
+-                else {
+-                    failures->push_back(MakeC2SettingResult(C2ParamField(param), C2SettingResult::BAD_TYPE));
+-                    break;
+-                }
+ 
+                 m_mfxVideoParamsConfig.mfx.FrameInfo.FrameRateExtN = uint64_t(framerate_value * 1000); // keep 3 sign after dot
+                 m_mfxVideoParamsConfig.mfx.FrameInfo.FrameRateExtD = 1000;
+-- 
+2.39.2
+
