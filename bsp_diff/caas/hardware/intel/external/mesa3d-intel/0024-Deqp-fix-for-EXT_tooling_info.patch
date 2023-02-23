@@ -1,0 +1,39 @@
+From f98277a67af5823b003d90a30866fd70107d6a6c Mon Sep 17 00:00:00 2001
+From: vdanix <vishwanathx.dani@intel.com>
+Date: Fri, 24 Feb 2023 13:31:10 +0530
+Subject: [PATCH] Deqp fix for EXT_tooling_info
+
+Fixes CTS below failures, with implementing EXT_tooling_info
+
+1. dEQP-VK.api.tooling_info#validate_getter
+2. dEQP-VK.api.tooling_info#validate_tools_properties
+
+Taken fix from below reference
+(commit id: dc8c77cc8fc12467e9d31ee23f11ce3680a1f02f)
+https://gitlab.freedesktop.org/mesa/mesa/-/merge_requests/15491
+
+Tracked-On: OAM-106550
+Signed-off-by: vdanix <vishwanathx.dani@intel.com>
+
+diff --git a/src/vulkan/runtime/vk_physical_device.c b/src/vulkan/runtime/vk_physical_device.c
+index e6504c88ec0..ce247a3f1f0 100644
+--- a/src/vulkan/runtime/vk_physical_device.c
++++ b/src/vulkan/runtime/vk_physical_device.c
+@@ -252,3 +252,14 @@ vk_common_GetPhysicalDeviceSparseImageFormatProperties(VkPhysicalDevice physical
+ 
+    STACK_ARRAY_FINISH(props2);
+ }
++
++/* VK_EXT_tooling_info */
++VKAPI_ATTR VkResult VKAPI_CALL
++vk_common_GetPhysicalDeviceToolProperties(VkPhysicalDevice physicalDevice,
++                                          uint32_t *pToolCount,
++                                          VkPhysicalDeviceToolProperties *pToolProperties)
++{
++   VK_OUTARRAY_MAKE_TYPED(VkPhysicalDeviceToolProperties, out, pToolProperties, pToolCount);
++
++   return vk_outarray_status(&out);
++}
+-- 
+2.39.2
+
