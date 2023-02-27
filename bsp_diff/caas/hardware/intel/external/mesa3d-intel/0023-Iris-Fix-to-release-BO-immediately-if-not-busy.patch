@@ -1,0 +1,41 @@
+From 32f2f6da41443fefaeb8705bfdc243848d6dc5e6 Mon Sep 17 00:00:00 2001
+From: gollarx <ratnakumarix.golla@intel.com>
+Date: Mon, 27 Feb 2023 22:17:48 +0530
+Subject: [PATCH] Iris: Fix to release BO immediately if not busy
+
+Currently the iris driver is adding the buffer objects to zombie list
+without checking if it is busy or not. It checks for it after 1 second
+which adds delay to buffer release.
+
+This fix checks if the bo is busy or not before adding it to zombie
+list.
+
+Without this fix, the applications expecting immediate buffer release
+would fail.
+
+The fix is identified while debugging below cts tests:
+android.graphics.cts.BitmapTest#testDrawingHardwareBitmapNotLeaking
+android.graphics.cts.BitmapTest#testHardwareBitmapNotLeaking
+
+Tracked-On: OAM-105275
+Signed-off-by: gollarx <ratnakumarix.golla@intel.com>
+---
+ src/gallium/drivers/iris/iris_bufmgr.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/src/gallium/drivers/iris/iris_bufmgr.c b/src/gallium/drivers/iris/iris_bufmgr.c
+index 34bb14be754..9e5da74d635 100644
+--- a/src/gallium/drivers/iris/iris_bufmgr.c
++++ b/src/gallium/drivers/iris/iris_bufmgr.c
+@@ -1354,6 +1354,8 @@ bo_free(struct iris_bo *bo)
+    if (!bo->real.userptr && bo->real.map)
+       bo_unmap(bo);
+ 
++   iris_bo_busy(bo);
++
+    if (bo->idle) {
+       bo_close(bo);
+    } else {
+-- 
+2.39.2
+
