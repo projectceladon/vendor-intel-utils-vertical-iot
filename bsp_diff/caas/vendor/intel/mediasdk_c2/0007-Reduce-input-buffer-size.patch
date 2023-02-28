@@ -1,0 +1,48 @@
+From 7a67eb5dfb436cd47d8e3c92c9703494eb29a06d Mon Sep 17 00:00:00 2001
+From: zhangyichix <yichix.zhang@intel.com>
+Date: Mon, 16 Jan 2023 10:21:28 +0800
+Subject: [PATCH] Reduce input buffer size
+
+related issue: OAM-105136
+
+When the bitstream header is incomplete, component will cache a lot
+bitstream to find complete header info. In order to avoid excessive
+memory consumption, we reduce minimum input buffer size from 8M to 2M.
+
+Tracked-On: OAM-105477
+Signed-off-by: zhangyichix <yichix.zhang@intel.com>
+---
+ c2_components/src/mfx_c2_decoder_component.cpp | 2 +-
+ c2_utils/include/mfx_defs.h                    | 3 +++
+ 2 files changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/c2_components/src/mfx_c2_decoder_component.cpp b/c2_components/src/mfx_c2_decoder_component.cpp
+index 0c54e51..bc740eb 100755
+--- a/c2_components/src/mfx_c2_decoder_component.cpp
++++ b/c2_components/src/mfx_c2_decoder_component.cpp
+@@ -42,7 +42,7 @@ using namespace android;
+ constexpr uint32_t MIN_W = 176;
+ constexpr uint32_t MIN_H = 144;
+ constexpr c2_nsecs_t TIMEOUT_NS = MFX_SECOND_NS;
+-constexpr uint64_t kMinInputBufferSize = 2 * WIDTH_2K * HEIGHT_2K;
++constexpr uint64_t kMinInputBufferSize = 2 * WIDTH_1K * HEIGHT_1K;
+ constexpr uint64_t kDefaultConsumerUsage =
+     (GRALLOC_USAGE_HW_TEXTURE | GRALLOC_USAGE_HW_COMPOSER);
+ 
+diff --git a/c2_utils/include/mfx_defs.h b/c2_utils/include/mfx_defs.h
+index 0743513..46bdb01 100755
+--- a/c2_utils/include/mfx_defs.h
++++ b/c2_utils/include/mfx_defs.h
+@@ -64,6 +64,9 @@ extern mfxVersion g_required_mfx_version;
+ #define WIDTH_2K 2048
+ #define HEIGHT_2K 2048
+ 
++#define WIDTH_1K 1024
++#define HEIGHT_1K 1024
++
+ #define MIN_WIDTH_4K 3840
+ #define MIN_HEIGHT_4K 2160
+ #define MIN_WIDTH_8K 7680
+-- 
+2.39.0
+
