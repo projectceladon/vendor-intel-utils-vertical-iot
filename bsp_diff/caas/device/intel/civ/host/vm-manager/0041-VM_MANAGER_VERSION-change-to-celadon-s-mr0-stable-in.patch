@@ -1,0 +1,29 @@
+From de36dee86a43e88e07319807091fa5510adb5623 Mon Sep 17 00:00:00 2001
+From: vdanix <vishwanathx.dani@intel.com>
+Date: Wed, 1 Mar 2023 13:32:06 +0530
+Subject: [PATCH] VM_MANAGER_VERSION change to celadon/s/mr0/stable in
+ setup_host.sh
+
+Fix for s/w to h/w codec in vertical build.
+
+Tracked-On: OAM-106631
+---
+ scripts/setup_host.sh | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/scripts/setup_host.sh b/scripts/setup_host.sh
+index 3a29e0d..e338cb6 100755
+--- a/scripts/setup_host.sh
++++ b/scripts/setup_host.sh
+@@ -17,7 +17,7 @@ QEMU_CACHE_DIR="$HOME/.cache/civ/qemu"
+ CIV_WORK_DIR=$(pwd)
+ CIV_GOP_DIR=$CIV_WORK_DIR/GOP_PKG
+ CIV_VERTICAl_DIR=$CIV_WORK_DIR/vertical_patches/host
+-VM_MANAGER_VERSION=v0.7.1
++VM_MANAGER_VERSION=celadon/s/mr0/stable
+ 
+ #---------      Functions    -------------------
+ function error() {
+-- 
+2.39.2
+
