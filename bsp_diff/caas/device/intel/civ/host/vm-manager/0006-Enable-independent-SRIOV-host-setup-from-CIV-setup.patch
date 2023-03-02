@@ -1,6 +1,6 @@
-From 158525e21f8188a66ca847a1bd31823164cdf16e Mon Sep 17 00:00:00 2001
+From c5e510ccbfbfaedeffc97c8938d8c8b8accabe1a Mon Sep 17 00:00:00 2001
 From: "Suresh, Prashanth" <prashanth.suresh@intel.com>
-Date: Fri, 27 May 2022 15:14:17 +0530
+Date: Wed, 1 Mar 2023 16:45:02 +0530
 Subject: [PATCH] Enable independent SRIOV host setup from CIV setup
 
 Changes:
@@ -15,10 +15,10 @@ Signed-off-by: Suresh, Prashanth <prashanth.suresh@intel.com>
  1 file changed, 28 insertions(+), 58 deletions(-)
 
 diff --git a/scripts/setup_host.sh b/scripts/setup_host.sh
-index 59ae955..ffcedff 100755
+index 0f57e23..08e50bd 100755
 --- a/scripts/setup_host.sh
 +++ b/scripts/setup_host.sh
-@@ -34,43 +34,6 @@ function ubu_changes_require(){
+@@ -39,43 +39,6 @@ function ubu_changes_require(){
      sudo apt install -y libglib2.0-dev libncurses-dev libuuid1 uuid-dev libjson-c-dev
  }
  
@@ -62,7 +62,7 @@ index 59ae955..ffcedff 100755
  function ubu_install_qemu_gvt(){
      sudo apt purge -y "^qemu"
      sudo apt autoremove -y
-@@ -95,6 +58,14 @@ function ubu_install_qemu_gvt(){
+@@ -107,6 +70,14 @@ function ubu_install_qemu_gvt(){
          for i in $CIV_GOP_DIR/qemu/*.patch; do patch -p1 < $i; done
      fi
  
@@ -77,20 +77,20 @@ index 59ae955..ffcedff 100755
      vertical_qemu_patch_num=$(ls $CIV_VERTICAl_DIR/qemu/*.patch 2> /dev/null | wc -l)
      if [ "$vertical_qemu_patch_num" != "0" ]; then
          for i in $CIV_VERTICAl_DIR/qemu/*.patch; do
-@@ -213,25 +184,6 @@ function ubu_enable_host_gvt(){
+@@ -221,25 +192,6 @@ function ubu_enable_host_gvt(){
      fi
  }
  
 -function ubu_enable_host_sriov(){
 -    if [[ ! `cat /etc/default/grub` =~ "i915.enable_guc=0x7 udmabuf.list_limit=8192" ]]; then
--        read -p "The grub entry in '/etc/default/grub' will be updated for enabling SRIOV, do you want to continue?     [Y/n]" res
+-        read -p "Do you want to update the grub entry in '/etc/default/grub' for enabling SRIOV? [Y/n]" res
 -        if [ x$res = xn ]; then
 -            return
 -        fi
 -        if [[ ! `cat /etc/default/grub` =~ "intel_iommu=on i915.force_probe=*" ]]; then
 -            sed -i "s/GRUB_CMDLINE_LINUX=\"/GRUB_CMDLINE_LINUX=\"intel_iommu=on i915.force_probe=* /g" /etc/default/grub
 -        fi
--        sed -i "s/GRUB_CMDLINE_LINUX=\"/GRUB_CMDLINE_LINUX=\"i915.enable_guc=0x7 udmabuf.list_limit=8192 /g" /etc/default/grub
+-	sed -i "s/GRUB_CMDLINE_LINUX=\"/GRUB_CMDLINE_LINUX=\"i915.enable_guc=0x7 udmabuf.list_limit=8192  /g" /etc/default/grub
 -        update-grub
 -
 -        echo -e "\nkvmgt\nvfio-iommu-type1\nvfio-mdev\n" >> /etc/initramfs-tools/modules
@@ -101,9 +101,9 @@ index 59ae955..ffcedff 100755
 -}
 -
  function ubu_update_fw(){
-     FW_REL="linux-firmware-20220310"
-     GUC_REL="70.0.3"
-@@ -286,6 +238,25 @@ function check_kernel_version() {
+     FW_REL="linux-firmware-20221109"
+
+@@ -303,6 +255,25 @@ function check_kernel_version() {
      fi
  }
  
@@ -129,7 +129,7 @@ index 59ae955..ffcedff 100755
  function ask_reboot(){
      if [ $reboot_required -eq 1 ];then
          read -p "Reboot is required, do you want to reboot it NOW? [y/N]" res
-@@ -581,13 +552,12 @@ parse_arg "$@"
+@@ -573,14 +544,13 @@ parse_arg "$@"
  check_os
  check_network
  check_kernel_version
@@ -138,6 +138,7 @@ index 59ae955..ffcedff 100755
  ubu_changes_require
 -ubu_install_sriov
  ubu_install_qemu_gvt
+ ubu_install_virtiofsd
  ubu_build_ovmf_gvt
  ubu_enable_host_gvt
 -ubu_enable_host_sriov
@@ -145,5 +146,5 @@ index 59ae955..ffcedff 100755
  
  install_vm_manager
 -- 
-2.36.1
+2.39.2
 

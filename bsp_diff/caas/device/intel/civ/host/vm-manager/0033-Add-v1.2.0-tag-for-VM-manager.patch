@@ -1,0 +1,66 @@
+From 8a2b699af533c2d8fb395b1b5e387932d51162bb Mon Sep 17 00:00:00 2001
+From: "Suresh, Prashanth" <prashanth.suresh@intel.com>
+Date: Thu, 2 Mar 2023 13:39:36 +0530
+Subject: [PATCH] Add v1.2.0 tag for VM-manager
+
+Add tag for VM manager so there is not issue later with incompatible versions.
+
+Tracked-On:
+Signed-off-by: Suresh, Prashanth <prashanth.suresh@intel.com>
+---
+ scripts/setup_host.sh | 29 ++++++++++++++++++++++-------
+ 1 file changed, 22 insertions(+), 7 deletions(-)
+
+diff --git a/scripts/setup_host.sh b/scripts/setup_host.sh
+index 24dbb6d..63190c0 100755
+--- a/scripts/setup_host.sh
++++ b/scripts/setup_host.sh
+@@ -18,6 +18,7 @@ CIV_WORK_DIR=$(pwd)
+ CIV_GOP_DIR=$CIV_WORK_DIR/GOP_PKG
+ CIV_VERTICAl_DIR=$CIV_WORK_DIR/vertical_patches/host
+ CIV_VIRTIOFSD_REL="virtiofsd-v1.4.0"
++VM_MANAGER_VERSION=v1.2.0
+
+ #---------      Functions    -------------------
+ function error() {
+@@ -160,16 +161,30 @@ function ubu_build_ovmf_gvt(){
+     cd $CIV_WORK_DIR
+ }
+
+-function install_vm_manager() {
+-    if [[ ! -z ${VM_MANAGER_VERSION} ]]; then
+-	echo "Skip vm-manager installation. It will use already installed packages."
+-        return 0
++function install_vm_manager_src() {
++    #Try to build from source code
++    sudo apt-get install --yes make gcc
++    if [ ! -z $VM_MANAGER_VERSION ]; then
++        git clone -b $VM_MANAGER_VERSION --single-branch https://github.com/projectceladon/vm_manager.git
++    else
++        git clone https://github.com/projectceladon/vm_manager.git || return -1
+     fi
+-    local SCRIPTS_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+-    sudo dpkg -i $SCRIPTS_DIR/vm-manager*.deb
++    cd vm_manager/
++    mkdir build && cd build
++    cmake -DCMAKE_BUILD_TYPE=Release ..
++    cmake --build . --config Release
++    sudo cp src/vm-manager /usr/bin/
++    cd ../..
++    rm -rf vm_manager/
++}
++
++function install_vm_manager() {
++    sudo apt-get update
++    sudo apt-get install --yes libglib2.0-dev libncurses-dev libuuid1 uuid-dev libjson-c-dev wget lsb-release git
++    install_vm_manager_src
+     if [ "$?" -ne 0 ]; then
+         echo "Failed to install vm-manager!"
+-        echo "Please download and install mannually from: https://github.com/projectceladon/vm_manager/releases/"
++        echo "Please download and install mannually from: https://github.com/projectceladon/vm_manager/releases/latest"
+     fi
+ }
+
+--
+2.39.2
+ 
