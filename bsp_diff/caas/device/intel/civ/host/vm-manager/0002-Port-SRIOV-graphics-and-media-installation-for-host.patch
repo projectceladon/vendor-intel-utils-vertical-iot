@@ -1,6 +1,6 @@
-From 1f22100cbb9d688bab9c45bfa6f19a67ff8ef994 Mon Sep 17 00:00:00 2001
-From: Kishan Mochi <kishan.mochi@intel.com>
-Date: Tue, 8 Mar 2022 13:06:23 +0530
+From 4ff4ce669d6f2ba78799d7b7c024f61e5fb269fc Mon Sep 17 00:00:00 2001
+From: "Suresh, Prashanth" <prashanth.suresh@intel.com>
+Date: Wed, 1 Mar 2023 16:28:49 +0530
 Subject: [PATCH] Port SRIOV graphics and media installation for host
 
 Changes:
@@ -9,11 +9,18 @@ Changes:
 - improved grub update logic
 - removed old mesa installation patch
 
+Tracked-On:
+---
+ scripts/setup_host.sh       |  57 ++++++++--
+ scripts/sriov_setup_host.sh | 214 ++++++++++++++++++++++++++++++++++++
+ 2 files changed, 261 insertions(+), 10 deletions(-)
+ create mode 100644 scripts/sriov_setup_host.sh
+
 diff --git a/scripts/setup_host.sh b/scripts/setup_host.sh
-index f6043e5..04ae987 100755
+index 48330df..0f57e23 100755
 --- a/scripts/setup_host.sh
 +++ b/scripts/setup_host.sh
-@@ -34,6 +34,43 @@ function ubu_changes_require(){
+@@ -39,6 +39,43 @@ function ubu_changes_require(){
      sudo apt install -y libglib2.0-dev libncurses-dev libuuid1 uuid-dev libjson-c-dev
  }
  
@@ -57,41 +64,38 @@ index f6043e5..04ae987 100755
  function ubu_install_qemu_gvt(){
      sudo apt purge -y "^qemu"
      sudo apt autoremove -y
-@@ -152,12 +189,15 @@ function install_vm_manager() {
+@@ -166,12 +203,15 @@ function install_vm_manager() {
  }
  
  function ubu_enable_host_gvt(){
 -    if [[ ! `cat /etc/default/grub` =~ "i915.enable_gvt=1 intel_iommu=on i915.force_probe=*" ]]; then
 +    if [[ ! `cat /etc/default/grub` =~ "i915.enable_gvt=1" ]]; then
-         read -p "The grub entry in '/etc/default/grub' will be updated for enabling GVT-g and GVT-d, do you want to continue? [Y/n]" res
+         read -p "Do you want to update the grub entry in '/etc/default/grub' for enabling GVT-g and GVT-d? [Y/n]" res
          if [ x$res = xn ]; then
--            exit 0
-+            return
-+        fi
-+        if [[ ! `cat /etc/default/grub` =~ "intel_iommu=on i915.force_probe=*" ]]; then
-+            sed -i "s/GRUB_CMDLINE_LINUX=\"/GRUB_CMDLINE_LINUX=\"intel_iommu=on i915.force_probe=* /g" /etc/default/grub
+             return
          fi
 -        sed -i "s/GRUB_CMDLINE_LINUX=\"/GRUB_CMDLINE_LINUX=\"i915.enable_gvt=1 intel_iommu=on i915.force_probe=*/g" /etc/default/grub
-+        sed -i "s/GRUB_CMDLINE_LINUX=\"/GRUB_CMDLINE_LINUX=\"i915.enable_gvt=1 /g" /etc/default/grub
++        if [[ ! `cat /etc/default/grub` =~ "intel_iommu=on i915.force_probe=*" ]]; then
++            sed -i "s/GRUB_CMDLINE_LINUX=\"/GRUB_CMDLINE_LINUX=\"intel_iommu=on i915.force_probe=* /g" /etc/default/grub
++        fi
++	sed -i "s/GRUB_CMDLINE_LINUX=\"/GRUB_CMDLINE_LINUX=\"i915.enable_gvt=1 /g" /etc/default/grub
          update-grub
  
          echo -e "\nkvmgt\nvfio-iommu-type1\nvfio-mdev\n" >> /etc/initramfs-tools/modules
-@@ -168,24 +208,21 @@ function ubu_enable_host_gvt(){
+@@ -182,24 +222,21 @@ function ubu_enable_host_gvt(){
  }
  
  function ubu_enable_host_sriov(){
 -   if [[ ! `cat /etc/default/grub` =~ "i915.enable_guc=0x7" ]]; then
 +    if [[ ! `cat /etc/default/grub` =~ "i915.enable_guc=0x7 udmabuf.list_limit=8192" ]]; then
-         read -p "The grub entry in '/etc/default/grub' will be updated for enabling SRIOV, do you want to continue?     [Y/n]" res
+         read -p "Do you want to update the grub entry in '/etc/default/grub' for enabling SRIOV? [Y/n]" res
          if [ x$res = xn ]; then
--            exit 0
-+            return
-+        fi
+             return
+         fi
 +        if [[ ! `cat /etc/default/grub` =~ "intel_iommu=on i915.force_probe=*" ]]; then
 +            sed -i "s/GRUB_CMDLINE_LINUX=\"/GRUB_CMDLINE_LINUX=\"intel_iommu=on i915.force_probe=* /g" /etc/default/grub
-         fi
--	sed -i "s/GRUB_CMDLINE_LINUX=\"/GRUB_CMDLINE_LINUX=\"i915.enable_guc=0x7 udmabuf.list_limit=8192  /g" /etc/default/grub
-+        sed -i "s/GRUB_CMDLINE_LINUX=\"/GRUB_CMDLINE_LINUX=\"i915.enable_guc=0x7 udmabuf.list_limit=8192 /g" /etc/default/grub
++        fi
+       sed -i "s/GRUB_CMDLINE_LINUX=\"/GRUB_CMDLINE_LINUX=\"i915.enable_guc=0x7 udmabuf.list_limit=8192  /g" /etc/default/grub
          update-grub
  
          echo -e "\nkvmgt\nvfio-iommu-type1\nvfio-mdev\n" >> /etc/initramfs-tools/modules
@@ -107,14 +111,15 @@ index f6043e5..04ae987 100755
      fi
  }
  
-@@ -494,6 +531,7 @@ check_network
+@@ -538,7 +575,7 @@ check_network
  check_kernel_version
  
  ubu_changes_require
+-
 +ubu_install_sriov
  ubu_install_qemu_gvt
+ ubu_install_virtiofsd
  ubu_build_ovmf_gvt
- ubu_enable_host_gvt
 diff --git a/scripts/sriov_setup_host.sh b/scripts/sriov_setup_host.sh
 new file mode 100644
 index 0000000..8be0eaa
@@ -336,5 +341,5 @@ index 0000000..8be0eaa
 +sudo dpkg -i *.deb
 +cd $WrkDir
 -- 
-2.35.1
+2.39.2
 
