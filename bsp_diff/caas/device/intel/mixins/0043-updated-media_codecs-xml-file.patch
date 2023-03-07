@@ -1,6 +1,6 @@
-From 327493f23c5f25e2599b4107fe9e09abb3dea60e Mon Sep 17 00:00:00 2001
-From: "Kothapeta, BikshapathiX" <bikshapathix.kothapeta@intel.com>
-Date: Thu, 2 Feb 2023 22:42:48 +0530
+From a887e9b2cafebae43aabbb7daf10331bde59773b Mon Sep 17 00:00:00 2001
+From: "Suresh, Prashanth" <prashanth.suresh@intel.com>
+Date: Fri, 3 Mar 2023 14:01:37 +0530
 Subject: [PATCH] update media_codecs xml as per MediaSDK_C2
 
 update media_codecs_intel_c2_video.xml as per below PR
@@ -8,9 +8,12 @@ https://github.com/projectceladon/MediaSDK_C2/pull/70
 
 Tracked-On:
 Signed-off-by: Kothapeta, BikshapathiX <bikshapathix.kothapeta@intel.com>
+---
+ .../true/media_codecs_intel_c2_video.xml      | 58 ++++++++++---------
+ 1 file changed, 32 insertions(+), 26 deletions(-)
 
 diff --git a/groups/codec2/true/media_codecs_intel_c2_video.xml b/groups/codec2/true/media_codecs_intel_c2_video.xml
-index 713a417..415f237 100644
+index af080dd..497d244 100644
 --- a/groups/codec2/true/media_codecs_intel_c2_video.xml
 +++ b/groups/codec2/true/media_codecs_intel_c2_video.xml
 @@ -18,64 +18,70 @@
@@ -132,7 +135,7 @@ index 713a417..415f237 100644
              <!-- profiles and levels:  ProfileBaseline : Level41 -->
              <Limit name="size" min="176x144" max="4096x4096" />
              <Limit name="alignment" value="2x2" />
-@@ -116,18 +122,18 @@ and updated to vendor media codecs.
+@@ -118,18 +124,18 @@ and updated to vendor media codecs.
  {{/hw_ve_h264}}
  
  {{#hw_ve_h265}}
@@ -154,7 +157,7 @@ index 713a417..415f237 100644
              <Limit name="size" min="128x96" max="8192x8192" />
              <Limit name="alignment" value="2x2" />
              <Limit name="block-size" value="16x16" />
-@@ -135,7 +141,7 @@ and updated to vendor media codecs.
+@@ -137,7 +143,7 @@ and updated to vendor media codecs.
              <Limit name="blocks-per-second" range="1-972000" />
              <Limit name="bitrate" range="1-40000000" />
              <Limit name="performance-point-3840x2160" value="30" />
@@ -163,78 +166,6 @@ index 713a417..415f237 100644
  {{/hw_ve_vp9}}
      </Encoders>
  </Included>
-diff --git a/groups/codecs/configurable/media_codecs_gen12.xml b/groups/codecs/configurable/media_codecs_gen12.xml
-index c176ee8..eecd437 100644
---- a/groups/codecs/configurable/media_codecs_gen12.xml
-+++ b/groups/codecs/configurable/media_codecs_gen12.xml
-@@ -195,9 +195,9 @@ Only the three quirks included above are recognized at this point:
-             <Limit name="size" min="64x64" max="4096x4096" />
-             <Limit name="alignment" value="2x2" />
-             <Limit name="block-size" value="16x16" />
--            <Limit name="block-count" range="1-32768" /> <!-- max 4096x2048 equivalent -->
-+            <Limit name="block-count" range="1-65536" /> <!-- max 4096x4096 equivalent -->
-             <Limit name="blocks-per-second" range="1-1966080" />
--            <Limit name="bitrate" range="1-48000000" />
-+            <Limit name="bitrate" range="1-40000000" />
-             <Limit name="performance-point-3840x2160" value="30" />
-             <Feature name="adaptive-playback" />
-         </MediaCodec>
-@@ -207,9 +207,9 @@ Only the three quirks included above are recognized at this point:
-             <Limit name="size" min="64x64" max="8192x8192" />
-             <Limit name="alignment" value="2x2" />
-             <Limit name="block-size" value="8x8" />
--            <Limit name="block-count" range="1-196608" /> <!-- max 4096x3072 -->
--            <Limit name="blocks-per-second" range="1-2000000" />
--            <Limit name="bitrate" range="1-10000000" />
-+            <Limit name="block-count" range="1-1048576" /> <!-- max 8192x8192 -->
-+            <Limit name="blocks-per-second" range="1-31457280" />
-+            <Limit name="bitrate" range="1-40000000" />
-             <Limit name="performance-point-3840x2160" value="30" />
-             <Feature name="adaptive-playback" />
-         </MediaCodec>
-@@ -218,8 +218,8 @@ Only the three quirks included above are recognized at this point:
-             <Limit name="size" min="64x64" max="8192x8192" />
-             <Limit name="alignment" value="2x2" />
-             <Limit name="block-size" value="16x16" />
--            <Limit name="block-count" range="1-16384" />
--            <Limit name="blocks-per-second" range="1-500000" />
-+            <Limit name="block-count" range="1-262144" />
-+            <Limit name="blocks-per-second" range="1-7864320" />
-             <Limit name="bitrate" range="1-40000000" />
-             <Limit name="performance-point-3840x2160" value="30" />
-             <Feature name="adaptive-playback" />
-@@ -229,12 +229,12 @@ Only the three quirks included above are recognized at this point:
-             <Limit name="size" min="64x64" max="4096x4096" />
-             <Limit name="alignment" value="2x2" />
-             <Limit name="block-size" value="16x16" />
--            <Limit name="block-count" range="1-16384" />
-+            <Limit name="block-count" range="1-131072" />
-             <Limit name="blocks-per-second" range="1-500000" />
-             <Limit name="bitrate" range="1-40000000" />
-             <Limit name="performance-point-3840x2160" value="30" />
-             <Feature name="adaptive-playback" />
--        </MediaCodec>
-+        </MediaCodec>	
- 
-         <MediaCodec name="c2.intel.mp2.decoder" type="video/mpeg2">
-             <Limit name="size" min="64x64" max="2048x2048" />
-@@ -256,7 +256,7 @@ Only the three quirks included above are recognized at this point:
-             <Limit name="bitrate" range="1-40000000" />
-             <Limit name="performance-point-3840x2160" value="30" />
-             <Feature name="adaptive-playback" />
--        </MediaCodec>
-+        </MediaCodec>	
- {{/enable_msdk_c2}}
-     </Decoders>
- 
-@@ -303,6 +303,7 @@ Only the three quirks included above are recognized at this point:
- 
- {{#enable_msdk_c2}}
-         <MediaCodec name="c2.intel.avc.encoder" type="video/avc">
-+            <!-- profiles and levels:  ProfileBaseline : Level41 -->
-             <Limit name="size" min="176x144" max="4096x4096" />
-             <Limit name="alignment" value="2x2" />
-             <Limit name="block-size" value="16x16" />
 -- 
-2.39.1
+2.39.2
 

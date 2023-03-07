@@ -1,27 +1,25 @@
-From aa01021d85fca0734e0f8d5f226ee3ba9918bbe8 Mon Sep 17 00:00:00 2001
+From dc0e6602db34f7da79068067f088d9803cab29f4 Mon Sep 17 00:00:00 2001
 From: "Suresh, Prashanth" <prashanth.suresh@intel.com>
-Date: Tue, 20 Sep 2022 11:57:10 +0530
+Date: Thu, 2 Mar 2023 17:45:40 +0530
 Subject: [PATCH] Update scripts for QEMU 7.1
 
 Change:
 - updated path for QEMU 7.1 in scripts
 - updated to use QEMUMonitorProtocol legacy interface
-
-Tracked-On:
 ---
  groups/device-specific/caas/guest_pm_control | 25 +++++++++++++-------
  groups/device-specific/caas/wakeup.py        | 15 ++++++------
  2 files changed, 24 insertions(+), 16 deletions(-)
 
 diff --git a/groups/device-specific/caas/guest_pm_control b/groups/device-specific/caas/guest_pm_control
-index bd9ad52..fdebaf6 100755
+index 2b6ea1a..6c5dab8 100755
 --- a/groups/device-specific/caas/guest_pm_control
 +++ b/groups/device-specific/caas/guest_pm_control
 @@ -22,8 +22,16 @@ import subprocess
  import signal
  from sys import argv,exit
  
--sys.path.append(os.path.join(os.path.dirname(__file__), '../qemu-6.2.0/python'))
+-sys.path.append(os.path.join(os.path.dirname(__file__), '../qemu-7.0.0/python'))
 +sys.path.append(os.path.join(os.path.dirname(__file__), '../qemu-7.1.0/python'))
  from qemu import qmp
 +from qemu.qmp.legacy import (
@@ -70,14 +68,14 @@ index bd9ad52..fdebaf6 100755
          try:
              # Pull the VM shutdown and reboot event from QEMU QMP Server
 diff --git a/groups/device-specific/caas/wakeup.py b/groups/device-specific/caas/wakeup.py
-index 9e8c9e1..cf34287 100755
+index 465fc11..cf34287 100755
 --- a/groups/device-specific/caas/wakeup.py
 +++ b/groups/device-specific/caas/wakeup.py
 @@ -8,22 +8,23 @@ from sys import argv,exit
  
  timeout = 60
  
--sys.path.append(os.path.join(os.path.dirname(__file__), '../qemu-6.2.0/python'))
+-sys.path.append(os.path.join(os.path.dirname(__file__), '../qemu-7.0.0/python'))
 +sys.path.append(os.path.join(os.path.dirname(__file__), '../qemu-7.1.0/python'))
  
  from qemu import qmp
@@ -105,5 +103,5 @@ index 9e8c9e1..cf34287 100755
  
          if time.time() >= timeout + timeout_start:
 -- 
-2.37.3
+2.39.2
 

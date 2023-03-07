@@ -17,9 +17,10 @@ index 15e149c..d09ace5 100644
 --- a/vendor/dumpstate.te
 +++ b/vendor/dumpstate.te
 @@ -4,3 +4,4 @@ dontaudit dumpstate unlabeled:file read;
+ dontaudit dumpstate unlabeled:file read;
  allow dumpstate hal_power_default:binder call;
  allow dumpstate hal_light_default:binder call;
- allow dumpstate gpu_device:dir r_dir_perms;
++allow dumpstate gpu_device:dir r_dir_perms;
 +allow dumpstate gpu_device:dir { search };
 -- 
 2.39.1

@@ -1,6 +1,6 @@
-From 416b72ec4f1dd22713a87c64def4690226bc61a7 Mon Sep 17 00:00:00 2001
-From: vdanix <vishwanathx.dani@intel.com>
-Date: Wed, 23 Nov 2022 15:23:43 +0530
+From be4730d8327d574281359fa83bf13f5a95ec3f39 Mon Sep 17 00:00:00 2001
+From: "Suresh, Prashanth" <prashanth.suresh@intel.com>
+Date: Thu, 2 Mar 2023 18:43:18 +0530
 Subject: [PATCH] Fix for GTS checkGpuProfilingRequirements TC
 
 TC failing Error: API level S must support GPU profiling
@@ -13,19 +13,19 @@ Signed-off-by: vdanix <vishwanathx.dani@intel.com>
  1 file changed, 3 insertions(+)
 
 diff --git a/groups/device-specific/caas/caas.mk b/groups/device-specific/caas/caas.mk
-index 3ad0fc2..373266a 100644
+index 0de11a5..44f8e69 100644
 --- a/groups/device-specific/caas/caas.mk
 +++ b/groups/device-specific/caas/caas.mk
-@@ -65,6 +65,9 @@ PRODUCT_AAPT_PREF_CONFIG := mdpi
- PRODUCT_VENDOR_PROPERTIES += \
-     ro.soc.manufacturer=$(PRODUCT_MANUFACTURER)
+@@ -62,6 +62,9 @@ PRODUCT_LOCALES := en_US en_IN fr_FR it_IT es_ES et_EE de_DE nl_NL cs_CZ pl_PL j
+ PRODUCT_AAPT_CONFIG := normal large mdpi
+ PRODUCT_AAPT_PREF_CONFIG := mdpi
  
 +PRODUCT_VENDOR_PROPERTIES += \
 +    graphics.gpu.profiler.support=true
 +
  PRODUCT_RESTRICT_VENDOR_FILES := false
- ifneq ($(TARGET_BUILD_VARIANT),user)
  PRODUCT_SET_DEBUGFS_RESTRICTIONS := false
+ {{^ota-update}}
 -- 
-2.39.1
+2.39.2
 
