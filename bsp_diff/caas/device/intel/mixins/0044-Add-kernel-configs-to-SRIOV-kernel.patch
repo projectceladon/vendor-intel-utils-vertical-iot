@@ -1,0 +1,94 @@
+From 7180899e312cd77b1ea8527f4dc1e2bab251bc30 Mon Sep 17 00:00:00 2001
+From: "Suresh, Prashanth" <prashanth.suresh@intel.com>
+Date: Wed, 8 Mar 2023 17:36:53 +0530
+Subject: [PATCH] Add kernel configs to SRIOV kernel.
+
+Tracked-On:
+Signed-off-by: Suresh, Prashanth <prashanth.suresh@intel.com>
+---
+ .../config-lts/lts2020-yocto/x86_64_defconfig       | 13 ++++++-------
+ 1 file changed, 6 insertions(+), 7 deletions(-)
+
+diff --git a/groups/kernel/gmin64/config-lts/lts2020-yocto/x86_64_defconfig b/groups/kernel/gmin64/config-lts/lts2020-yocto/x86_64_defconfig
+index c25850d..02ea837 100644
+--- a/groups/kernel/gmin64/config-lts/lts2020-yocto/x86_64_defconfig
++++ b/groups/kernel/gmin64/config-lts/lts2020-yocto/x86_64_defconfig
+@@ -8,8 +8,6 @@ CONFIG_LD_VERSION=0
+ CONFIG_CC_IS_CLANG=y
+ CONFIG_LD_IS_LLD=y
+ CONFIG_CLANG_VERSION=140006
+-CONFIG_AS_IS_LLVM=y
+-CONFIG_AS_VERSION=140006
+ CONFIG_LLD_VERSION=140006
+ CONFIG_CC_HAS_ASM_GOTO=y
+ CONFIG_CC_HAS_ASM_GOTO_OUTPUT=y
+@@ -449,6 +447,9 @@ CONFIG_LEGACY_VSYSCALL_NONE=y
+ CONFIG_HAVE_LIVEPATCH=y
+ # end of Processor type and features
+
++CONFIG_SPECULATION_MITIGATIONS=y
++CONFIG_CPU_IBPB_ENTRY=y
++CONFIG_CPU_IBRS_ENTRY=y
+ CONFIG_ARCH_HAS_ADD_PAGES=y
+ CONFIG_ARCH_ENABLE_MEMORY_HOTPLUG=y
+ CONFIG_ARCH_ENABLE_SPLIT_PMD_PTLOCK=y
+@@ -597,7 +598,6 @@ CONFIG_X86_SYSFB=y
+ # Binary Emulations
+ #
+ CONFIG_IA32_EMULATION=y
+-# CONFIG_X86_X32 is not set
+ CONFIG_COMPAT_32=y
+ CONFIG_COMPAT=y
+ CONFIG_COMPAT_FOR_U64_ALIGNMENT=y
+@@ -651,7 +651,6 @@ CONFIG_VIRTUALIZATION=y
+ CONFIG_AS_AVX512=y
+ CONFIG_AS_SHA1_NI=y
+ CONFIG_AS_SHA256_NI=y
+-CONFIG_AS_TPAUSE=y
+
+ #
+ # General architecture-dependent options
+@@ -1609,6 +1608,7 @@ CONFIG_HOTPLUG_PCI_ACPI=y
+ #
+ # Generic Driver Options
+ #
++# CONFIG_AUXILIARY_BUS is not set
+ CONFIG_UEVENT_HELPER=y
+ CONFIG_UEVENT_HELPER_PATH="/sbin/hotplug"
+ # CONFIG_DEVTMPFS is not set
+@@ -2443,7 +2443,6 @@ CONFIG_WLAN_VENDOR_QUANTENNA=y
+ # CONFIG_FUJITSU_ES is not set
+ CONFIG_NET_FAILOVER=y
+ # CONFIG_ISDN is not set
+-# CONFIG_NVM is not set
+
+ #
+ # Input device support
+@@ -6696,7 +6695,7 @@ CONFIG_CRYPTO_HASH_INFO=y
+ #
+ CONFIG_CRYPTO_LIB_AES=y
+ CONFIG_CRYPTO_LIB_ARC4=y
+-# CONFIG_CRYPTO_LIB_BLAKE2S is not set
++CONFIG_CRYPTO_LIB_BLAKE2S_GENERIC=y
+ # CONFIG_CRYPTO_LIB_CHACHA is not set
+ # CONFIG_CRYPTO_LIB_CURVE25519 is not set
+ CONFIG_CRYPTO_LIB_DES=y
+@@ -6704,6 +6703,7 @@ CONFIG_CRYPTO_LIB_POLY1305_RSIZE=11
+ # CONFIG_CRYPTO_LIB_POLY1305 is not set
+ # CONFIG_CRYPTO_LIB_CHACHA20POLY1305 is not set
+ CONFIG_CRYPTO_LIB_SHA256=y
++CONFIG_LIB_MEMNEQ=y
+ CONFIG_CRYPTO_HW=y
+ # CONFIG_CRYPTO_DEV_PADLOCK is not set
+ # CONFIG_CRYPTO_DEV_ATMEL_ECC is not set
+@@ -6871,7 +6871,6 @@ CONFIG_DEBUG_BUGVERBOSE=y
+ CONFIG_DEBUG_INFO=y
+ # CONFIG_DEBUG_INFO_REDUCED is not set
+ # CONFIG_DEBUG_INFO_COMPRESSED is not set
+-# CONFIG_DEBUG_INFO_SPLIT is not set
+ # CONFIG_DEBUG_INFO_DWARF4 is not set
+ # CONFIG_DEBUG_INFO_BTF is not set
+ # CONFIG_GDB_SCRIPTS is not set
+--
+2.39.2
+

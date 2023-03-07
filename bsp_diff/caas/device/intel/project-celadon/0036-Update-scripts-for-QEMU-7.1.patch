@@ -1,109 +1,42 @@
-From aa01021d85fca0734e0f8d5f226ee3ba9918bbe8 Mon Sep 17 00:00:00 2001
+From de0526bec6a219b439ab877cc1ebb2ef2d5dca60 Mon Sep 17 00:00:00 2001
 From: "Suresh, Prashanth" <prashanth.suresh@intel.com>
-Date: Tue, 20 Sep 2022 11:57:10 +0530
-Subject: [PATCH] Update scripts for QEMU 7.1
+Date: Fri, 3 Mar 2023 14:37:27 +0530
+Subject: [PATCH] Add kernel paths and config.
 
-Change:
-- updated path for QEMU 7.1 in scripts
-- updated to use QEMUMonitorProtocol legacy interface
-
+Add Yocto SRIOV kernel configs.
 Tracked-On:
 ---
- caas/guest_pm_control | 25 +++++++++++++-------
- caas/wakeup.py        | 15 ++++++------
- 2 files changed, 24 insertions(+), 16 deletions(-)
+ caas/AndroidBoard.mk | 3 +++
+ caas/mixins.spec     | 2 +-
+ 2 files changed, 4 insertions(+), 1 deletion(-)
 
-diff --git a/caas/guest_pm_control b/caas/guest_pm_control
-index bd9ad52..fdebaf6 100755
---- a/caas/guest_pm_control
-+++ b/caas/guest_pm_control
-@@ -22,8 +22,16 @@ import subprocess
- import signal
- from sys import argv,exit
- 
--sys.path.append(os.path.join(os.path.dirname(__file__), '../qemu-6.0.0/python'))
-+sys.path.append(os.path.join(os.path.dirname(__file__), '../qemu-7.1.0/python'))
- from qemu import qmp
-+from qemu.qmp.legacy import (
-+    QEMUMonitorProtocol,
-+    QMPMessage,
-+    QMPReturnValue,
-+)
-+
-+# connection timeout of two minutes
-+con_timeout = 2*60
- 
- rtc_wakeup = 0
- current_rtc_wakeup_count = 0
-@@ -77,7 +85,7 @@ def main():
-     # to connect to this unix socket. To avoid this failure delay of 2 second
-     # has been kept. With this delay there is no connection failure.
-     time.sleep(2)
--    qemu = qmp.QEMUMonitorProtocol(argv[1])
-+    qemu = QEMUMonitorProtocol(argv[1])
- 
-     # Make a connection to QMP server. Break while loop only when the connection is made.
-     # put a timeout 2 minutes if connection is not successful
-@@ -85,18 +93,17 @@ def main():
-     while True:
-         try:
-             qemu.connect()
--        except qmp.QMPConnectError:
--            print('Didn\'t get QMP greeting message from QEMU QMP server')
--        except qmp.QMPCapabilitiesError:
--            print('Could not negotiate capabilities with QEMU QMP server')
--        except qmp.QMPTimeoutError:
--            print('Connection Timeout Error')
--        except OSError:
-+        except qmp.ConnectError:
-             print
-         else:
-             print("connected to QEMU QMP server")
-             break
- 
-+        if time.time() >= con_timeout + timeout_start:
-+            print("connection timeout error")
-+            return
-+
-+
-     while True:
-         try:
-             # Pull the VM shutdown and reboot event from QEMU QMP Server
-diff --git a/caas/wakeup.py b/caas/wakeup.py
-index 9e8c9e1..cf34287 100755
---- a/caas/wakeup.py
-+++ b/caas/wakeup.py
-@@ -8,22 +8,23 @@ from sys import argv,exit
- 
- timeout = 60
- 
--sys.path.append(os.path.join(os.path.dirname(__file__), '../qemu-6.0.0/python'))
-+sys.path.append(os.path.join(os.path.dirname(__file__), '../qemu-7.1.0/python'))
- 
- from qemu import qmp
-+from qemu.qmp.legacy import (
-+    QEMUMonitorProtocol,
-+    QMPMessage,
-+    QMPReturnValue,
-+)
- 
- def main():
-     timeout_start = time.time()
--    qemu = qmp.QEMUMonitorProtocol("/tmp/qmp-vinput-sock")
-+    qemu = QEMUMonitorProtocol("/tmp/qmp-vinput-sock")
-     while True:
-         try:
-             qemu.connect(negotiate=True)
-             break
--        except qmp.QMPConnectError:
--            print('Didn\'t get QMP greeting message from QEMU QMP server')
--        except qmp.QMPCapabilitiesError:
--            print('Could not negotiate capabilities with QEMU QMP server')
--        except OSError:
-+        except qmp.ConnectError:
-             print
- 
-         if time.time() >= timeout + timeout_start:
+diff --git a/caas/AndroidBoard.mk b/caas/AndroidBoard.mk
+index dd774fe..5b5c7cf 100644
+--- a/caas/AndroidBoard.mk
++++ b/caas/AndroidBoard.mk
+@@ -280,6 +280,9 @@ KERNEL_CCSLOP := $(subst $(space),$(comma),$(KERNEL_CCSLOP))
+ ifeq ($(BASE_LTS2021_CHROMIUM_KERNEL), true)
+   LOCAL_KERNEL_SRC := kernel/lts2021-chromium
+   KERNEL_CONFIG_PATH := $(TARGET_DEVICE_DIR)/config-lts/lts2021-chromium
++else ifeq ($(BASE_LTS2020_YOCTO_KERNEL), true)
++  LOCAL_KERNEL_SRC := kernel/lts2020-yocto-sriov
++  KERNEL_CONFIG_PATH := $(TARGET_DEVICE_DIR)/config-lts/lts2020-yocto-sriov
+ else ifeq ($(BASE_LINUX_INTEL_LTS2021_KERNEL), true)
+   LOCAL_KERNEL_SRC := kernel/linux-intel-lts2021
+   KERNEL_CONFIG_PATH := $(TARGET_DEVICE_DIR)/config-lts/linux-intel-lts2021
+diff --git a/caas/mixins.spec b/caas/mixins.spec
+index da73734..87b0f12 100755
+--- a/caas/mixins.spec
++++ b/caas/mixins.spec
+@@ -7,7 +7,7 @@ mixinsrel: false
+ product.mk: device.mk
+
+ [groups]
+-kernel: gmin64(useprebuilt=false,src_path=kernel/lts2021-chromium, loglevel=7, interactive_governor=false, relative_sleepstates=false, modules_in_bootimg=false, external_modules=,debug_modules=, use_bcmdhd=false, use_iwlwifi=false, extmod_platform=bxt, iwl_defconfig=, cfg_path=config-lts/lts2021-chromium, more_modules=true, lts2021_chromium_src_path=kernel/lts2021-chromium, lts2021_chromium_cfg_path=config-lts/lts2021-chromium, linux_intel_lts2021_src_path=kernel/linux-intel-lts2021, linux_intel_lts2021_cfg_path=config-lts/linux-intel-lts2021)
++kernel: gmin64(useprebuilt=false,src_path=kernel/lts2021-chromium, loglevel=7, interactive_governor=false, relative_sleepstates=false, modules_in_bootimg=false, external_modules=,debug_modules=, use_bcmdhd=false, use_iwlwifi=false, extmod_platform=bxt, iwl_defconfig=, cfg_path=config-lts/lts2021-chromium, more_modules=true, lts2021_chromium_src_path=kernel/lts2021-chromium, lts2021_chromium_cfg_path=config-lts/lts2021-chromium, linux_intel_lts2021_src_path=kernel/linux-intel-lts2021, linux_intel_lts2021_cfg_path=config-lts/linux-intel-lts2021, lts2020_yocto_src_path=kernel/lts2020-yocto-sriov, lts2020_yocto_cfg_path=config-lts/lts2020-yocto-sriov)
+ disk-bus: auto
+ boot-arch: project-celadon(uefi_arch=x86_64,fastboot=efi,ignore_rsci=true,disable_watchdog=true,watchdog_parameters=10 30,verity_warning=false,txe_bind_root_of_trust=false,bootloader_block_size=4096,verity_mode=false,disk_encryption=false,file_encryption=true,metadata_encryption=true,fsverity=true,target=caas,ignore_not_applicable_reset=true,self_usb_device_mode_protocol=true,usb_storage=true,live_boot=true,userdata_checkpoint=true,data_use_f2fs=true)
+ sepolicy: enforcing
 -- 
-2.37.3
+2.39.2
 
