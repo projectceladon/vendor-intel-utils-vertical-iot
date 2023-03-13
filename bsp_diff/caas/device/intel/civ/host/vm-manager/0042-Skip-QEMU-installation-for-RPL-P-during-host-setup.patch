@@ -1,0 +1,51 @@
+From 20a2a5e20bf36fc87e51236d97138a609cd96b3c Mon Sep 17 00:00:00 2001
+From: "Suresh, Prashanth" <prashanth.suresh@intel.com>
+Date: Mon, 13 Mar 2023 16:17:27 +0530
+Subject: [PATCH] Skip QEMU installation for RPL-P during host setup.
+
+--bsp to be passed as an argument when running on RPL-P.
+Eg. sudo -E ./scripts/setup_host.sh --bsp
+
+Tracked-On: OAM-106817
+Signed-off-by: Suresh, Prashanth <prashanth.suresh@intel.com>
+---
+ scripts/setup_host.sh | 9 +++++++++
+ 1 file changed, 9 insertions(+)
+
+diff --git a/scripts/setup_host.sh b/scripts/setup_host.sh
+index e338cb6..cc697a8 100755
+--- a/scripts/setup_host.sh
++++ b/scripts/setup_host.sh
+@@ -10,6 +10,7 @@ set -eE
+ #---------      Global variable     -------------------
+ reboot_required=0
+ QEMU_REL="qemu-7.1.0"
++skip_install_qemu=false
+ 
+ #Directory to keep versions of qemu which can be reused instead of downloading again
+ QEMU_CACHE_DIR="$HOME/.cache/civ/qemu"
+@@ -36,6 +37,10 @@ function ubu_changes_require(){
+ }
+ 
+ function ubu_install_qemu_gvt(){
++    if [ $skip_install_qemu = true ]; then
++        echo "Skip ubu_install_qemu_gvt"
++        return
++    fi
+     sudo apt purge -y "^qemu"
+     sudo apt autoremove -y
+     sudo apt install -y git libfdt-dev libpixman-1-dev libssl-dev vim socat libsdl2-dev libspice-server-dev autoconf libtool xtightvncviewer tightvncserver x11vnc uuid-runtime uuid uml-utilities bridge-utils liblzma-dev libc6-dev libegl1-mesa-dev libepoxy-dev libdrm-dev libgbm-dev libaio-dev libusb-1.0-0-dev libgtk-3-dev bison libcap-dev libattr1-dev flex libvirglrenderer-dev build-essential gettext libegl-mesa0 libegl-dev libglvnd-dev libgl1-mesa-dev libgl1-mesa-dev libgles2-mesa-dev libegl1 gcc g++ pkg-config libpulse-dev libgl1-mesa-dri
+@@ -571,6 +576,10 @@ function parse_arg() {
+                 shift
+                 ;;
+ 
++            --bsp)
++                skip_install_qemu=true
++                ;;
++
+             -?*)
+                 echo "Error: Invalid option $1"
+                 show_help
+-- 
+2.39.2
+
