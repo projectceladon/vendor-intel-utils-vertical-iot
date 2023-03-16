@@ -1,0 +1,50 @@
+From b8526015fb438d0ae27869c885df79e141620bbd Mon Sep 17 00:00:00 2001
+From: vdanix <vishwanathx.dani@intel.com>
+Date: Thu, 16 Mar 2023 13:18:40 +0530
+Subject: [PATCH] Revert "Change the MinInputBufferSize to 1M"
+
+This reverts commit f053e88332f2445296512d49485064fb9a861d88.
+
+diff --git a/c2_components/src/mfx_c2_decoder_component.cpp b/c2_components/src/mfx_c2_decoder_component.cpp
+index 55b071c..306f002 100755
+--- a/c2_components/src/mfx_c2_decoder_component.cpp
++++ b/c2_components/src/mfx_c2_decoder_component.cpp
+@@ -42,7 +42,7 @@ using namespace android;
+ constexpr uint32_t MIN_W = 176;
+ constexpr uint32_t MIN_H = 144;
+ constexpr c2_nsecs_t TIMEOUT_NS = MFX_SECOND_NS;
+-constexpr uint64_t kMinInputBufferSize = 1 * WIDTH_1K * HEIGHT_1K;
++constexpr uint64_t kMinInputBufferSize = 2 * WIDTH_2K * HEIGHT_2K;
+ constexpr uint64_t kDefaultConsumerUsage =
+     (GRALLOC_USAGE_HW_TEXTURE | GRALLOC_USAGE_HW_COMPOSER);
+ 
+@@ -96,8 +96,10 @@ C2R MfxC2DecoderComponent::MaxInputSizeSetter(bool mayBlock, C2P<C2StreamMaxBuff
+                                 const C2P<C2StreamMaxPictureSizeTuning::output> &maxSize) {
+     (void)mayBlock;
+     // assume compression ratio of 2
+-    me.set().value = c2_max((((maxSize.v.width + 63) / 64) * ((maxSize.v.height + 63) / 64) * 3072),
+-		   kMinInputBufferSize);
++    me.set().value = c2_max((((maxSize.v.width + 15) / 16)
++            * ((maxSize.v.height + 15) / 16) * 192), kMinInputBufferSize);
++    ALOGD("zyc, input size = %d", me.set().value);
++    me.set().value = kMinInputBufferSize;
+     return C2R::Ok();
+ }
+ 
+diff --git a/c2_utils/include/mfx_defs.h b/c2_utils/include/mfx_defs.h
+index 46bdb01..0743513 100755
+--- a/c2_utils/include/mfx_defs.h
++++ b/c2_utils/include/mfx_defs.h
+@@ -64,9 +64,6 @@ extern mfxVersion g_required_mfx_version;
+ #define WIDTH_2K 2048
+ #define HEIGHT_2K 2048
+ 
+-#define WIDTH_1K 1024
+-#define HEIGHT_1K 1024
+-
+ #define MIN_WIDTH_4K 3840
+ #define MIN_HEIGHT_4K 2160
+ #define MIN_WIDTH_8K 7680
+-- 
+2.40.0
+
