@@ -1,0 +1,271 @@
+From d8ee0f33654e2531c67ed819f824b7994386a0b9 Mon Sep 17 00:00:00 2001
+From: "Chenthati, Pradeep" <pradeepx.chenthati@intel.com>
+Date: Tue, 28 Mar 2023 16:32:44 +0530
+Subject: [PATCH] Revert "Revert "Refine the init function and fix issue""
+
+This reverts commit a3bfbf89da369317aba41993cf76fa285e63e2df.
+Need to apply the re-implementation commit - 3319e5d after all the
+vertical patches to avoid conflicts and to apply this change cleanly
+
+Tracked-On: OAM-107370
+Signed-off-by: Chenthati, Pradeep <pradeepx.chenthati@intel.com>
+---
+ cros_gralloc/cros_gralloc_driver.cc | 92 ++++++++++++++++++++++++++---
+ drv.c                               | 22 ++++---
+ drv.h                               |  2 +
+ drv_priv.h                          |  9 +++
+ gbm.c                               |  6 ++
+ i915.c                              |  9 +++
+ 6 files changed, 125 insertions(+), 15 deletions(-)
+
+diff --git a/cros_gralloc/cros_gralloc_driver.cc b/cros_gralloc/cros_gralloc_driver.cc
+index 8ed8529..6063a9a 100644
+--- a/cros_gralloc/cros_gralloc_driver.cc
++++ b/cros_gralloc/cros_gralloc_driver.cc
+@@ -75,6 +75,14 @@ int32_t cros_gralloc_driver::init()
+ 	uint32_t j;
+ 	char *node;
+ 
++	const int render_num = 10;
++	const int name_length = 50;
++	int node_fd[render_num];
++	char node_name[render_num][name_length] = { "" };
++	int availabe_node = 0;
++	int virtio_node_idx = -1;
++	uint32_t gpu_grp_type = 0;
++
+ 	// destroy drivers if exist before re-initializing them
+ 	if (drv_kms) {
+ 		int fd = drv_get_fd(drv_kms);
+@@ -103,7 +111,6 @@ int32_t cros_gralloc_driver::init()
+ 			continue;
+ 		version = drmGetVersion(fd);
+ 		if (!version) {
+-			drmFreeVersion(version);
+ 			close(fd);
+ 			continue;
+ 		}
+@@ -134,21 +141,92 @@ int32_t cros_gralloc_driver::init()
+ 		if (j < ARRAY_SIZE(undesired_rdev))
+ 			continue;
+ 
+-		drv_render = drv_create(fd);
++		if (!strcmp(version->name, "virtio_gpu")) {
++			virtio_node_idx = availabe_node;
++		}
++
++		node_fd[availabe_node] = fd;
++		strcpy(node_name[availabe_node], version->name);
++		availabe_node++;
++
++		drmFreeVersion(version);
++	}
++
++	// open the first render node
++	if (availabe_node > 0) {
++		drv_render = drv_create(node_fd[0]);
+ 		if (!drv_render) {
+-			drv_log("Failed to create driver for render only device\n");
+-			close(fd);
++			drv_log("Failed to create driver for the 1st device\n");
++			close(node_fd[0]);
+ 			goto fail;
+ 		}
+ 		// if kms_name is null, kms_node == render_node
+ 		if (!kms_name)
+ 			drv_kms = drv_render;
+ 
+-		// return success if both nodes exist
+-		if (drv_kms)
+-			return 0;
++		switch (availabe_node) {
++		// only have one render node, is GVT-d/BM/VirtIO
++		case 1:
++			if (drv_render) {
++				drv_kms = drv_render;
++			} else
++				goto fail;
++			gpu_grp_type = (virtio_node_idx != -1)? ONE_GPU_VIRTIO: ONE_GPU_INTEL;
++			break;
++		// is SR-IOV or iGPU + dGPU
++		case 2:
++			if (virtio_node_idx != -1) {
++				drv_kms = drv_create(node_fd[virtio_node_idx]);
++				if (!drv_kms) {
++					drv_log("Failed to create driver for virtio device\n");
++					close(node_fd[virtio_node_idx]);
++					goto fail;
++				}
++				gpu_grp_type = TWO_GPU_IGPU_VIRTIO;
++			} else {
++				close(node_fd[1]);
++				drv_kms = drv_render;
++				gpu_grp_type = TWO_GPU_IGPU_DGPU;
++			}
++			break;
++		// is SR-IOV + dGPU
++		case 3:
++			if (!strcmp(node_name[1], "i915")) {
++				close(node_fd[1]);
++			}
++			if (virtio_node_idx != -1) {
++				drv_kms = drv_create(node_fd[virtio_node_idx]);
++				if (!drv_kms) {
++					drv_log("Failed to create driver for virtio device\n");
++					close(node_fd[virtio_node_idx]);
++					goto fail;
++				}
++			}
++			gpu_grp_type = THREE_GPU_IGPU_VIRTIO_DGPU;
++			// TO-DO: the 3rd node is i915 or others.
++			break;
++		}
++
++		if (drv_render) {
++			if (drv_init(drv_render, gpu_grp_type)) {
++				drv_log("Failed to init render driver\n");
++				goto fail;
++			}
++		}
++
++		if (drv_kms && (drv_kms != drv_render)) {
++			if (drv_init(drv_kms, gpu_grp_type)) {
++				drv_log("Failed to init kms driver\n");
++				goto fail;
++			}
++		}
+ 	}
+ 
++	if (!drv_render && !drv_kms)
++		return -ENODEV;
++
++	return 0;
++
+ fail:
+ 	if (drv_kms) {
+ 		fd = drv_get_fd(drv_kms);
+diff --git a/drv.c b/drv.c
+index e9da5de..322b0ac 100644
+--- a/drv.c
++++ b/drv.c
+@@ -181,14 +181,6 @@ struct driver *drv_create(int fd)
+ 	if (!drv->combos)
+ 		goto free_mappings;
+ 
+-	if (drv->backend->init) {
+-		ret = drv->backend->init(drv);
+-		if (ret) {
+-			drv_array_destroy(drv->combos);
+-			goto free_mappings;
+-		}
+-	}
+-
+ 	return drv;
+ 
+ free_mappings:
+@@ -202,6 +194,20 @@ free_driver:
+ 	return NULL;
+ }
+ 
++int drv_init(struct driver * drv, uint32_t grp_type)
++{
++	int ret = 0;
++	assert(drv);
++	assert(drv->backend);
++
++	drv->gpu_grp_type = grp_type;
++
++	if (drv->backend->init) {
++		ret = drv->backend->init(drv);
++	}
++	return ret;
++}
++
+ void drv_destroy(struct driver *drv)
+ {
+ 	pthread_mutex_lock(&drv->driver_lock);
+diff --git a/drv.h b/drv.h
+index f1667bf..04f3619 100644
+--- a/drv.h
++++ b/drv.h
+@@ -117,6 +117,8 @@ struct mapping {
+ 
+ struct driver *drv_create(int fd);
+ 
++int drv_init(struct driver * drv, uint32_t grp_type);
++
+ void drv_destroy(struct driver *drv);
+ 
+ int drv_get_fd(struct driver *drv);
+diff --git a/drv_priv.h b/drv_priv.h
+index 32c082d..5f50090 100644
+--- a/drv_priv.h
++++ b/drv_priv.h
+@@ -49,11 +49,20 @@ struct combination {
+ 	uint64_t use_flags;
+ };
+ 
++enum CIV_GPU_TYPE {
++	ONE_GPU_INTEL = 1,
++	ONE_GPU_VIRTIO,
++	TWO_GPU_IGPU_VIRTIO,
++	TWO_GPU_IGPU_DGPU,
++	THREE_GPU_IGPU_VIRTIO_DGPU
++};
++
+ struct driver {
+ 	int fd;
+ 	const struct backend *backend;
+ 	void *priv;
+ 	void *buffer_table;
++	uint32_t gpu_grp_type;  	// enum CIV_GPU_TYPE
+ 	struct drv_array *mappings;
+ 	struct drv_array *combos;
+ 	pthread_mutex_t driver_lock;
+diff --git a/gbm.c b/gbm.c
+index ab5b3f7..6aa38ba 100644
+--- a/gbm.c
++++ b/gbm.c
+@@ -62,6 +62,12 @@ PUBLIC struct gbm_device *gbm_create_device(int fd)
+ 		return NULL;
+ 	}
+ 
++	if (drv_init(gbm->drv, 0) != 0) {
++		drv_destroy(gbm->drv);
++		free(gbm);
++		return NULL;
++	}
++
+ 	return gbm;
+ }
+ 
+diff --git a/i915.c b/i915.c
+index be67f8c..bc37360 100644
+--- a/i915.c
++++ b/i915.c
+@@ -188,6 +188,11 @@ static int i915_add_combinations(struct driver *drv)
+ 	metadata.priority = 2;
+ 	metadata.modifier = I915_FORMAT_MOD_X_TILED;
+ 
++        // In sriov mode, MMAP_GTT will fail for tiled buffer.
++        if ((drv->gpu_grp_type == TWO_GPU_IGPU_VIRTIO) || (drv->gpu_grp_type == THREE_GPU_IGPU_VIRTIO_DGPU))
++                scanout_and_render =
++                        unset_flags(scanout_and_render, BO_USE_SW_READ_RARELY | BO_USE_SW_WRITE_RARELY);
++
+ 	drv_add_combinations(drv, render_formats, ARRAY_SIZE(render_formats), &metadata, render);
+ 	drv_add_combinations(drv, scanout_render_formats, ARRAY_SIZE(scanout_render_formats),
+ 			     &metadata, scanout_and_render);
+@@ -199,6 +204,10 @@ static int i915_add_combinations(struct driver *drv)
+ 	metadata.priority = 3;
+ 	metadata.modifier = I915_FORMAT_MOD_Y_TILED;
+ 
++	// dGPU do not support Tiling Y mode
++	if ((drv->gpu_grp_type == TWO_GPU_IGPU_DGPU) || (drv->gpu_grp_type == THREE_GPU_IGPU_VIRTIO_DGPU))
++		 scanout_and_render = unset_flags(scanout_and_render, BO_USE_SCANOUT);
++
+ /* Support y-tiled NV12 and P010 for libva */
+ #ifdef I915_SCANOUT_Y_TILED
+ 	drv_add_combination(drv, DRM_FORMAT_NV12, &metadata,
+-- 
+2.40.0
+
