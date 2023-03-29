@@ -1,7 +1,7 @@
-From 4ff4ce669d6f2ba78799d7b7c024f61e5fb269fc Mon Sep 17 00:00:00 2001
-From: "Suresh, Prashanth" <prashanth.suresh@intel.com>
-Date: Wed, 1 Mar 2023 16:28:49 +0530
-Subject: [PATCH] Port SRIOV graphics and media installation for host
+From e3e318c3c2728234c982fd410c5681910cc61b82 Mon Sep 17 00:00:00 2001
+From: "Kothapeta, BikshapathiX" <bikshapathix.kothapeta@intel.com>
+Date: Thu, 16 Mar 2023 18:59:06 +0530
+Subject: [PATCH 10/18] Port SRIOV graphics and media installation for host
 
 Changes:
 - added function to install components for SRIOV
@@ -10,18 +10,14 @@ Changes:
 - removed old mesa installation patch
 
 Tracked-On:
----
- scripts/setup_host.sh       |  57 ++++++++--
- scripts/sriov_setup_host.sh | 214 ++++++++++++++++++++++++++++++++++++
- 2 files changed, 261 insertions(+), 10 deletions(-)
- create mode 100644 scripts/sriov_setup_host.sh
+Signed-off-by: Kothapeta, BikshapathiX <bikshapathix.kothapeta@intel.com>
 
 diff --git a/scripts/setup_host.sh b/scripts/setup_host.sh
-index 48330df..0f57e23 100755
+index 7998b7a..2ca0e9a 100755
 --- a/scripts/setup_host.sh
 +++ b/scripts/setup_host.sh
-@@ -39,6 +39,43 @@ function ubu_changes_require(){
-     sudo apt install -y libglib2.0-dev libncurses-dev libuuid1 uuid-dev libjson-c-dev
+@@ -27,6 +27,43 @@ function error() {
+     echo "$BASH_SOURCE Failed at line($line): $cmd"
  }
  
 +function ubu_install_sriov(){
@@ -61,10 +57,10 @@ index 48330df..0f57e23 100755
 +
 +}
 +
- function ubu_install_qemu_gvt(){
-     sudo apt purge -y "^qemu"
-     sudo apt autoremove -y
-@@ -166,12 +203,15 @@ function install_vm_manager() {
+ function ubu_changes_require(){
+     echo "Please make sure your apt is working"
+     echo "If you run the installation first time, reboot is required"
+@@ -180,12 +217,15 @@ function install_vm_manager() {
  }
  
  function ubu_enable_host_gvt(){
@@ -82,12 +78,12 @@ index 48330df..0f57e23 100755
          update-grub
  
          echo -e "\nkvmgt\nvfio-iommu-type1\nvfio-mdev\n" >> /etc/initramfs-tools/modules
-@@ -182,24 +222,21 @@ function ubu_enable_host_gvt(){
+@@ -196,11 +236,14 @@ function ubu_enable_host_gvt(){
  }
  
  function ubu_enable_host_sriov(){
 -   if [[ ! `cat /etc/default/grub` =~ "i915.enable_guc=0x7" ]]; then
-+    if [[ ! `cat /etc/default/grub` =~ "i915.enable_guc=0x7 udmabuf.list_limit=8192" ]]; then
++   if [[ ! `cat /etc/default/grub` =~ "i915.enable_guc=0x7 udmabuf.list_limit=8192" ]]; then
          read -p "Do you want to update the grub entry in '/etc/default/grub' for enabling SRIOV? [Y/n]" res
          if [ x$res = xn ]; then
              return
@@ -95,34 +91,20 @@ index 48330df..0f57e23 100755
 +        if [[ ! `cat /etc/default/grub` =~ "intel_iommu=on i915.force_probe=*" ]]; then
 +            sed -i "s/GRUB_CMDLINE_LINUX=\"/GRUB_CMDLINE_LINUX=\"intel_iommu=on i915.force_probe=* /g" /etc/default/grub
 +        fi
-       sed -i "s/GRUB_CMDLINE_LINUX=\"/GRUB_CMDLINE_LINUX=\"i915.enable_guc=0x7 udmabuf.list_limit=8192  /g" /etc/default/grub
+ 	sed -i "s/GRUB_CMDLINE_LINUX=\"/GRUB_CMDLINE_LINUX=\"i915.enable_guc=0x7 udmabuf.list_limit=8192  /g" /etc/default/grub
          update-grub
  
-         echo -e "\nkvmgt\nvfio-iommu-type1\nvfio-mdev\n" >> /etc/initramfs-tools/modules
-         update-initramfs -u -k all
- 
--        # Switch to Xorg for Ubuntu 21.04
--        if [[ $(lsb_release -rs) == "21.04" ]]; then
--            sed -i "s/\#WaylandEnable=false/WaylandEnable=false/g" /etc/gdm3/custom.conf
--        fi
--
-         reboot_required=1
--
-     fi
- }
- 
-@@ -538,7 +575,7 @@ check_network
- check_kernel_version
+@@ -560,6 +603,7 @@ check_kernel_version
  
  ubu_changes_require
--
+ 
 +ubu_install_sriov
  ubu_install_qemu_gvt
  ubu_install_virtiofsd
  ubu_build_ovmf_gvt
 diff --git a/scripts/sriov_setup_host.sh b/scripts/sriov_setup_host.sh
 new file mode 100644
-index 0000000..8be0eaa
+index 0000000..b12e048
 --- /dev/null
 +++ b/scripts/sriov_setup_host.sh
 @@ -0,0 +1,214 @@
@@ -340,6 +322,7 @@ index 0000000..8be0eaa
 +wget https://github.com/intel/compute-runtime/releases/download/21.47.21710/intel-level-zero-gpu_1.2.21710_amd64.deb
 +sudo dpkg -i *.deb
 +cd $WrkDir
+\ No newline at end of file
 -- 
-2.39.2
+2.40.0
 

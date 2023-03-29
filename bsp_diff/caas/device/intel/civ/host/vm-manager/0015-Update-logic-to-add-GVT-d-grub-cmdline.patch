@@ -1,20 +1,17 @@
-From 9da587464de745a2d8e5f8e253abdb6cfb952564 Mon Sep 17 00:00:00 2001
+From 01551e1d60a554f4d756c60c5f79049cfd3429a9 Mon Sep 17 00:00:00 2001
 From: "Suresh, Prashanth" <prashanth.suresh@intel.com>
 Date: Thu, 2 Mar 2023 11:11:18 +0530
-Subject: [PATCH] Update logic to add GVT-d grub cmdline
+Subject: [PATCH 15/18] Update logic to add GVT-d grub cmdline
 
 Change:
 - updated logic to add GVT-d grub cmdline only for non-SRIOV case
 Tracked-On:
----
- scripts/setup_host.sh | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
 
 diff --git a/scripts/setup_host.sh b/scripts/setup_host.sh
-index ebc8137..24dbb6d 100755
+index 5a10771..be32911 100755
 --- a/scripts/setup_host.sh
 +++ b/scripts/setup_host.sh
-@@ -174,7 +174,8 @@ function install_vm_manager() {
+@@ -188,7 +188,8 @@ function install_vm_manager() {
  }
  
  function ubu_enable_host_gvt(){
@@ -25,5 +22,5 @@ index ebc8137..24dbb6d 100755
          if [ x$res = xn ]; then
              return
 -- 
-2.39.2
+2.40.0
 

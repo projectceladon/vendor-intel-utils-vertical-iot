@@ -1,19 +1,16 @@
-From 0e5ffb83d1691b16d090f9722c2521c5fce6f743 Mon Sep 17 00:00:00 2001
+From 9639b0f06c70bb94b9112dcb3845fad8819e4802 Mon Sep 17 00:00:00 2001
 From: Basil Chew <basil.chew@intel.com>
 Date: Mon, 30 Jan 2023 11:09:23 +0800
-Subject: [PATCH] Update SRIOV QEMU patching
+Subject: [PATCH 17/18] Update SRIOV QEMU patching
 
 Changes:
 - added patching for SRIOV QEMU CVE patches
 - updated SRIOV QEMU patch path
 
 Change-Id: Iae178053579f93b9a15c034e37946ef78481c9a4
----
- scripts/setup_host.sh | 12 ++++++++++--
- 1 file changed, 10 insertions(+), 2 deletions(-)
 
 diff --git a/scripts/setup_host.sh b/scripts/setup_host.sh
-index 98e5e46..7223f17 100755
+index c21e0f4..88412e8 100755
 --- a/scripts/setup_host.sh
 +++ b/scripts/setup_host.sh
 @@ -71,9 +71,17 @@ function ubu_install_qemu_gvt(){
@@ -37,5 +34,5 @@ index 98e5e46..7223f17 100755
              patch -p1 < $i
          done
 -- 
-2.39.1
+2.40.0
 

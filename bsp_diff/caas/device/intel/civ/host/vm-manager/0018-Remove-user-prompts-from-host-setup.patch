@@ -1,7 +1,7 @@
-From e04afdb53b6a8c193976a6e0f519fd734f948b20 Mon Sep 17 00:00:00 2001
+From 6dfb7da01ccd38e3ff1779c786ca08f341016c20 Mon Sep 17 00:00:00 2001
 From: "Suresh, Prashanth" <prashanth.suresh@intel.com>
 Date: Thu, 2 Mar 2023 14:26:11 +0530
-Subject: [PATCH] Remove user prompts from host setup
+Subject: [PATCH 18/18] Remove user prompts from host setup
 
 Changes:
 - removed prompt to update QEMU
@@ -10,9 +10,6 @@ Changes:
 
 Tracked-On:
 Signed-off-by: Suresh, Prashanth <prashanth.suresh@intel.com>
----
- scripts/setup_host.sh | 15 +--------------
- 1 file changed, 1 insertion(+), 14 deletions(-)
 
 diff --git a/scripts/setup_host.sh b/scripts/setup_host.sh
 index 88412e8..16be3dc 100755
@@ -55,5 +52,5 @@ index 88412e8..16be3dc 100755
  }
  
 -- 
-2.39.2
+2.40.0
 
