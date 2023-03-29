@@ -1,7 +1,7 @@
-From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From fe974f52678e245028635642f385f184fae9b7f5 Mon Sep 17 00:00:00 2001
 From: Basil Chew <basil.chew@intel.com>
 Date: Tue, 8 Mar 2022 12:13:49 +0800
-Subject: [PATCH] Update SRIOV graphics and media installation for host
+Subject: [PATCH 11/18] Update SRIOV graphics and media installation for host
 
 Changes:
 - updated to dev_gen12_ww10 branch
@@ -12,12 +12,9 @@ Changes:
 - updated onevpl-gpu from 21.3.4 to 22.2.0
 - updated onevpl from v2021.6.0 to w2022.0.3
 - added patches for gstreamer plugins
----
- scripts/sriov_setup_host.sh | 25 ++++++++++++++-----------
- 1 file changed, 14 insertions(+), 11 deletions(-)
 
 diff --git a/scripts/sriov_setup_host.sh b/scripts/sriov_setup_host.sh
-index 8be0eaa..97d2a77 100755
+index b12e048..421eec4 100644
 --- a/scripts/sriov_setup_host.sh
 +++ b/scripts/sriov_setup_host.sh
 @@ -28,7 +28,8 @@ source /etc/environment
@@ -131,5 +128,5 @@ index 8be0eaa..97d2a77 100755
  wget https://github.com/intel/intel-graphics-compiler/releases/download/igc-1.0.9389/intel-igc-core_1.0.9389_amd64.deb
  wget https://github.com/intel/intel-graphics-compiler/releases/download/igc-1.0.9389/intel-igc-opencl_1.0.9389_amd64.deb
 -- 
-2.17.1
+2.40.0
 

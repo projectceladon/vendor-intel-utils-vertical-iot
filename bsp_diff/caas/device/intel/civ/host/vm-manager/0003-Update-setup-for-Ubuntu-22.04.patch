@@ -1,7 +1,7 @@
-From 28a7a043547a405b2b7c9e61fab94ea7b4ca715a Mon Sep 17 00:00:00 2001
+From 5d2edd52a52198d290db87230b7942ecc1cf5f0a Mon Sep 17 00:00:00 2001
 From: "Suresh, Prashanth" <prashanth.suresh@intel.com>
 Date: Thu, 2 Mar 2023 10:45:24 +0530
-Subject: [PATCH] Update setup for Ubuntu 22.04
+Subject: [PATCH 03/18] Update setup for Ubuntu 22.04
 
 Changes:
 - removed installation of obsolete python-dev package
@@ -11,12 +11,9 @@ Changes:
 
 Tracked-On:
 Signed-off-by: Suresh, Prashanth <prashanth.suresh@intel.com>
----
- scripts/setup_host.sh | 55 ++++++++++++++++++++++---------------------
- 1 file changed, 28 insertions(+), 27 deletions(-)
 
 diff --git a/scripts/setup_host.sh b/scripts/setup_host.sh
-index 08e50bd..5a173cc 100755
+index 48330df..417f2d9 100755
 --- a/scripts/setup_host.sh
 +++ b/scripts/setup_host.sh
 @@ -42,7 +42,7 @@ function ubu_changes_require(){
@@ -28,7 +25,7 @@ index 08e50bd..5a173cc 100755
      sudo apt install -y ninja-build libcap-ng-dev
  
      #Create QEMU_CACHE_DIR if it doesnt exists
-@@ -392,33 +392,33 @@ function setup_sof() {
+@@ -384,33 +384,33 @@ function setup_sof() {
  }
  
  function ubu_install_swtpm() {
@@ -88,7 +85,7 @@ index 08e50bd..5a173cc 100755
  }
  
  function ubu_update_bt_fw() {
-@@ -557,6 +557,7 @@ install_vm_manager
+@@ -550,6 +550,7 @@ install_vm_manager
  
  prepare_required_scripts
  ubu_install_swtpm
@@ -97,5 +94,5 @@ index 08e50bd..5a173cc 100755
  
  ask_reboot
 -- 
-2.39.2
+2.40.0
 

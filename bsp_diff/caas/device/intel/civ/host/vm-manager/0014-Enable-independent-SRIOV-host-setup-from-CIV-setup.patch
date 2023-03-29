@@ -1,7 +1,7 @@
-From c5e510ccbfbfaedeffc97c8938d8c8b8accabe1a Mon Sep 17 00:00:00 2001
-From: "Suresh, Prashanth" <prashanth.suresh@intel.com>
-Date: Wed, 1 Mar 2023 16:45:02 +0530
-Subject: [PATCH] Enable independent SRIOV host setup from CIV setup
+From 2a2d7362d782ed7531aae3304f4d5ce26b97200d Mon Sep 17 00:00:00 2001
+From: "Kothapeta, BikshapathiX" <bikshapathix.kothapeta@intel.com>
+Date: Thu, 16 Mar 2023 22:06:32 +0530
+Subject: [PATCH 14/18] Enable independent SRIOV host setup from CIV setup
 
 Changes:
 - removed SRIOV-related setup functions
@@ -10,16 +10,14 @@ Changes:
 
 Tracked-On:
 Signed-off-by: Suresh, Prashanth <prashanth.suresh@intel.com>
----
- scripts/setup_host.sh | 86 ++++++++++++++-----------------------------
- 1 file changed, 28 insertions(+), 58 deletions(-)
+Signed-off-by: Kothapeta, BikshapathiX <bikshapathix.kothapeta@intel.com>
 
 diff --git a/scripts/setup_host.sh b/scripts/setup_host.sh
-index 0f57e23..08e50bd 100755
+index 2ca0e9a..5a10771 100755
 --- a/scripts/setup_host.sh
 +++ b/scripts/setup_host.sh
-@@ -39,43 +39,6 @@ function ubu_changes_require(){
-     sudo apt install -y libglib2.0-dev libncurses-dev libuuid1 uuid-dev libjson-c-dev
+@@ -27,43 +27,6 @@ function error() {
+     echo "$BASH_SOURCE Failed at line($line): $cmd"
  }
  
 -function ubu_install_sriov(){
@@ -59,10 +57,10 @@ index 0f57e23..08e50bd 100755
 -
 -}
 -
- function ubu_install_qemu_gvt(){
-     sudo apt purge -y "^qemu"
-     sudo apt autoremove -y
-@@ -107,6 +70,14 @@ function ubu_install_qemu_gvt(){
+ function ubu_changes_require(){
+     echo "Please make sure your apt is working"
+     echo "If you run the installation first time, reboot is required"
+@@ -108,6 +71,14 @@ function ubu_install_qemu_gvt(){
          for i in $CIV_GOP_DIR/qemu/*.patch; do patch -p1 < $i; done
      fi
  
@@ -77,12 +75,12 @@ index 0f57e23..08e50bd 100755
      vertical_qemu_patch_num=$(ls $CIV_VERTICAl_DIR/qemu/*.patch 2> /dev/null | wc -l)
      if [ "$vertical_qemu_patch_num" != "0" ]; then
          for i in $CIV_VERTICAl_DIR/qemu/*.patch; do
-@@ -221,25 +192,6 @@ function ubu_enable_host_gvt(){
+@@ -235,31 +206,6 @@ function ubu_enable_host_gvt(){
      fi
  }
  
 -function ubu_enable_host_sriov(){
--    if [[ ! `cat /etc/default/grub` =~ "i915.enable_guc=0x7 udmabuf.list_limit=8192" ]]; then
+-   if [[ ! `cat /etc/default/grub` =~ "i915.enable_guc=0x7 udmabuf.list_limit=8192" ]]; then
 -        read -p "Do you want to update the grub entry in '/etc/default/grub' for enabling SRIOV? [Y/n]" res
 -        if [ x$res = xn ]; then
 -            return
@@ -96,14 +94,20 @@ index 0f57e23..08e50bd 100755
 -        echo -e "\nkvmgt\nvfio-iommu-type1\nvfio-mdev\n" >> /etc/initramfs-tools/modules
 -        update-initramfs -u -k all
 -
+-        # Switch to Xorg for Ubuntu 21.04
+-        if [[ $(lsb_release -rs) == "21.04" ]]; then
+-            sed -i "s/\#WaylandEnable=false/WaylandEnable=false/g" /etc/gdm3/custom.conf
+-        fi
+-
 -        reboot_required=1
+-
 -    fi
 -}
 -
  function ubu_update_fw(){
      FW_REL="linux-firmware-20221109"
-
-@@ -303,6 +255,25 @@ function check_kernel_version() {
+ 
+@@ -323,6 +269,25 @@ function check_kernel_version() {
      fi
  }
  
@@ -129,13 +133,14 @@ index 0f57e23..08e50bd 100755
  function ask_reboot(){
      if [ $reboot_required -eq 1 ];then
          read -p "Reboot is required, do you want to reboot it NOW? [y/N]" res
-@@ -573,14 +544,13 @@ parse_arg "$@"
+@@ -600,15 +565,13 @@ parse_arg "$@"
  check_os
  check_network
  check_kernel_version
 +check_sriov_setup
  
  ubu_changes_require
+-
 -ubu_install_sriov
  ubu_install_qemu_gvt
  ubu_install_virtiofsd
@@ -146,5 +151,5 @@ index 0f57e23..08e50bd 100755
  
  install_vm_manager
 -- 
-2.39.2
+2.40.0
 

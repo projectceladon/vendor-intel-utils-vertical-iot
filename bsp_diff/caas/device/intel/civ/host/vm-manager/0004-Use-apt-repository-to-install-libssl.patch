@@ -1,19 +1,16 @@
-From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From b58e4e70d642a4e75c8031c2d40b1eace4d64732 Mon Sep 17 00:00:00 2001
 From: Basil Chew <basil.chew@intel.com>
 Date: Fri, 24 Jun 2022 13:03:44 +0800
-Subject: [PATCH] Use apt repository to install libssl
+Subject: [PATCH 04/18] Use apt repository to install libssl
 
 Change:
 - switched installation of libssl1.1 to use focal apt repository
----
- scripts/setup_host.sh | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
 
 diff --git a/scripts/setup_host.sh b/scripts/setup_host.sh
-index 7edfc01..fc33f9f 100755
+index 417f2d9..db20b4e 100755
 --- a/scripts/setup_host.sh
 +++ b/scripts/setup_host.sh
-@@ -316,9 +316,9 @@ function ubu_install_swtpm() {
+@@ -408,9 +408,9 @@ function ubu_install_swtpm() {
  }
  
  function ubu_install_libssl() {
@@ -27,5 +24,5 @@ index 7edfc01..fc33f9f 100755
  
  function ubu_update_bt_fw() {
 -- 
-2.17.1
+2.40.0
 

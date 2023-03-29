@@ -1,17 +1,12 @@
-From 0b4916bd299b7489bd1c038570c95448db394b95 Mon Sep 17 00:00:00 2001
+From e8bef4bc191a37892fae40dee21c1391bef3e1f2 Mon Sep 17 00:00:00 2001
 From: "Suresh, Prashanth" <prashanth.suresh@intel.com>
 Date: Thu, 2 Mar 2023 10:55:51 +0530
-Subject: [PATCH] Add config ini as part of package.
+Subject: [PATCH 05/18] Add config ini as part of package.
 
 Add ini file as part of config and update paths.
 
 Tracked-On:
 Signed-off-by: Suresh, Prashanth <prashanth.suresh@intel.com>
----
- scripts/setup_civ_ini.sh | 44 ++++++++++++++++++++++++++++++++++++++++
- scripts/setup_host.sh    |  6 ++++++
- 2 files changed, 50 insertions(+)
- create mode 100755 scripts/setup_civ_ini.sh
 
 diff --git a/scripts/setup_civ_ini.sh b/scripts/setup_civ_ini.sh
 new file mode 100755
@@ -64,10 +59,10 @@ index 0000000..aab7697
 +setup_civ_ini
 +
 diff --git a/scripts/setup_host.sh b/scripts/setup_host.sh
-index c9a7025..7178667 100755
+index db20b4e..7dc4976 100755
 --- a/scripts/setup_host.sh
 +++ b/scripts/setup_host.sh
-@@ -327,6 +327,11 @@ function setup_power_button(){
+@@ -319,6 +319,11 @@ function setup_power_button(){
      reboot_required=1
  }
  
@@ -79,7 +74,7 @@ index c9a7025..7178667 100755
  # This is for lg setup
  function ubu_install_lg_client(){
      if [[ $1 == "PGP" ]]; then
-@@ -554,6 +559,7 @@ ubu_enable_host_gvt
+@@ -547,6 +552,7 @@ ubu_enable_host_sriov
  ubu_update_fw
  
  install_vm_manager
@@ -88,5 +83,5 @@ index c9a7025..7178667 100755
  prepare_required_scripts
  ubu_install_swtpm
 -- 
-2.39.2
+2.40.0
 

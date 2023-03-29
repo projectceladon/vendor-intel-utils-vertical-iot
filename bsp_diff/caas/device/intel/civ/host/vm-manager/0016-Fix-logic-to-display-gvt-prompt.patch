@@ -1,7 +1,7 @@
-From 587fd5bd128c09e4cbf233b179eff5033d33b0f6 Mon Sep 17 00:00:00 2001
+From 747c0cc4a6e41a3ef2bab046b3bbc273e80fdac6 Mon Sep 17 00:00:00 2001
 From: "Suresh, Prashanth" <prashanth.suresh@intel.com>
 Date: Thu, 2 Mar 2023 14:08:42 +0530
-Subject: [PATCH] Fix logic to display gvt prompt
+Subject: [PATCH 16/18] Fix logic to display gvt prompt
 
 Changes:
 - improved string matching to handle both hex and decimal
@@ -9,9 +9,6 @@ Changes:
 
 Tracked-On:
 Signed-off-by: Suresh, Prashanth <prashanth.suresh@intel.com>
----
- scripts/setup_host.sh | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/scripts/setup_host.sh b/scripts/setup_host.sh
 index be32911..c21e0f4 100755
@@ -27,5 +24,5 @@ index be32911..c21e0f4 100755
          read -p "Do you want to update the grub entry in '/etc/default/grub' for enabling GVT-g and GVT-d? [Y/n]" res
          if [ x$res = xn ]; then
 -- 
-2.39.2
+2.40.0
 

@@ -1,7 +1,7 @@
-From d0163f1ea3780ffd397a30aaf4bc94a4a997b9b1 Mon Sep 17 00:00:00 2001
+From 180c2b0eca21e09b859b0f13f7a6bd15b90fa3f8 Mon Sep 17 00:00:00 2001
 From: vdanix <vishwanathx.dani@intel.com>
 Date: Tue, 4 Oct 2022 13:40:22 +0530
-Subject: [PATCH] From Horizontal changes taken in start_flash_usb.sh
+Subject: [PATCH 09/18] From Horizontal changes taken in start_flash_usb.sh
 
 From Master commit "support celadon ISO image flashing
 in start_flash_usb.sh script"
@@ -84,5 +84,5 @@ index df2f88d..eb13016 100755
    -device virtio-scsi-pci,id=scsi0,addr=0x8 \
    -drive file=./android.qcow2,if=none,format=qcow2,id=scsidisk1 \
 -- 
-2.37.3
+2.40.0
 

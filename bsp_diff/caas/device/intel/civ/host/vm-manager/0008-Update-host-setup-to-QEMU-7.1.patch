@@ -1,19 +1,16 @@
-From 56633a908fddd39b9a15fccbe667bc6386717925 Mon Sep 17 00:00:00 2001
+From 9a56ccab1d9cc73b49e2d22aed9a20c98897722f Mon Sep 17 00:00:00 2001
 From: "Suresh, Prashanth" <prashanth.suresh@intel.com>
 Date: Thu, 2 Mar 2023 13:49:14 +0530
-Subject: [PATCH] Update host setup to QEMU 7.1
+Subject: [PATCH 08/18] Update host setup to QEMU 7.1
 
 Change:
 - updated setup_host.sh to install QEMU 7.1
 - ensured submodules are updated before patching
 
 Signed-off-by: Suresh, Prashanth <prashanth.suresh@intel.com>
----
- scripts/setup_host.sh | 5 ++---
- 1 file changed, 2 insertions(+), 3 deletions(-)
 
 diff --git a/scripts/setup_host.sh b/scripts/setup_host.sh
-index 63190c0..be32911 100755
+index 2729d18..7998b7a 100755
 --- a/scripts/setup_host.sh
 +++ b/scripts/setup_host.sh
 @@ -9,7 +9,7 @@ set -eE
@@ -25,7 +22,7 @@ index 63190c0..be32911 100755
  
  #Directory to keep versions of qemu which can be reused instead of downloading again
  QEMU_CACHE_DIR="$HOME/.cache/civ/qemu"
-@@ -127,6 +127,7 @@ function ubu_build_ovmf_gvt(){
+@@ -119,6 +119,7 @@ function ubu_build_ovmf_gvt(){
      git clone https://github.com/tianocore/edk2.git
      cd $CIV_WORK_DIR/edk2
      git checkout -b stable202111 edk2-stable202111
@@ -33,7 +30,7 @@ index 63190c0..be32911 100755
  
      patch -p1 < $CIV_WORK_DIR/patches/ovmf/0001-OvmfPkg-add-IgdAssignmentDxe.patch
      if [ -d $CIV_GOP_DIR ]; then
-@@ -142,8 +143,6 @@ function ubu_build_ovmf_gvt(){
+@@ -134,8 +135,6 @@ function ubu_build_ovmf_gvt(){
          done
      fi
  
@@ -41,7 +38,7 @@ index 63190c0..be32911 100755
 -
      cd $CIV_WORK_DIR/edk2/BaseTools/
      patch -p1 < $CIV_WORK_DIR/patches/ovmf/0002-Fix-vla-parameter-error.patch
-
+ 
 -- 
-2.39.2
+2.40.0
 
