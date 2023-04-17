@@ -1,0 +1,50 @@
+From 7d8e82dcf442f068a52017d98167bcba274a4eea Mon Sep 17 00:00:00 2001
+From: Kalyan Alle <kalyan.alle@intel.com>
+Date: Fri, 20 Jan 2023 07:48:21 +0530
+Subject: [PATCH] Revert WA to retrieve the entire supported modelist from
+ HwComposer
+
+Set the default value to 0 for preferred modelist limited property
+
+Change-Id: Id0d4238dc89371719589b9659e46fdb2a855b306
+Tracked-On: OAM-108818
+Signed-off-by: amudassx <afrax.mudassir@intel.com>
+
+diff --git a/bsp_diff/caas/vendor/intel/external/drm-hwcomposer/0001-Wa-to-retrieve-the-entire-supported-modelist-from-hw.patch b/bsp_diff/caas/vendor/intel/external/drm-hwcomposer/0001-Wa-to-retrieve-the-entire-supported-modelist-from-hw.patch
+new file mode 100644
+index 0000000..aaf2241
+--- /dev/null
++++ b/bsp_diff/caas/vendor/intel/external/drm-hwcomposer/0001-Wa-to-retrieve-the-entire-supported-modelist-from-hw.patch
+@@ -0,0 +1,29 @@
++From a9fe8d18e557b524e5a151a5b89e53aff2377382 Mon Sep 17 00:00:00 2001
++From: kalle <kalyan.alle@intel.com>
++Date: Fri, 13 Jan 2023 15:01:40 +0530
++Subject: [PATCH] Wa to retrieve the entire supported modelist from hwcomposer
++
++Set the default value to 0 for preferred modelist limit property.
++
++Tracked-On: OAM-105464
++Signed-off-by: Shekhar Chauhan shekhar.chauhan@intel.com
++---
++ drm/DrmDevice.cpp | 2 +-
++ 1 file changed, 1 insertion(+), 1 deletion(-)
++
++diff --git a/drm/DrmDevice.cpp b/drm/DrmDevice.cpp
++index c8662dd..9ecbdfb 100755
++--- a/drm/DrmDevice.cpp
+++++ b/drm/DrmDevice.cpp
++@@ -102,7 +102,7 @@ auto DrmDevice::Init(const char *path) -> int {
++ 
++   char property[PROPERTY_VALUE_MAX];
++   memset(property, 0 , PROPERTY_VALUE_MAX);
++-  property_get("vendor.hwcomposer.preferred.mode.limit", property, "1");
+++  property_get("vendor.hwcomposer.preferred.mode.limit", property, "0");
++   preferred_mode_limit_ = atoi(property) != 0 ? true : false;
++   ALOGD("The property 'vendor.hwcomposer.preferred.mode.limit' value is %d", preferred_mode_limit_);
++ 
++-- 
++2.17.1
++
+-- 
+2.40.0
+
