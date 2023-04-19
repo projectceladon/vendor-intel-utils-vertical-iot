@@ -1,0 +1,45 @@
+From 9fe426eda134e17e3199c425b15ea78e76f42b14 Mon Sep 17 00:00:00 2001
+From: "Suresh, Prashanth" <prashanth.suresh@intel.com>
+Date: Wed, 5 Apr 2023 14:19:14 +0530
+Subject: [PATCH] Add parameters to config ini to support HPD feature.
+
+Add display related featured for HPD support on Android.
+Tracked-On:
+---
+ sample/guest01.ini    | 7 +++++++
+ scripts/setup_host.sh | 1 +
+ 2 files changed, 8 insertions(+)
+
+diff --git a/sample/guest01.ini b/sample/guest01.ini
+index 0542a20..4ea3b73 100644
+--- a/sample/guest01.ini
++++ b/sample/guest01.ini
+@@ -71,6 +71,13 @@ support_suspend=enable
+ #making audio passthrough for guest. In all other cases use "legacy-hda" only.
+ audio_type=legacy-hda
+ 
++#"show_fps" should be set to "on" if FPS is to be displayed. It can be set to "off"
++#if not required.
++[display]
++#connectors.0=
++#connectors.1=
++#show_fps=
++
+ [passthrough]
+ #specified the PCI id here if you want to passthrough it to guest, seperate them with comma
+ passthrough_pci=0000:00:14.0,
+diff --git a/scripts/setup_host.sh b/scripts/setup_host.sh
+index cc697a8..3df928e 100755
+--- a/scripts/setup_host.sh
++++ b/scripts/setup_host.sh
+@@ -180,6 +180,7 @@ function install_vm_manager_src() {
+         git clone https://github.com/projectceladon/vm_manager.git || return -1
+     fi
+     cd vm_manager/
++    git apply $CIV_WORK_DIR/vertical_patches/host/vm-manager/*.patch
+     make || return -1
+     sudo make install || return -1
+     cd -
+-- 
+2.40.0
+
