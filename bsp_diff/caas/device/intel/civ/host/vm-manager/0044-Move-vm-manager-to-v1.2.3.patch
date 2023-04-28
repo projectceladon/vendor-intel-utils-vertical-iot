@@ -1,0 +1,62 @@
+From 56a59611919ea88acfc8d2dfa1a44083811015d3 Mon Sep 17 00:00:00 2001
+From: "Suresh, Prashanth" <prashanth.suresh@intel.com>
+Date: Fri, 28 Apr 2023 22:02:00 +0530
+Subject: [PATCH] Move vm-manager to v1.2.3.
+
+Upgrade vm-manager to latest release.
+
+Tracked-On:
+---
+ sample/guest01.ini    |  4 ++--
+ scripts/setup_host.sh | 11 +++++++----
+ 2 files changed, 9 insertions(+), 6 deletions(-)
+
+diff --git a/sample/guest01.ini b/sample/guest01.ini
+index 4ea3b73..225402a 100644
+--- a/sample/guest01.ini
++++ b/sample/guest01.ini
+@@ -74,8 +74,8 @@ audio_type=legacy-hda
+ #"show_fps" should be set to "on" if FPS is to be displayed. It can be set to "off"
+ #if not required.
+ [display]
+-#connectors.0=
+-#connectors.1=
++#connectors_0=
++#connectors_1=
+ #show_fps=
+ 
+ [passthrough]
+diff --git a/scripts/setup_host.sh b/scripts/setup_host.sh
+index 3df928e..0c1e0a1 100755
+--- a/scripts/setup_host.sh
++++ b/scripts/setup_host.sh
+@@ -18,7 +18,7 @@ QEMU_CACHE_DIR="$HOME/.cache/civ/qemu"
+ CIV_WORK_DIR=$(pwd)
+ CIV_GOP_DIR=$CIV_WORK_DIR/GOP_PKG
+ CIV_VERTICAl_DIR=$CIV_WORK_DIR/vertical_patches/host
+-VM_MANAGER_VERSION=celadon/s/mr0/stable
++VM_MANAGER_VERSION=v1.2.3
+ 
+ #---------      Functions    -------------------
+ function error() {
+@@ -179,11 +179,14 @@ function install_vm_manager_src() {
+     else
+         git clone https://github.com/projectceladon/vm_manager.git || return -1
+     fi
++    sudo apt install -y cmake
+     cd vm_manager/
+     git apply $CIV_WORK_DIR/vertical_patches/host/vm-manager/*.patch
+-    make || return -1
+-    sudo make install || return -1
+-    cd -
++    mkdir build && cd build
++    cmake -DCMAKE_BUILD_TYPE=Release ..
++    cmake --build . --config Release
++    cp src/vm-manager /usr/bin/
++    cd $CIV_WORK_DIR
+     rm -rf vm_manager/
+ }
+ 
+-- 
+2.40.1
+
