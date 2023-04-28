@@ -1,0 +1,137 @@
+From ded5be3b145349e93282a34f45de26fcb84b46d1 Mon Sep 17 00:00:00 2001
+From: "Suresh, Prashanth" <prashanth.suresh@intel.com>
+Date: Fri, 28 Apr 2023 19:25:54 +0530
+Subject: [PATCH] Add support for HPD.
+
+VM manager changes for Hot pluggable display.
+---
+ src/guest/config_parser.cc   |  2 +-
+ src/guest/config_parser.h    |  3 ++
+ src/guest/vm_builder_qemu.cc | 58 ++++++++++++++++++++++++++++++++++--
+ 3 files changed, 60 insertions(+), 3 deletions(-)
+
+diff --git a/src/guest/config_parser.cc b/src/guest/config_parser.cc
+index d2b04c8..9946a2f 100644
+--- a/src/guest/config_parser.cc
++++ b/src/guest/config_parser.cc
+@@ -35,7 +35,7 @@ map<string_view, vector<string_view>> kConfigMap = {
+     { kGroupFirm,    { kFirmType, kFirmPath, kFirmCode, kFirmVars } },
+     { kGroupDisk,    { kDiskSize, kDiskPath } },
+     { kGroupVgpu,    { kVgpuType, kVgpuGvtgVer, kVgpuUuid, kVgpuMonId, kVgpuOutputs } },
+-    { kGroupDisplay, { kDispOptions } },
++    { kGroupDisplay, { kDispOptions, kDispConnector0, kDispConnector1, kDispShowFps } },
+     { kGroupNet,     { kNetModel, kNetAdbPort, kNetFastbootPort } },
+     { kGroupVtpm,    { kVtpmBinPath, kVtpmDataDir } },
+     { kGroupRpmb,    { kRpmbBinPath, kRpmbDataDir } },
+diff --git a/src/guest/config_parser.h b/src/guest/config_parser.h
+index 947bc42..b793907 100644
+--- a/src/guest/config_parser.h
++++ b/src/guest/config_parser.h
+@@ -61,6 +61,9 @@ constexpr char kVgpuMonId[]    = "monitor";
+ constexpr char kVgpuOutputs[]    = "outputs";
+ 
+ constexpr char kDispOptions[] = "options";
++constexpr char kDispConnector0[] = "connectors_0";
++constexpr char kDispConnector1[] = "connectors_1";
++constexpr char kDispShowFps[] = "show_fps";
+ 
+ constexpr char kNetModel[] = "model";
+ constexpr char kNetAdbPort[] = "adb_port";
+diff --git a/src/guest/vm_builder_qemu.cc b/src/guest/vm_builder_qemu.cc
+index b06b51f..21a18eb 100644
+--- a/src/guest/vm_builder_qemu.cc
++++ b/src/guest/vm_builder_qemu.cc
+@@ -68,6 +68,17 @@ constexpr const unsigned int kExecQuantum = 25;
+ 
+ constexpr const char *kQmpPowerSocket = "/tmp/qmp-pwr-socket-";
+ 
++const std::string connectors[8] = {
++                "HDMI-1",
++                "HDMI-2",
++                "HDMI-3",
++                "HDMI-4",
++                "DP-1",
++                "DP-2",
++                "DP-3",
++                "DP-4",
++        };
++
+ static bool CheckUuid(std::string uuid) {
+     try {
+         boost::uuids::string_generator gen;
+@@ -281,6 +292,46 @@ bool VmBuilderQemu::SetupSriov(void) {
+         emul_cmd_.append(" -display gtk,gl=on,monitor=" + vgpu_mon_id);
+     }
+ 
++    int numberOfDisplays = 0;
++    std::string connectors_0 = cfg_.GetValue(kGroupDisplay, kDispConnector0);
++    std::string connectors_1 = cfg_.GetValue(kGroupDisplay, kDispConnector1);
++    std::string connector_str;
++    bool isConnector0Valid = false;
++    bool isConnector1Valid = false;
++    std::string show_fps = cfg_.GetValue(kGroupDisplay, kDispShowFps);
++    if (!show_fps.empty() && (show_fps.compare("on") == 0 || show_fps.compare("off") == 0)) {
++        emul_cmd_.append(",show-fps=" + show_fps + ",");
++    } else if (show_fps.empty()){
++        emul_cmd_.append(",show-fps=off,");
++    } else {
++	LOG(error) << "Please enter a valid value for show_fps.";
++	return false;
++    }
++
++    for(int i = 0; i < 8; i++) {
++        if(!connectors_0.empty() && connectors_0.compare(connectors[i]) == 0) {
++                        numberOfDisplays++;
++                        connector_str.append("connectors.0=");
++                        connector_str.append(connectors_0);
++                        connector_str.append(",");
++			isConnector0Valid = true;
++        }
++        if(!connectors_1.empty() && connectors_1.compare(connectors[i]) == 0) {
++                        numberOfDisplays++;
++                        connector_str.append("connectors.1=");
++                        connector_str.append(connectors_1);
++                        connector_str.append(",");
++			isConnector1Valid = true;
++        }
++    }
++
++    if((!connectors_0.empty() && isConnector0Valid == false) || (!connectors_1.empty() && isConnector1Valid == false)) {
++	    LOG(error) << "Please enter a valid value for connectors";
++	    return false;
++    }
++
++    emul_cmd_.append(connector_str);
++
+     std::string mem_size = cfg_.GetValue(kGroupMem, kMemSize);
+     boost::trim(mem_size);
+ 
+@@ -292,7 +343,7 @@ bool VmBuilderQemu::SetupSriov(void) {
+     if (vf < 0)
+         return false;
+ 
+-    emul_cmd_.append(" -device virtio-vga,max_outputs=1,blob=true"
++    emul_cmd_.append(" -device virtio-vga,max_outputs=" + ((numberOfDisplays > 0 ) ? std::to_string(numberOfDisplays) : "1") + ",blob=true"
+                     " -device vfio-pci,host=0000:00:02." + std::to_string(vf) +
+                     " -object memory-backend-memfd,hugetlb=on,id=mem_sriov,size=" + mem_size +
+                     " -machine memory-backend=mem_sriov");
+@@ -791,12 +842,15 @@ void VmBuilderQemu::BuildVinputCmd(void) {
+ }
+ 
+ void VmBuilderQemu::BuildDispCmd(void) {
++    std::string vgpu_type = cfg_.GetValue(kGroupVgpu, kVgpuType);
++    if(vgpu_type.compare(kVgpuSriov) == 0) {
++	    return;
++    }
+     std::string disp_op = cfg_.GetValue(kGroupDisplay, kDispOptions);
+     if (disp_op.empty()) {
+         emul_cmd_.append(" -display gtk,gl=on");
+         return;
+     }
+-
+     emul_cmd_.append(" -display " + disp_op);
+ }
+ 
+-- 
+2.34.1
+
