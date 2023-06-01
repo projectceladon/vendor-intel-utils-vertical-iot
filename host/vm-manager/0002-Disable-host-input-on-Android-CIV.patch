@@ -1,0 +1,57 @@
+From 0c7c3ebbf273e82f77dc45d6f6a053530589c07a Mon Sep 17 00:00:00 2001
+From: "Suresh, Prashanth" <prashanth.suresh@intel.com>
+Date: Thu, 1 Jun 2023 19:25:22 +0530
+Subject: [PATCH] Disable host input on Android CIV
+
+- Disable host input based on value from ini file.
+---
+ src/guest/config_parser.cc   | 2 +-
+ src/guest/config_parser.h    | 1 +
+ src/guest/vm_builder_qemu.cc | 6 ++++++
+ 3 files changed, 8 insertions(+), 1 deletion(-)
+
+diff --git a/src/guest/config_parser.cc b/src/guest/config_parser.cc
+index 9946a2f..6cfaae5 100644
+--- a/src/guest/config_parser.cc
++++ b/src/guest/config_parser.cc
+@@ -35,7 +35,7 @@ map<string_view, vector<string_view>> kConfigMap = {
+     { kGroupFirm,    { kFirmType, kFirmPath, kFirmCode, kFirmVars } },
+     { kGroupDisk,    { kDiskSize, kDiskPath } },
+     { kGroupVgpu,    { kVgpuType, kVgpuGvtgVer, kVgpuUuid, kVgpuMonId, kVgpuOutputs } },
+-    { kGroupDisplay, { kDispOptions, kDispConnector0, kDispConnector1, kDispShowFps } },
++    { kGroupDisplay, { kDispOptions, kDispConnector0, kDispConnector1, kDispShowFps, kDisableHostInput } },
+     { kGroupNet,     { kNetModel, kNetAdbPort, kNetFastbootPort } },
+     { kGroupVtpm,    { kVtpmBinPath, kVtpmDataDir } },
+     { kGroupRpmb,    { kRpmbBinPath, kRpmbDataDir } },
+diff --git a/src/guest/config_parser.h b/src/guest/config_parser.h
+index b793907..80d8a12 100644
+--- a/src/guest/config_parser.h
++++ b/src/guest/config_parser.h
+@@ -64,6 +64,7 @@ constexpr char kDispOptions[] = "options";
+ constexpr char kDispConnector0[] = "connectors_0";
+ constexpr char kDispConnector1[] = "connectors_1";
+ constexpr char kDispShowFps[] = "show_fps";
++constexpr char kDisableHostInput[] = "disable_host_input";
+ 
+ constexpr char kNetModel[] = "model";
+ constexpr char kNetAdbPort[] = "adb_port";
+diff --git a/src/guest/vm_builder_qemu.cc b/src/guest/vm_builder_qemu.cc
+index 21a18eb..c106684 100644
+--- a/src/guest/vm_builder_qemu.cc
++++ b/src/guest/vm_builder_qemu.cc
+@@ -332,6 +332,12 @@ bool VmBuilderQemu::SetupSriov(void) {
+ 
+     emul_cmd_.append(connector_str);
+ 
++    std::string disable_host_input = cfg_.GetValue(kGroupDisplay, kDisableHostInput);
++    if((!disable_host_input.empty()) && disable_host_input.compare("yes") == 0) {
++	LOG(info) << "Disabling host input";
++	emul_cmd_.append("input=off");
++    }
++
+     std::string mem_size = cfg_.GetValue(kGroupMem, kMemSize);
+     boost::trim(mem_size);
+ 
+-- 
+2.34.1
+
