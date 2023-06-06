@@ -1,0 +1,378 @@
+From 8378f6996196f81b2e475ede221a87826f0ca2fe Mon Sep 17 00:00:00 2001
+From: "Suresh, Prashanth" <prashanth.suresh@intel.com>
+Date: Wed, 28 Jun 2023 12:11:34 +0530
+Subject: [PATCH] Multi Android VM support
+
+Tracked-On: OAM-110639
+
+Signed-off-by: Suresh, Prashanth <prashanth.suresh@intel.com>
+---
+ scripts/setup_civ_ini.sh      |  47 ++++++++++--
+ scripts/setup_host.sh         |  51 +++++++++++--
+ scripts/setup_multi_civ_vm.sh | 137 ++++++++++++++++++++++++++++++++++
+ scripts/start_flash_usb.sh    |  22 +++++-
+ 4 files changed, 239 insertions(+), 18 deletions(-)
+ create mode 100755 scripts/setup_multi_civ_vm.sh
+
+diff --git a/scripts/setup_civ_ini.sh b/scripts/setup_civ_ini.sh
+index aab7697..2701194 100755
+--- a/scripts/setup_civ_ini.sh
++++ b/scripts/setup_civ_ini.sh
+@@ -8,29 +8,38 @@
+ set -eE
+ CIV_WORK_DIR=$(pwd)
+ USER_HOME=$(getent passwd $SUDO_USER | cut -d: -f6)
++VSOCK_ID=3
++VM_NAME=Android-CIV
++ADB_PORT=5555
++FASTBOOT_PORT=5554
+ 
+ function setup_civ_ini() {
+         filename=$(ls caas-flashfiles*)
+-        sed -i "/^\[global\]$/,/^\[/ s#^name.*#name=civ-sriov#" $USER_HOME/.intel/.civ/civ-sriov.ini
++        sed -i "/^\[global\]$/,/^\[/ s#^name.*#name=$VM_NAME#" $USER_HOME/.intel/.civ/civ-sriov.ini
+         sed -i "/^\[global\]$/,/^\[/ s#^flashfiles.*#flashfiles=$CIV_WORK_DIR\/$filename#" $USER_HOME/.intel/.civ/civ-sriov.ini
+-        sed -i "/^\[firmware\]$/,/^\[/ s#^path.*#path=$CIV_WORK_DIR\/OVMF.fd#" $USER_HOME/.intel/.civ/civ-sriov.ini
+-        sed -i "/^\[disk\]$/,/^\[/ s#^path.*#path=$CIV_WORK_DIR\/android.qcow2#" $USER_HOME/.intel/.civ/civ-sriov.ini
++	sed -i "/^\[global\]$/,/^\[/ s#^vsock_cid.*#vsock_cid=$VSOCK_ID#" $USER_HOME/.intel/.civ/civ-sriov.ini
++        sed -i "/^\[firmware\]$/,/^\[/ s#^path.*#path=$CIV_WORK_DIR\/$VM_NAME\/OVMF.fd#" $USER_HOME/.intel/.civ/civ-sriov.ini
++        sed -i "/^\[disk\]$/,/^\[/ s#^path.*#path=$CIV_WORK_DIR\/$VM_NAME\/android.qcow2#" $USER_HOME/.intel/.civ/civ-sriov.ini
+         sed -i "/^\[graphics\]$/,/^\[/ s#^type.*#type=SRIOV#" $USER_HOME/.intel/.civ/civ-sriov.ini
+ 
+         sed -i "/^\[graphics\]$/,/^\[/ s/^gvtg_version.*/#gvtg_version=/" $USER_HOME/.intel/.civ/civ-sriov.ini
+         sed -i "/^\[graphics\]$/,/^\[/ s/^vgpu_uuid.*/#vgpu_uuid=/" $USER_HOME/.intel/.civ/civ-sriov.ini
+ 
+         sed -i "/^\[net\]$/,/^\[/ s/^model.*/#model=/" $USER_HOME/.intel/.civ/civ-sriov.ini
++	sed -i "/^\[net\]$/,/^\[/ s/^adb_port.*/adb_port=$ADB_PORT/" $USER_HOME/.intel/.civ/civ-sriov.ini
++        sed -i "/^\[net\]$/,/^\[/ s/^fastboot_port.*/fastboot_port=$((ADB_PORT+1))/" $USER_HOME/.intel/.civ/civ-sriov.ini
+ 
+-        sed -i "/^\[vtpm\]$/,/^\[/ s#^data_dir.*#data_dir=$CIV_WORK_DIR\/vtpm0#" $USER_HOME/.intel/.civ/civ-sriov.ini
++        sed -i "/^\[vtpm\]$/,/^\[/ s#^data_dir.*#data_dir=$CIV_WORK_DIR\/$VM_NAME\/vtpm0#" $USER_HOME/.intel/.civ/civ-sriov.ini
+ 
+-        sed -i "/^\[rpmb\]$/,/^\[/ s#^bin_path.*#bin_path=$CIV_WORK_DIR\/scripts\/rpmb_dev#" $USER_HOME/.intel/.civ/civ-sriov.ini
+-        sed -i "/^\[rpmb\]$/,/^\[/ s#^data_dir.*#data_dir=$CIV_WORK_DIR#" $USER_HOME/.intel/.civ/civ-sriov.ini
++        sed -i "/^\[rpmb\]$/,/^\[/ s#^bin_path.*#bin_path=$CIV_WORK_DIR\/$VM_NAME\/scripts\/rpmb_dev#" $USER_HOME/.intel/.civ/civ-sriov.ini
++        sed -i "/^\[rpmb\]$/,/^\[/ s#^data_dir.*#data_dir=$CIV_WORK_DIR\/$VM_NAME#" $USER_HOME/.intel/.civ/civ-sriov.ini
+ 
+-        sed -i "/^\[aaf\]$/,/^\[/ s#^path.*#path=$CIV_WORK_DIR/scripts/aaf#" $USER_HOME/.intel/.civ/civ-sriov.ini
++        sed -i "/^\[aaf\]$/,/^\[/ s#^path.*#path=$CIV_WORK_DIR/$VM_NAME/scripts/aaf#" $USER_HOME/.intel/.civ/civ-sriov.ini
+         sed -i "/^\[aaf\]$/,/^\[/ s#^support_suspend.*#support_suspend=disable#" $USER_HOME/.intel/.civ/civ-sriov.ini
+ 
+         sed -i "/^\[passthrough\]$/,/^\[/ s/^passthrough_pci/#passthrough_pci/" $USER_HOME/.intel/.civ/civ-sriov.ini
++
++	mv $USER_HOME/.intel/.civ/civ-sriov.ini $USER_HOME/.intel/.civ/$VM_NAME.ini
+ }
+ 
+ function copy_civ_ini() {
+@@ -39,6 +48,30 @@ function copy_civ_ini() {
+         chmod 0666 $USER_HOME/.intel/.civ/civ-sriov.ini
+ }
+ 
++function read_args() {
++        while [[ $# -gt 0 ]]; do
++                case $1 in
++                        -v)
++                                VSOCK_ID=$2
++                                shift
++                                ;;
++
++                        -p)
++                                ADB_PORT=$2
++                                shift
++                                ;;
++
++                        -n)
++                                VM_NAME=$2
++                                shift
++                                ;;
++                esac
++                shift
++        done
++}
++
++read_args "$@"
++
+ copy_civ_ini
+ setup_civ_ini
+ 
+diff --git a/scripts/setup_host.sh b/scripts/setup_host.sh
+index 0c1e0a1..60bb206 100755
+--- a/scripts/setup_host.sh
++++ b/scripts/setup_host.sh
+@@ -19,6 +19,10 @@ CIV_WORK_DIR=$(pwd)
+ CIV_GOP_DIR=$CIV_WORK_DIR/GOP_PKG
+ CIV_VERTICAl_DIR=$CIV_WORK_DIR/vertical_patches/host
+ VM_MANAGER_VERSION=v1.2.3
++VSOCK_ID=3
++VM_NAME=Android-CIV1
++ADB_PORT=5555
++USER_HOME=$(getent passwd $SUDO_USER | cut -d: -f6)
+ 
+ #---------      Functions    -------------------
+ function error() {
+@@ -567,6 +571,11 @@ function parse_arg() {
+                 shift
+                 ;;
+ 
++            -n)
++                VM_NAME=$2
++                shift
++                ;;
++
+             -t)
+                 start_thermal_daemon || return -1
+                 ;;
+@@ -599,13 +608,40 @@ function parse_arg() {
+ }
+ 
+ function setup_civ_ini() {
+-        $CIV_WORK_DIR/scripts/setup_civ_ini.sh
++        $CIV_WORK_DIR/scripts/setup_civ_ini.sh -v $1 -p $2 -n $3
++}
++
++function create_vm_dir() {
++        if [ -d $CIV_WORK_DIR/$VM_NAME ]
++        then
++                echo "Folder with name $VM_NAME already present. Delete and create new folder? Please enter yes/no"
++		read input
++		if [ $input = "yes" ]; then
++	                rm -rf $CIV_DIR/$VM_NAME
++	        else
++	                exit
++	        fi
++        fi
++        echo "Creating Dir: $CIV_WORK_DIR/$VM_NAME"
++        mkdir $CIV_WORK_DIR/$VM_NAME
+ }
+ 
+-function create_aaf_dir() {
+-        mkdir -p $CIV_WORK_DIR/scripts/aaf
+-}
++function copy_files_for_vm() {
++    echo "Copying file: $CIV_WORK_DIR/$VM_NAME"
++    mkdir -p $CIV_WORK_DIR/$VM_NAME/scripts/aaf
+ 
++    req_files=("$CIV_WORK_DIR/OVMF.fd"
++                   "$CIV_WORK_DIR/scripts/rpmb_dev")
++    for file in ${req_files[@]}; do
++        if [ ! -f $file ]; then
++            echo "Error: $file file is missing"
++            exit -1
++        fi
++    done
++
++    cp $CIV_WORK_DIR/OVMF.fd $CIV_WORK_DIR/$VM_NAME/
++    cp $CIV_WORK_DIR/scripts/rpmb_dev $CIV_WORK_DIR/$VM_NAME/scripts/
++}
+ 
+ #-------------    main processes    -------------
+ 
+@@ -623,10 +659,11 @@ ubu_install_qemu_gvt
+ ubu_build_ovmf_gvt
+ ubu_enable_host_gvt
+ ubu_update_fw
+-
+ install_vm_manager
+-create_aaf_dir
+-setup_civ_ini
++
++create_vm_dir
++setup_civ_ini $VSOCK_ID $ADB_PORT $VM_NAME
++copy_files_for_vm
+ 
+ prepare_required_scripts
+ ubu_install_swtpm
+diff --git a/scripts/setup_multi_civ_vm.sh b/scripts/setup_multi_civ_vm.sh
+new file mode 100755
+index 0000000..3b5b14e
+--- /dev/null
++++ b/scripts/setup_multi_civ_vm.sh
+@@ -0,0 +1,137 @@
++#!/bin/bash
++
++# Copyright (c) 2023 Intel Corporation.
++# All rights reserved.
++#
++# SPDX-License-Identifier: Apache-2.0
++
++set -eE
++
++#---------      Global variable     -------------------
++CIV_DIR=$(pwd)
++USER_HOME=$(getent passwd $SUDO_USER | cut -d: -f6)
++VM_NAME=Android-CIV
++NUMBER_OF_VM=1
++ADB_PORT=5555
++INITIAL_VM_NUM=1
++SETUP_HOST_DONE=false
++
++function copy_files_for_vm_flashing() {
++    mkdir -p $CIV_DIR/$3/scripts/aaf
++
++    req_files=("$CIV_DIR/OVMF.fd"
++                   "$CIV_DIR/scripts/rpmb_dev")
++    for file in ${req_files[@]}; do
++        if [ ! -f $file ]; then
++            echo "Error: $file file is missing"
++            exit -1
++        fi
++    done
++
++    cp $CIV_DIR/OVMF.fd $CIV_DIR/$3/
++    cp $CIV_DIR/scripts/rpmb_dev $CIV_DIR/$3/scripts/
++}
++
++function create_vm_dirs() {
++    mkdir $CIV_DIR/$3
++    $CIV_DIR/scripts/setup_civ_ini.sh -v $1 -p $2 -n $3
++}
++
++
++function create_vms() {
++    create_vm_dirs $1 $2 $3
++    copy_files_for_vm_flashing $1 $2 $3
++}
++
++function setup_files() {
++    echo "Creating setup for VMs"
++    if [ -d $USER_HOME/.intel/.civ ]
++    then
++        SETUP_HOST_DONE=true
++    fi
++
++    new_dir=$CIV_DIR/$VM_NAME
++    if [ -n "$(ls -d ${new_dir}? 2> /dev/null )" ]; then
++	dir_arr=$(ls -d ${new_dir}?)
++	directories=( $dir_arr )
++	last_vm=${directories[-1]}
++	final_vm_name="${last_vm##*/}"
++	last_character=${final_vm_name: -1}
++	last_character=$((last_character+1))
++	INITIAL_VM_NUM=$last_character
++    fi
++
++    for (( i=$INITIAL_VM_NUM; i<$NUMBER_OF_VM+$INITIAL_VM_NUM; i++ ))
++    do
++	if [ $SETUP_HOST_DONE = false ]; then
++            echo "Error: Please ensure setup_host.sh has been run successfully first"
++	    exit -1
++	else
++	    create_vms $((i+2)) $((ADB_PORT+((i-1)*2))) ${VM_NAME}${i}
++	fi
++    done
++}
++
++function copy_files_for_vm() {
++    if [ -f "$CIV_DIR/$VM_NAME$INITIAL_VM_NUM/android.qcow2" ]; then
++        cp $CIV_DIR/$VM_NAME$INITIAL_VM_NUM/android.qcow2 $CIV_DIR/$VM_NAME$1
++    else
++        echo "android.qcow2 missing. Please run setup_host.sh, start_flash_usb.sh and try again"
++        exit
++    fi
++
++    if [ -d "$CIV_DIR/$VM_NAME$INITIAL_VM_NUM/vtpm0" ]; then
++        cp -r $CIV_DIR/$VM_NAME$INITIAL_VM_NUM/vtpm0 $CIV_DIR/$VM_NAME$1
++    else
++        echo "vtpm0 missing. Please run setup_host.sh, start_flash_usb.sh and try again"
++        exit
++    fi
++}
++
++function flash_vms() {
++    echo "Flashing VMs"
++    if [ -f caas-flashfiles-*.zip ]; then
++        ./scripts/start_flash_usb.sh caas-flashfiles-*.zip --display-off -n $VM_NAME$INITIAL_VM_NUM
++    else
++        echo "flashfiles missing. Please download and unzip the package correctly."
++        exit -1
++    fi
++
++    for (( i=$INITIAL_VM_NUM+1; i<$NUMBER_OF_VM+$INITIAL_VM_NUM; i++ ))
++    do
++        copy_files_for_vm $i
++        echo "Flashed ${VM_NAME}${i}"
++    done
++}
++
++function show_help() {
++    printf "Creates CIV guests under folder Android-CIVx, where x is the guest number.\n"
++    printf "Usage: \n"
++    printf "$(basename "$0") [-c] \n"
++    printf "Options:\n"
++    printf "\t-h  show this help message\n"
++    printf "\t-c  specify number of Android guests to be newly created. Default is 1.\n"
++}
++
++function parse_args() {
++    while [[ $# -gt 0 ]]; do
++        case $1 in
++	    -c)
++		NUMBER_OF_VM=$2
++		shift
++		;;
++
++	    -h|-\?|--help)
++                show_help
++                exit
++                ;;
++
++	esac
++        shift
++    done
++}
++
++parse_args "$@"
++setup_files
++flash_vms
++echo "Done: \"$(realpath $0) $@\""
+diff --git a/scripts/start_flash_usb.sh b/scripts/start_flash_usb.sh
+index eb13016..a4e851f 100755
+--- a/scripts/start_flash_usb.sh
++++ b/scripts/start_flash_usb.sh
+@@ -5,7 +5,21 @@
+ #
+ # SPDX-License-Identifier: Apache-2.0
+ 
+-WORK_DIR=$PWD
++WORK_DIR=$PWD/Android-CIV1
++
++function parse_args() {
++    while [[ $# -gt 0 ]]; do
++        case $1 in
++            -n)
++                WORK_DIR=$PWD/$2
++                shift
++                ;;
++        esac
++        shift
++    done
++}
++
++parse_args "$@"
+ 
+ [ $# -lt 1 ] && echo "Usage: $0 [caas-flashfiles-<variant>.zip] [caas-flashfile-<variant>.iso] [caas-flashfile-<variant>.iso.zip]" && exit -1
+ 
+@@ -36,9 +50,9 @@ done
+ 
+ if [ "$support_dedicated_data" = true ]
+ then
+-	qemu-img create -f qcow2 android.qcow2 8500M
++	qemu-img create -f qcow2 $WORK_DIR/android.qcow2 8500M
+ else
+-	qemu-img create -f qcow2 android.qcow2 32G
++	qemu-img create -f qcow2 $WORK_DIR/android.qcow2 32G
+ fi
+ 
+ decompress=flashfiles_decompress
+@@ -102,7 +116,7 @@ qemu-system-x86_64 \
+   -drive file=$virt_disk,id=udisk1,format=raw,if=none \
+   -device usb-storage,drive=udisk1,bus=xhci.0 \
+   -device virtio-scsi-pci,id=scsi0,addr=0x8 \
+-  -drive file=./android.qcow2,if=none,format=qcow2,id=scsidisk1 \
++  -drive file=$WORK_DIR/android.qcow2,if=none,format=qcow2,id=scsidisk1 \
+   -device scsi-hd,drive=scsidisk1,bus=scsi0.0 \
+   -drive file=$ovmf_file,format=raw,if=pflash \
+   -no-reboot \
+-- 
+2.41.0
+
