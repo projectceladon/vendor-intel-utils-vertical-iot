@@ -1,0 +1,52 @@
+From 27b4f35324bd6c94f9638d5e20c9fd6bfff02a88 Mon Sep 17 00:00:00 2001
+From: "Suresh, Prashanth" <prashanth.suresh@intel.com>
+Date: Wed, 28 Jun 2023 12:13:44 +0530
+Subject: [PATCH] Multi Android VM support
+
+Tracked-On: OAM-110639
+Signed-off-by: Suresh, Prashanth <prashanth.suresh@intel.com>
+---
+ groups/device-specific/caas/AndroidBoard.mk | 1 +
+ groups/device-specific/caas/BoardConfig.mk  | 1 +
+ groups/device-specific/caas/product.mk      | 1 +
+ 3 files changed, 3 insertions(+)
+
+diff --git a/groups/device-specific/caas/AndroidBoard.mk b/groups/device-specific/caas/AndroidBoard.mk
+index e9d8594..69d1b43 100644
+--- a/groups/device-specific/caas/AndroidBoard.mk
++++ b/groups/device-specific/caas/AndroidBoard.mk
+@@ -30,6 +30,7 @@ em-host-utilities:
+ ini-sample:
+ 	cp device/intel/civ/host/vm-manager/sample/guest01.ini $(PRODUCT_OUT)/scripts/civ-1.ini
+ 	cp device/intel/civ/host/vm-manager/scripts/setup_civ_ini.sh $(PRODUCT_OUT)/scripts/setup_civ_ini.sh
++	cp device/intel/civ/host/vm-manager/scripts/setup_multi_civ_vm.sh $(PRODUCT_OUT)/scripts/setup_multi_civ_vm.sh
+ 
+ .PHONY: host-pkg
+ host-pkg: em-host-utilities vinput-manager ini-sample
+diff --git a/groups/device-specific/caas/BoardConfig.mk b/groups/device-specific/caas/BoardConfig.mk
+index 3369348..b00642a 100644
+--- a/groups/device-specific/caas/BoardConfig.mk
++++ b/groups/device-specific/caas/BoardConfig.mk
+@@ -27,6 +27,7 @@ BOARD_FLASHFILES += $(PRODUCT_OUT)/scripts/thermald.service
+ BOARD_FLASHFILES += $(PRODUCT_OUT)/scripts/rpmb_dev
+ BOARD_FLASHFILES += $(PRODUCT_OUT)/scripts/civ-1.ini
+ BOARD_FLASHFILES += $(PRODUCT_OUT)/scripts/setup_civ_ini.sh
++BOARD_FLASHFILES += $(PRODUCT_OUT)/scripts/setup_multi_civ_vm.sh
+ 
+ # for USB OTG WA
+ BOARD_SEPOLICY_DIRS += $(INTEL_PATH_SEPOLICY)/bxt_usb
+diff --git a/groups/device-specific/caas/product.mk b/groups/device-specific/caas/product.mk
+index b18a5ac..4132b57 100755
+--- a/groups/device-specific/caas/product.mk
++++ b/groups/device-specific/caas/product.mk
+@@ -57,6 +57,7 @@ PRODUCT_COPY_FILES += $(LOCAL_PATH)/guest_pm_control:$(PRODUCT_OUT)/scripts/gues
+ PRODUCT_COPY_FILES += $(LOCAL_PATH)/intel-thermal-conf.xml:$(PRODUCT_OUT)/scripts/intel-thermal-conf.xml
+ PRODUCT_COPY_FILES += $(LOCAL_PATH)/thermald.service:$(PRODUCT_OUT)/scripts/thermald.service
+ PRODUCT_COPY_FILES += device/intel/civ/host/vm-manager/scripts/setup_host.sh:$(PRODUCT_OUT)/scripts/setup_host.sh
++PRODUCT_COPY_FILES += device/intel/civ/host/vm-manager/scripts/setup_multi_civ_vm.sh:$(PRODUCT_OUT)/scripts/setup_multi_civ_vm.sh
+ PRODUCT_COPY_FILES += device/intel/civ/host/vm-manager/scripts/guest_time_keeping.sh:$(PRODUCT_OUT)/scripts/guest_time_keeping.sh
+ PRODUCT_COPY_FILES += device/intel/civ/host/vm-manager/scripts/start_flash_usb.sh:$(PRODUCT_OUT)/scripts/start_flash_usb.sh
+ PRODUCT_COPY_FILES += vendor/intel/fw/trusty-release-binaries/rpmb_dev:$(PRODUCT_OUT)/scripts/rpmb_dev
+-- 
+2.41.0
+
