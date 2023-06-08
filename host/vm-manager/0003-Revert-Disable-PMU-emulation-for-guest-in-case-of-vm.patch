@@ -1,0 +1,29 @@
+From 731b81b98728d0e9e3d4c38db326ec809fdaed63 Mon Sep 17 00:00:00 2001
+From: "Chenthati, Pradeep" <pradeepx.chenthati@intel.com>
+Date: Thu, 8 Jun 2023 01:14:59 +0530
+Subject: [PATCH] Revert "Disable PMU emulation for guest in case of vmentry
+ failure"
+
+This reverts commit 9aefcfdf7915a53b326ab6c9f50af62a9e47c691.
+
+Tracked-On: OAM-110665
+---
+ src/guest/vm_builder_qemu.cc | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/guest/vm_builder_qemu.cc b/src/guest/vm_builder_qemu.cc
+index b06b51f..b816299 100644
+--- a/src/guest/vm_builder_qemu.cc
++++ b/src/guest/vm_builder_qemu.cc
+@@ -566,7 +566,7 @@ void VmBuilderQemu::BuildFixedCmd(void) {
+         " -M q35"
+         " -machine kernel_irqchip=on"
+         " -k en-us"
+-        " -cpu host,-waitpkg,pmu=off"
++        " -cpu host,-waitpkg"
+         " -enable-kvm"
+         " -device qemu-xhci,id=xhci,p2=8,p3=8"
+         " -device usb-mouse"
+-- 
+2.40.1
+
