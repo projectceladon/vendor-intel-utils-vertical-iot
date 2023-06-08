@@ -1,0 +1,49 @@
+From 3969b1da8fd70626c14599816b55ff05235eebf3 Mon Sep 17 00:00:00 2001
+From: vdanix <vishwanathx.dani@intel.com>
+Date: Thu, 8 Jun 2023 11:56:34 +0530
+Subject: [PATCH] WA add raptorlake platform for disabling pmu
+
+Tracked-On: OAM-110419
+Signed-off-by: vdanix <vishwanathx.dani@intel.com>
+
+diff --git a/arch/x86/events/core.c b/arch/x86/events/core.c
+index 15ff4e3b639b6..d11d5993a79c5 100644
+--- a/arch/x86/events/core.c
++++ b/arch/x86/events/core.c
+@@ -251,6 +251,8 @@ bool check_hw_exists(struct pmu *pmu, int num_counters, int num_counters_fixed)
+ 
+ 	if(boot_cpu_has(X86_FEATURE_HYPERVISOR) &&
+ 			(boot_cpu_data.x86_model == INTEL_FAM6_ALDERLAKE ||
++			 boot_cpu_data.x86_model == INTEL_FAM6_RAPTORLAKE ||
++			 boot_cpu_data.x86_model == INTEL_FAM6_RAPTORLAKE_P ||
+ 			boot_cpu_data.x86_model == INTEL_FAM6_ALDERLAKE_L)) {
+ 		pr_cont("Disabling PMU for VM on ADL.\n");
+ 		goto msr_fail;
+diff --git a/arch/x86/events/intel/core.c b/arch/x86/events/intel/core.c
+index d66b97d225aef..f227b647d643d 100644
+--- a/arch/x86/events/intel/core.c
++++ b/arch/x86/events/intel/core.c
+@@ -6117,6 +6117,8 @@ __init int intel_pmu_init(void)
+ 
+ 	case INTEL_FAM6_ALDERLAKE:
+ 	case INTEL_FAM6_ALDERLAKE_L:
++	case INTEL_FAM6_RAPTORLAKE:
++	case INTEL_FAM6_RAPTORLAKE_P:
+ 		/*
+ 		 * Alder Lake has 2 types of CPU, core and atom.
+ 		 *
+diff --git a/arch/x86/include/asm/intel-family.h b/arch/x86/include/asm/intel-family.h
+index 82c55ab6e9c50..577d2fec24ba7 100644
+--- a/arch/x86/include/asm/intel-family.h
++++ b/arch/x86/include/asm/intel-family.h
+@@ -101,6 +101,7 @@
+ #define INTEL_FAM6_ALDERLAKE_N		0xBE
+ 
+ #define INTEL_FAM6_RAPTORLAKE		0xB7
++#define INTEL_FAM6_RAPTORLAKE_P		0xBA
+ 
+ /* "Small Core" Processors (Atom) */
+ 
+-- 
+2.40.1
+
