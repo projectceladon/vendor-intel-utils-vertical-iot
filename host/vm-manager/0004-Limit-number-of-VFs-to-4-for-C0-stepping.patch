@@ -1,0 +1,50 @@
+From d86dd6212f8aec177debc35cfe681f2ca27228fc Mon Sep 17 00:00:00 2001
+From: intel <prashanth.suresh@intel.com>
+Date: Fri, 9 Jun 2023 00:39:37 +0530
+Subject: [PATCH 2/2] Limit number of VFs to 4 for C0 stepping.
+
+---
+ src/guest/vm_builder_qemu.cc | 20 ++++++++++++++++++++
+ 1 file changed, 20 insertions(+)
+
+diff --git a/src/guest/vm_builder_qemu.cc b/src/guest/vm_builder_qemu.cc
+index 9f8d869..04871f9 100644
+--- a/src/guest/vm_builder_qemu.cc
++++ b/src/guest/vm_builder_qemu.cc
+@@ -233,6 +233,21 @@ static bool LoadKernelModule(const char *path, const std::string &module) {
+ }
+ 
+ static int SetAvailableVf(void) {
++    boost::process::ipstream pipe_stream;
++    std::error_code ec;
++    boost::process::child c("dmidecode --type processor", boost::process::std_out > pipe_stream);
++    std::string line;
++    std::string stepping, family, model;
++    while (pipe_stream && std::getline(pipe_stream, line)) {
++        if (!line.empty() && line.find("ID:") != std::string::npos ) {
++	    stepping = line.substr(5, 2);
++	    family = line.substr(8, 2);
++	    model = line.substr(11, 2);
++	    break;
++        }
++        line.erase();
++    }
++ 
+     if (!LoadKernelModule(kVfioModulePath, "vfio"))
+         return -1;
+ 
+@@ -243,6 +258,11 @@ static int SetAvailableVf(void) {
+     if (totalvfs <= 0)
+         return -1;
+ 
++    if (!stepping.compare("A4") && !family.compare("06") && !model.compare("0A")) {
++        LOG(info) << "Limit max VFs for MTL-P less than C0 stepping";
++	totalvfs = 4;
++    }
++
+     int current_vfs = ReadSysFile(kIntelGpuSriovNumVfs, std::ios_base::dec);
+     if (current_vfs < 0)
+         return -1;
+-- 
+2.34.1
+
