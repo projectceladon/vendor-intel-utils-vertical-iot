@@ -1,0 +1,70 @@
+From 2670965ef6c3d92c72082e5413bdd59e2f42dbf8 Mon Sep 17 00:00:00 2001
+From: intel <prashanth.suresh@intel.com>
+Date: Thu, 8 Jun 2023 22:15:20 +0530
+Subject: [PATCH 1/2] Update preempt_timeout_us and exec_quantum_ms based on
+ kernel
+
+---
+ src/guest/vm_builder_qemu.cc | 25 +++++++++++++++++++++----
+ 1 file changed, 21 insertions(+), 4 deletions(-)
+
+diff --git a/src/guest/vm_builder_qemu.cc b/src/guest/vm_builder_qemu.cc
+index 21a18eb..9f8d869 100644
+--- a/src/guest/vm_builder_qemu.cc
++++ b/src/guest/vm_builder_qemu.cc
+@@ -10,6 +10,7 @@
+ #include <utility>
+ #include <memory>
+ #include <fstream>
++#include <sys/utsname.h>
+ 
+ #include <boost/process.hpp>
+ #include <boost/uuid/uuid.hpp>
+@@ -63,6 +64,10 @@ constexpr const char *kDrmCard0Vf = "/sys/class/drm/card0/iov/vf";
+ constexpr const char *kGtPreemptTimeoutUs = "/gt/preempt_timeout_us";
+ constexpr const char *kGtExecQuantumMs = "/gt/exec_quantum_ms";
+ 
++constexpr const char *kDrmCard0Vf6Ker = "/sys/class/drm/card0/prelim_iov/vf";
++constexpr const char *kGtPreemptTimeoutUs6Ker = "/gt0/preempt_timeout_us";
++constexpr const char *kGtExecQuantumMs6Ker = "/gt0/exec_quantum_ms";
++
+ constexpr const unsigned int kPreemptTimeout = 50000;
+ constexpr const unsigned int kExecQuantum = 25;
+ 
+@@ -263,17 +268,29 @@ static int SetAvailableVf(void) {
+         return false;
+     }
+ 
++    struct utsname osInfo{};
++    int kernel = 0;
++    uname(&osInfo);
++    std::cout << osInfo.release << std::endl;
++    LOG(info) << "Host kernel: " << osInfo.release;
++    std::string kernel_str (osInfo.release);
++    if (kernel_str.rfind("6.", 0) == 0) {
++	     kernel = 6;
++    } else if(kernel_str.rfind("5.", 0) == 0) {
++	     kernel = 5;
++    }
++
+     for (int i = 1; i < totalvfs; i++) {
+         std::string sd(kIntelGpuDevPath);
+         sd.replace(sd.end() - 2, sd.end(), std::to_string(i) + "/enable");
+         int status = ReadSysFile(sd.c_str(), std::ios_base::dec);
+         if (status == 0) {
+-            std::string timeoutPath = kDrmCard0Vf;
+-            timeoutPath.append(std::to_string(i) + kGtPreemptTimeoutUs);
++            std::string timeoutPath = ((kernel == 5) ? kDrmCard0Vf : kDrmCard0Vf6Ker);
++            timeoutPath.append(std::to_string(i) +  ((kernel == 5) ? kGtPreemptTimeoutUs : kGtPreemptTimeoutUs6Ker));
+             WriteSysFile(timeoutPath.c_str(), std::to_string(kPreemptTimeout));
+ 
+-            std::string execQuantumPath = kDrmCard0Vf;
+-            execQuantumPath.append(std::to_string(i) + kGtExecQuantumMs);
++            std::string execQuantumPath = ((kernel == 5) ? kDrmCard0Vf : kDrmCard0Vf6Ker);
++            execQuantumPath.append(std::to_string(i) + ((kernel == 5) ? kGtExecQuantumMs : kGtExecQuantumMs6Ker));
+             WriteSysFile(execQuantumPath.c_str(), std::to_string(kExecQuantum));
+             return i;
+         }
+-- 
+2.34.1
+
