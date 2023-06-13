@@ -1,0 +1,33 @@
+From 7f004a9599f35ee4f0169086d455df994a0a8c1e Mon Sep 17 00:00:00 2001
+From: "Panda,SushreeX" <sushreex.panda@intel.com>
+Date: Tue, 13 Jun 2023 10:07:17 +0530
+Subject: [PATCH] Android 12 [ADL] Bare Metal Boot Issue Fix
+
+Tracked-On: OAM-110715
+Signed-off-by: Panda,SushreeX <sushreex.panda@intel.com>
+
+diff --git a/drivers/gpu/drm/i915/display/intel_bw.c b/drivers/gpu/drm/i915/display/intel_bw.c
+index abec394f6869e..dabd7327fdf8d 100644
+--- a/drivers/gpu/drm/i915/display/intel_bw.c
++++ b/drivers/gpu/drm/i915/display/intel_bw.c
+@@ -408,11 +408,12 @@ static int tgl_get_bw_info(struct drm_i915_private *dev_priv, const struct intel
+ 			bi_next = &dev_priv->max_bw[i + 1];
+ 
+ 		clpchgroup = (sa->deburst * qi.deinterleave / num_channels) << i;
+-
+-		if (i < num_groups - 1 && clpchgroup < clperchgroup)
+-			bi_next->num_planes = (ipqdepth - clpchgroup) / clpchgroup + 1;
+-		else
+-			bi_next->num_planes = 0;
++		if (bi_next != NULL) {
++			if (i < num_groups - 1 && clpchgroup < clperchgroup)
++				bi_next->num_planes = (ipqdepth - clpchgroup) / clpchgroup + 1;
++			else
++				bi_next->num_planes = 0;
++		}
+ 
+ 		bi->num_qgv_points = qi.num_points;
+ 		bi->num_psf_gv_points = qi.num_psf_points;
+-- 
+2.40.1
+
