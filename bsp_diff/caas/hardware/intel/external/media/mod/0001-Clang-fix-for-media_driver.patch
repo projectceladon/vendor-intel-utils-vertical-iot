@@ -1,0 +1,183 @@
+From 65d3c069c5eb5ce84c35ec29fbf566486121f6ea Mon Sep 17 00:00:00 2001
+From: vdanix <vishwanathx.dani@intel.com>
+Date: Tue, 18 Jul 2023 15:32:15 +0530
+Subject: [PATCH] clang S fix for media_driver
+
+Tracked-On: OAM-111117
+Signed-off-by: vdanix <vishwanathx.dani@intel.com>
+
+diff --git a/cmrtlib/linux/hardware/cm_device_os.cpp b/cmrtlib/linux/hardware/cm_device_os.cpp
+index e21292283..f19c1c595 100644
+--- a/cmrtlib/linux/hardware/cm_device_os.cpp
++++ b/cmrtlib/linux/hardware/cm_device_os.cpp
+@@ -71,6 +71,7 @@ int32_t CmDevice_RT::GetSupportedAdapters(uint32_t &count)
+         drmDevicePtr devices[max_device];
+         int node_count = drmGetDevices(devices, max_device);
+         int supported_adapter_count = 0;
++        assert(devices);
+         for (int node_idx = 0; node_idx < node_count; ++node_idx)
+         {
+             char *card_name = strrchr(devices[node_idx]->nodes[0], '/');
+diff --git a/media_driver/agnostic/common/codec/hal/codechal_encode_wp.cpp b/media_driver/agnostic/common/codec/hal/codechal_encode_wp.cpp
+index 3b2f0ba3d..d88d22295 100644
+--- a/media_driver/agnostic/common/codec/hal/codechal_encode_wp.cpp
++++ b/media_driver/agnostic/common/codec/hal/codechal_encode_wp.cpp
+@@ -436,4 +436,4 @@ CodechalEncodeWP::~CodechalEncodeWP()
+ 
+     MOS_Delete(m_kernelState);
+     m_kernelState = nullptr;
+-}
+\ No newline at end of file
++}
+diff --git a/media_driver/agnostic/common/os/mos_graphicsresource.h b/media_driver/agnostic/common/os/mos_graphicsresource.h
+index ed428d9b2..acc2ea1a0 100644
+--- a/media_driver/agnostic/common/os/mos_graphicsresource.h
++++ b/media_driver/agnostic/common/os/mos_graphicsresource.h
+@@ -204,6 +204,7 @@ public:
+         //!
+         LockParams(PMOS_LOCK_PARAMS pLockFlags)
+         {
++            assert(pLockFlags);
+             m_forceCached  = pLockFlags->ForceCached;
+             m_noDecompress = pLockFlags->NoDecompress;
+             m_readRequest  = pLockFlags->ReadOnly;
+diff --git a/media_driver/agnostic/common/vp/hal/vphal_render_composite.cpp b/media_driver/agnostic/common/vp/hal/vphal_render_composite.cpp
+index 4a6a8c24c..e2761d7c5 100644
+--- a/media_driver/agnostic/common/vp/hal/vphal_render_composite.cpp
++++ b/media_driver/agnostic/common/vp/hal/vphal_render_composite.cpp
+@@ -3451,7 +3451,8 @@ int32_t CompositeState::SetLayer(
+             }
+             else
+             {
+-                //For Y210/Y216 with AVS(Y)+3D(U/V) sampler, the shift is not needed.
++		//For Y210/Y216 with AVS(Y)+3D(U/V) sampler, the shift is not needed.
++                assert(pSurfaceEntries);
+                 if ((pSource->Format == Format_Y210 ||
+                     pSource->Format == Format_Y216)
+                     && pSurfaceEntries[0]->bAVS)
+@@ -3587,6 +3588,7 @@ int32_t CompositeState::SetLayer(
+     // Geometry adjustments for BOB DI
+     //-----------------------------------
+     // Use width and height that were used to setup surface state for plane 0
++    assert(pSurfaceEntries);
+     pSurfaceEntry = pSurfaceEntries[0];
+     dwSurfStateHt = pSurfaceEntry->dwHeight;
+     dwSurfStateWd = pSurfaceEntry->dwWidth;
+diff --git a/media_driver/agnostic/common/vp/hal/vphal_render_vebox_base.cpp b/media_driver/agnostic/common/vp/hal/vphal_render_vebox_base.cpp
+index ea3e76640..36b80a078 100644
+--- a/media_driver/agnostic/common/vp/hal/vphal_render_vebox_base.cpp
++++ b/media_driver/agnostic/common/vp/hal/vphal_render_vebox_base.cpp
+@@ -2418,6 +2418,7 @@ void VPHAL_VEBOX_STATE::VeboxSetCommonRenderingFlags(
+     // bSameSamples flag also needs to be set for no reference case
+     else
+     {
++         assert(pCurSurf);
+          pRenderData->bSameSamples  =
+                WITHIN_BOUNDS(
+                       pCurSurf->FrameID - pVeboxState->iCurFrameID,
+diff --git a/media_driver/agnostic/common/vp/hal/vphal_renderer.cpp b/media_driver/agnostic/common/vp/hal/vphal_renderer.cpp
+index 21b2e8d00..8c2c4f167 100644
+--- a/media_driver/agnostic/common/vp/hal/vphal_renderer.cpp
++++ b/media_driver/agnostic/common/vp/hal/vphal_renderer.cpp
+@@ -787,7 +787,8 @@ MOS_STATUS VphalRenderer::RenderPass(
+                     VPHAL_RENDER_CHK_STATUS(VpHal_RndrRenderHDR(this, pRenderParams, &RenderPassData));
+                 }
+             }
+-            // restore render pointer and count.
++            // restore render pointer and count
++            assert(StoreRenderParams.pTarget[0]->b16UsrPtr);
+             pRenderParams->pTarget[0]            = StoreRenderParams.pTarget[0];
+             pRenderParams->pTarget[0]->b16UsrPtr = StoreRenderParams.pTarget[0]->b16UsrPtr;
+             pRenderParams->uDstCount             = StoreRenderParams.uDstCount;
+diff --git a/media_driver/agnostic/gen10/vp/hal/vphal_render_composite_g10.cpp b/media_driver/agnostic/gen10/vp/hal/vphal_render_composite_g10.cpp
+index 2ae1e0139..08fcfe278 100644
+--- a/media_driver/agnostic/gen10/vp/hal/vphal_render_composite_g10.cpp
++++ b/media_driver/agnostic/gen10/vp/hal/vphal_render_composite_g10.cpp
+@@ -54,7 +54,7 @@ void CompositeStateG10::SubmitStatesFillGenSpecificStaticData(
+ 
+     // Set ChromaSitting
+     pStatic->DW10.ObjKa2Gen9.ChromaSitingLocation = GetOutputChromaSitting(pTarget);
+-
++    assert(pRenderingData);
+     if (pRenderingData->iLayers > 0)
+     {
+         pStatic->DW09.ObjKa2Gen9.IEFByPassEnable = pRenderingData->pLayers[0]->bIEF ? false : true;
+diff --git a/media_driver/agnostic/gen11/hw/mhw_vebox_g11_X.cpp b/media_driver/agnostic/gen11/hw/mhw_vebox_g11_X.cpp
+index 8abb34da8..ccbe280fa 100644
+--- a/media_driver/agnostic/gen11/hw/mhw_vebox_g11_X.cpp
++++ b/media_driver/agnostic/gen11/hw/mhw_vebox_g11_X.cpp
+@@ -1419,7 +1419,7 @@ MOS_STATUS MhwVeboxInterfaceG11::AddVeboxGamutState(
+         else
+         {
+             pIecpState->CscState.DW0.TransformEnable = true;
+-
++            assert(pVeboxIecpParams);
+             if (pVeboxIecpParams->pfCscCoeff    &&
+                 pVeboxIecpParams->pfCscInOffset &&
+                 pVeboxIecpParams->pfCscOutOffset)
+diff --git a/media_driver/agnostic/gen11/vp/hal/vphal_render_composite_g11.cpp b/media_driver/agnostic/gen11/vp/hal/vphal_render_composite_g11.cpp
+index e450722d8..d1ddc0f60 100644
+--- a/media_driver/agnostic/gen11/vp/hal/vphal_render_composite_g11.cpp
++++ b/media_driver/agnostic/gen11/vp/hal/vphal_render_composite_g11.cpp
+@@ -54,7 +54,7 @@ void CompositeStateG11::SubmitStatesFillGenSpecificStaticData(
+ 
+     // Set ChromaSitting
+     pStatic->DW10.ObjKa2Gen9.ChromaSitingLocation = GetOutputChromaSitting(pTarget);
+-
++    assert(pRenderingData);
+     if (pRenderingData->iLayers > 0)
+     {
+         pStatic->DW09.ObjKa2Gen9.IEFByPassEnable = pRenderingData->pLayers[0]->bIEF ? false : true;
+diff --git a/media_driver/agnostic/gen8/vp/hal/vphal_render_composite_g8.cpp b/media_driver/agnostic/gen8/vp/hal/vphal_render_composite_g8.cpp
+index 09ddbe83c..31b0bd2bb 100644
+--- a/media_driver/agnostic/gen8/vp/hal/vphal_render_composite_g8.cpp
++++ b/media_driver/agnostic/gen8/vp/hal/vphal_render_composite_g8.cpp
+@@ -55,7 +55,7 @@ void CompositeStateG8::SubmitStatesFillGenSpecificStaticData(
+ 
+     // Set ChromaSitting
+     pStatic->DW10.ChromaSitingLocation = GetOutputChromaSitting(pTarget);
+-
++    assert(pRenderingData);
+     if (pRenderingData->iLayers > 0)
+     {
+         pStatic->DW09.ObjKa2Gen8.IEFByPassEnable = pRenderingData->pLayers[0]->bIEF ? false : true;
+diff --git a/media_driver/agnostic/gen9/vp/hal/vphal_render_composite_g9.cpp b/media_driver/agnostic/gen9/vp/hal/vphal_render_composite_g9.cpp
+index ac447bf72..1a99a16a6 100644
+--- a/media_driver/agnostic/gen9/vp/hal/vphal_render_composite_g9.cpp
++++ b/media_driver/agnostic/gen9/vp/hal/vphal_render_composite_g9.cpp
+@@ -54,7 +54,7 @@ void CompositeStateG9::SubmitStatesFillGenSpecificStaticData(
+ 
+     // Set ChromaSitting
+     pStatic->DW10.ObjKa2Gen9.ChromaSitingLocation = GetOutputChromaSitting(pTarget);
+-
++    assert(pRenderingData);
+     if (pRenderingData->iLayers > 0)
+     {
+         pStatic->DW09.ObjKa2Gen9.IEFByPassEnable = pRenderingData->pLayers[0]->bIEF ? false : true;
+diff --git a/media_driver/linux/common/codec/ddi/media_ddi_encode_hevc.cpp b/media_driver/linux/common/codec/ddi/media_ddi_encode_hevc.cpp
+index 262427fdd..39c8b1417 100644
+--- a/media_driver/linux/common/codec/ddi/media_ddi_encode_hevc.cpp
++++ b/media_driver/linux/common/codec/ddi/media_ddi_encode_hevc.cpp
+@@ -400,6 +400,7 @@ VAStatus DdiEncodeHevc::EncodeInCodecHal(uint32_t numSlices)
+         encoder->m_mfeEncodeParams.streamId  = 0;
+     }
+ 
++    assert(m_encodeCtx->pCodecHal);
+     MOS_STATUS status = m_encodeCtx->pCodecHal->Execute(&encodeParams);
+     if (MOS_STATUS_SUCCESS != status)
+     {
+diff --git a/media_softlet/agnostic/common/os/mos_graphicsresource_next.h b/media_softlet/agnostic/common/os/mos_graphicsresource_next.h
+index 48fea8456..bec3f380d 100644
+--- a/media_softlet/agnostic/common/os/mos_graphicsresource_next.h
++++ b/media_softlet/agnostic/common/os/mos_graphicsresource_next.h
+@@ -205,6 +205,7 @@ public:
+         //!
+         LockParams(PMOS_LOCK_PARAMS pLockFlags)
+         {
++            assert(pLockFlags);
+             m_forceCached  = pLockFlags->ForceCached;
+             m_noDecompress = pLockFlags->NoDecompress;
+             m_readRequest  = pLockFlags->ReadOnly;
+-- 
+2.41.0
+
