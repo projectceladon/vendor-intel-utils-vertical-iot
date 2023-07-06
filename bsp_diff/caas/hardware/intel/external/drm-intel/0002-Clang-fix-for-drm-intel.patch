@@ -1,0 +1,49 @@
+From 5574b474bcad893624837e37830a2b2995418fb1 Mon Sep 17 00:00:00 2001
+From: vdanix <vishwanathx.dani@intel.com>
+Date: Fri, 7 Jul 2023 05:17:35 +0530
+Subject: [PATCH] clang fix for drm
+
+Tracked-On: OAM-111116
+Signed-off-by: vdanix <vishwanathx.dani@intel.com>
+
+diff --git a/intel/intel_bufmgr_fake.c b/intel/intel_bufmgr_fake.c
+index 0cec51f5..cafd9065 100644
+--- a/intel/intel_bufmgr_fake.c
++++ b/intel/intel_bufmgr_fake.c
+@@ -550,6 +550,7 @@ evict_lru(drm_intel_bufmgr_fake *bufmgr_fake, unsigned int max_fence)
+ 			return 0;
+ 
+ 		set_dirty(&bo_fake->bo);
++		assert(bo_fake->block);
+ 		bo_fake->block = NULL;
+ 
+ 		free_block(bufmgr_fake, block, 0);
+@@ -573,6 +574,7 @@ evict_mru(drm_intel_bufmgr_fake *bufmgr_fake)
+ 			continue;
+ 
+ 		set_dirty(&bo_fake->bo);
++		assert(bo_fake->block);
+ 		bo_fake->block = NULL;
+ 
+ 		free_block(bufmgr_fake, block, 0);
+@@ -1030,7 +1032,8 @@ static int
+ 			} else {
+ 				assert(bo_fake->block);
+ 				bo_fake->dirty = 0;
+-
++				assert(bo_fake->block->fenced);
++				assert(bo_fake->block->virtual);
+ 				if (!(bo_fake->flags & BM_NO_FENCE_SUBDATA) &&
+ 				    bo_fake->block->fenced) {
+ 					drm_intel_fake_bo_wait_rendering_locked
+@@ -1185,6 +1188,7 @@ static int
+ 
+ 	assert(bo_fake->block);
+ 	assert(bo_fake->block->bo == &bo_fake->bo);
++	assert(bo_fake->block->mem);
+ 
+ 	bo->offset = bo_fake->block->mem->ofs;
+ 
+-- 
+2.41.0
+
