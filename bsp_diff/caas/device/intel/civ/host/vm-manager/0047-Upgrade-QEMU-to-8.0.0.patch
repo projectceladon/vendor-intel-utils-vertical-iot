@@ -1,0 +1,27 @@
+From d4bbd1fe9cfabd962e725d3985eca342c5631f89 Mon Sep 17 00:00:00 2001
+From: "Suresh, Prashanth" <prashanth.suresh@intel.com>
+Date: Sun, 23 Jul 2023 23:08:16 +0530
+Subject: [PATCH] Upgrade QEMU to 8.0.0
+
+Tracked-On: OAM-111335
+Signed-off-by: Suresh, Prashanth <prashanth.suresh@intel.com>
+---
+ scripts/setup_host.sh | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/scripts/setup_host.sh b/scripts/setup_host.sh
+index 60bb206..d64b309 100755
+--- a/scripts/setup_host.sh
++++ b/scripts/setup_host.sh
+@@ -9,7 +9,7 @@ set -eE
+ 
+ #---------      Global variable     -------------------
+ reboot_required=0
+-QEMU_REL="qemu-7.1.0"
++QEMU_REL="qemu-8.0.0"
+ skip_install_qemu=false
+ 
+ #Directory to keep versions of qemu which can be reused instead of downloading again
+-- 
+2.41.0
+
