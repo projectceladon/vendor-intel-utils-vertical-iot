@@ -1,0 +1,26 @@
+From e60d0c11f0bcd41c696879fadf8237952afbd3d5 Mon Sep 17 00:00:00 2001
+From: intel <prashanth.suresh@intel.com>
+Date: Wed, 2 Aug 2023 13:10:54 +0530
+Subject: [PATCH] Modify preempt_timeout_us
+
+Change preempt_timeout_us from 50000 to 500000
+---
+ src/guest/vm_builder_qemu.cc | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/guest/vm_builder_qemu.cc b/src/guest/vm_builder_qemu.cc
+index f1a3edc..a8f5923 100644
+--- a/src/guest/vm_builder_qemu.cc
++++ b/src/guest/vm_builder_qemu.cc
+@@ -68,7 +68,7 @@ constexpr const char *kDrmCard0Vf6Ker = "/sys/class/drm/card0/prelim_iov/vf";
+ constexpr const char *kGtPreemptTimeoutUs6Ker = "/gt0/preempt_timeout_us";
+ constexpr const char *kGtExecQuantumMs6Ker = "/gt0/exec_quantum_ms";
+ 
+-constexpr const unsigned int kPreemptTimeout = 50000;
++constexpr const unsigned long int kPreemptTimeout = 500000;
+ constexpr const unsigned int kExecQuantum = 25;
+ 
+ constexpr const char *kQmpPowerSocket = "/tmp/qmp-pwr-socket-";
+-- 
+2.34.1
+
