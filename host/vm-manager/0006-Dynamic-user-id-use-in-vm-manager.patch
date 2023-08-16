@@ -1,0 +1,24 @@
+From 69ffef22e6181c2c4f55168918def9b9f6c37873 Mon Sep 17 00:00:00 2001
+From: "Nagappa Koppad, Basanagouda" <basanagouda.nagappa.koppad@intel.com>
+Date: Wed, 16 Aug 2023 09:22:29 +0530
+Subject: [PATCH] Dynamic user id use in vm manager
+
+Tracked-On:
+Signed-off-by: Nagappa Koppad, Basanagouda <basanagouda.nagappa.koppad@intel.com>
+
+diff --git a/src/guest/vm_builder_qemu.cc b/src/guest/vm_builder_qemu.cc
+index b06b51f..e72603f 100644
+--- a/src/guest/vm_builder_qemu.cc
++++ b/src/guest/vm_builder_qemu.cc
+@@ -514,7 +514,7 @@ void VmBuilderQemu::BuildAudioCmd(void) {
+     emul_cmd_.append(" -device intel-hda"
+                      " -device hda-duplex,audiodev=android_spk"
+                      " -audiodev id=android_spk,timer-period=5000,driver=pa,"
+-                     "in.fixed-settings=off,out.fixed-settings=off,server=/run/user/1000/pulse/native");
++                     "in.fixed-settings=off,out.fixed-settings=off,server=/run/user/" + std::to_string(uid) + "/pulse/native");
+ }
+ 
+ void VmBuilderQemu::BuildExtraCmd(void) {
+-- 
+2.41.0
+
