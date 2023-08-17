@@ -1,0 +1,32 @@
+From eb460822584f48abb9b30793ec3b8fad3a26d316 Mon Sep 17 00:00:00 2001
+From: "Kothapeta, BikshapathiX" <bikshapathix.kothapeta@intel.com>
+Date: Thu, 17 Aug 2023 19:36:33 +0530
+Subject: [PATCH] Fix TPM error failure fix for NVIndex failure
+
+Multi Android VM support TPM error failure fix for NVIndex failure
+
+Tracked-On: OAM-111783
+Signed-off-by: Kothapeta, BikshapathiX <bikshapathix.kothapeta@intel.com>
+
+diff --git a/scripts/start_flash_usb.sh b/scripts/start_flash_usb.sh
+index a4e851f..7e78ab7 100755
+--- a/scripts/start_flash_usb.sh
++++ b/scripts/start_flash_usb.sh
+@@ -126,4 +126,14 @@ qemu-system-x86_64 \
+   -tpmdev emulator,id=tpm0,chardev=chrtpm \
+   -device tpm-crb,tpmdev=tpm0 \
+ 
++if [ -f $WORK_DIR/../OVMF.fd ] ; then
++    if [ "$(md5sum $WORK_DIR/../OVMF.fd|awk '{print $1}')" != "$(md5sum $WORK_DIR/OVMF.fd|awk '{print $1}')" ]; then
++        cp $WORK_DIR/../OVMF.fd $WORK_DIR/
++    else
++        echo "CheckSum matches skipping"
++    fi
++else
++   echo "Error OVMF.fd file is missing"
++fi
++
+ echo "Flashing is completed"
+-- 
+2.41.0
+
