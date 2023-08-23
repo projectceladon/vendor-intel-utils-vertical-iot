@@ -1,0 +1,26 @@
+From ab3a765aa11728e3ca396d950729e249e6fb1212 Mon Sep 17 00:00:00 2001
+From: prashanth <prashanth.suresh@intel.com>
+Date: Wed, 23 Aug 2023 16:49:25 +0530
+Subject: [PATCH] Android first launch issue
+
+Increase delay to wait for server to start.
+---
+ src/vm_manager.cc | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/vm_manager.cc b/src/vm_manager.cc
+index f08a70d..e67bae8 100644
+--- a/src/vm_manager.cc
++++ b/src/vm_manager.cc
+@@ -266,7 +266,7 @@ class CivOptions final {
+                         LOG(error) << "Cannot start server!";
+                         return false;
+                     }
+-                    boost::this_thread::sleep_for(boost::chrono::microseconds(100));
++                    boost::this_thread::sleep_for(boost::chrono::microseconds(1000));
+                 }
+             }
+         }
+-- 
+2.34.1
+
