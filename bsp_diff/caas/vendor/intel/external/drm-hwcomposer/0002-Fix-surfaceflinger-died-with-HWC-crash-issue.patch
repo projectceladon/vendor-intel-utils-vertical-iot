@@ -1,0 +1,26 @@
+From f71ff6cef39495f68e1bb98964dc48d192b0a95c Mon Sep 17 00:00:00 2001
+From: "Mi, Yanfeng" <yanfeng.mi@intel.com>
+Date: Tue, 18 Jul 2023 12:00:58 +0800
+Subject: [PATCH 2/2] Fix surfaceflinger died with HWC crash issue
+
+Tracked-On: OAM-110612
+---
+ hwc2_device/HwcDisplay.cpp | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/hwc2_device/HwcDisplay.cpp b/hwc2_device/HwcDisplay.cpp
+index a0e68b3..5eb1f06 100644
+--- a/hwc2_device/HwcDisplay.cpp
++++ b/hwc2_device/HwcDisplay.cpp
+@@ -956,7 +956,7 @@ HWC2::Error HwcDisplay::GetRenderIntents(
+     int32_t mode, uint32_t *outNumIntents,
+     int32_t * /*android_render_intent_v1_1_t*/ outIntents) {
+ 
+-  if (NULL == outNumIntents && NULL == outIntents) {
++  if (NULL == outNumIntents || NULL == outIntents) {
+     ALOGE("Null pointer error, outNumIntents: %p, outIntents: %p",
+           outNumIntents, outIntents);
+     return HWC2::Error::BadParameter;
+-- 
+2.42.0
+
