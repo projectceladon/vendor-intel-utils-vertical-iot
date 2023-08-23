@@ -1,0 +1,58 @@
+From f668a4137bb9da42b4fd2dea89de5d701544e94e Mon Sep 17 00:00:00 2001
+From: "Mi, Yanfeng" <yanfeng.mi@intel.com>
+Date: Mon, 10 Jul 2023 16:37:36 +0800
+Subject: [PATCH 1/2] Fix crash issue when hot-plugout primary display
+
+Tracked-On: OAM-108926
+---
+ hwc2_device/HwcDisplay.cpp | 20 ++++++++++++++++++++
+ 1 file changed, 20 insertions(+)
+
+diff --git a/hwc2_device/HwcDisplay.cpp b/hwc2_device/HwcDisplay.cpp
+index a90d9b9..a0e68b3 100644
+--- a/hwc2_device/HwcDisplay.cpp
++++ b/hwc2_device/HwcDisplay.cpp
+@@ -260,6 +260,16 @@ HWC2::Error HwcDisplay::GetClientTargetSupport(uint32_t width, uint32_t height,
+ 
+ HWC2::Error HwcDisplay::GetColorModes(uint32_t *num_modes, int32_t *modes) {
+ 
++  if (IsInHeadlessMode()) {
++    if (num_modes)
++      *num_modes = 1;
++
++    if (modes)
++      *modes = HAL_COLOR_MODE_NATIVE;
++
++    return HWC2::Error::None;
++  }
++
+   DrmConnector *conn = pipeline_->connector->Get();
+   ALOGD("%s, num_modes:%p, modes:%p, conn:%p", __FUNCTION__, num_modes, modes, conn);
+   if (conn && (!conn->IsHdrSupportedDevice() || !conn->IsConnectorHdrCapable())) {
+@@ -434,6 +444,10 @@ HWC2::Error HwcDisplay::GetHdrCapabilities(uint32_t *num_types,
+                                            float * max_average_luminance,
+                                            float * min_luminance) {
+   *num_types = 0;
++  if (IsInHeadlessMode()) {
++    return HWC2::Error::Unsupported;
++  }
++
+   DrmConnector *conn = pipeline_->connector->Get();
+ 
+   if (conn && conn->IsHdrSupportedDevice()) {
+@@ -948,6 +962,12 @@ HWC2::Error HwcDisplay::GetRenderIntents(
+     return HWC2::Error::BadParameter;
+   }
+ 
++  if (IsInHeadlessMode()) {
++    *outNumIntents = 1;
++    outIntents[0] = HAL_RENDER_INTENT_COLORIMETRIC;
++    return HWC2::Error::None;
++  }
++
+   DrmConnector *conn = pipeline_->connector->Get();
+ 
+   if (conn && !conn->IsHdrSupportedDevice()) {
+-- 
+2.42.0
+
