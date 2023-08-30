@@ -1,0 +1,325 @@
+From 2c0c51a45a3c7228acf4088d17a69f89e7f65de5 Mon Sep 17 00:00:00 2001
+From: intel <prashanth.suresh@intel.com>
+Date: Wed, 30 Aug 2023 11:32:13 +0530
+Subject: [PATCH] Handle proper allocation of hugepages, VFs
+
+- Using flocks to handle proper launch of VMs.
+
+Signed-off-by: Suresh, Prashanth <prashanth.suresh@intel.com>
+---
+ src/guest/vm_builder_qemu.cc | 152 ++++++++++++++++++++++++++++++-----
+ src/guest/vm_builder_qemu.h  |  12 +++
+ 2 files changed, 144 insertions(+), 20 deletions(-)
+
+diff --git a/src/guest/vm_builder_qemu.cc b/src/guest/vm_builder_qemu.cc
+index f1a3edc..efb0087 100644
+--- a/src/guest/vm_builder_qemu.cc
++++ b/src/guest/vm_builder_qemu.cc
+@@ -72,6 +72,7 @@ constexpr const unsigned int kPreemptTimeout = 50000;
+ constexpr const unsigned int kExecQuantum = 25;
+ 
+ constexpr const char *kQmpPowerSocket = "/tmp/qmp-pwr-socket-";
++constexpr const char *kSetupLock = "/tmp/sriov.setup.lock";
+ 
+ const std::string connectors[8] = {
+                 "HDMI-1",
+@@ -163,7 +164,7 @@ static int WriteSysFile(const char *sys_file, const std::string &str) {
+     }
+ }
+ 
+-static bool SetupHugePages(const std::string &mem_size) {
++bool VmBuilderQemu::SetupHugePages(const std::string &mem_size) {
+     if (mem_size.empty())
+         return false;
+ 
+@@ -193,35 +194,66 @@ static bool SetupHugePages(const std::string &mem_size) {
+         return false;
+     }
+ 
+-    /* Get free Huge pages */
+-    int free_hp = ReadSysFile(kSys2MFreeHugePages, std::ios_base::dec);
+-
+-    if (free_hp >= mem_mb/2)
+-        return true;
+-
+     /* Get nr hugepages */
+     int nr_hp = ReadSysFile(kSys2MNrHugePages, std::ios_base::dec);
+-    int required_hp = nr_hp - free_hp + mem_mb/2;
++    int required_hp = mem_mb/2;
++    int new_nr_hp = nr_hp + required_hp;
++    int read_hp = 0;
+ 
+     /* Try to allocate required huge pages */
+-    WriteSysFile(kSys2MNrHugePages, std::to_string(required_hp));
++    WriteSysFile(kSys2MNrHugePages, std::to_string(new_nr_hp));
+ 
+     /* check nr huge pages */
+     int wait_cnt = 0;
+-    while (nr_hp != required_hp) {
+-        nr_hp = ReadSysFile(kSys2MNrHugePages, std::ios_base::dec);
+-        if (wait_cnt < 200) {
+-            usleep(10000);
++    while (new_nr_hp != read_hp) {
++        if (wait_cnt < 10) {
++            sleep(1);
+             wait_cnt++;
+         } else {
+             LOG(error) << "Hugepage cannot achieve required size!\n";
+             return false;
+         }
+-    }
+ 
++        read_hp = ReadSysFile(kSys2MNrHugePages, std::ios_base::dec);
++        hp_alloc = read_hp - nr_hp;
++    }
++    LOG(error) << "Hugepages allocated successfully!";
+     return true;
+ }
+ 
++void VmBuilderQemu::CleanupHugePages(void) {
++    LOG(info) << "Cleaning up huge pages";
++    /* Get nr hugepages */
++    int nr_hp = ReadSysFile(kSys2MNrHugePages, std::ios_base::dec);
++    int new_nr_hp = nr_hp;
++
++    if (do_cleanup == true) {
++        int free_hp = ReadSysFile(kSys2MFreeHugePages, std::ios_base::dec);
++
++        if (free_hp == nr_hp)
++            new_nr_hp = 0;
++    } else if (hp_alloc > 0) {
++        //Restore hugepg allocated to VM
++        new_nr_hp = nr_hp - hp_alloc;
++    }
++
++    if (new_nr_hp != nr_hp) {
++        WriteSysFile(kSys2MNrHugePages, std::to_string(new_nr_hp));
++
++        //Check and wait for hugepages to be deallocated
++        int read_hp = 0;
++        int count = 0;
++        while (read_hp != new_nr_hp ) {
++            if  (count++ > 10)  {
++                LOG(error) << "Error: unable to deallocate hugepages";
++                return;
++            }
++            sleep(1);
++            read_hp = ReadSysFile(kSys2MNrHugePages, std::ios_base::dec);
++        }
++    }
++}
++
+ static bool LoadKernelModule(const char *path, const std::string &module) {
+     boost::system::error_code ec;
+     boost::filesystem::path p(path);
+@@ -232,7 +264,7 @@ static bool LoadKernelModule(const char *path, const std::string &module) {
+     return true;
+ }
+ 
+-static int SetAvailableVf(void) {
++int VmBuilderQemu::SetAvailableVf(void) {
+     boost::process::ipstream pipe_stream;
+     std::error_code ec;
+     boost::process::child c("dmidecode --type processor", boost::process::std_out > pipe_stream);
+@@ -285,7 +317,7 @@ static int SetAvailableVf(void) {
+         WriteSysFile(kVfioPciRemoveId, id);
+         WriteSysFile(kVfioPciNewId, id);
+     } else if (errno_saved != 0) {
+-        return false;
++        return -1;
+     }
+ 
+     struct utsname osInfo{};
+@@ -312,12 +344,12 @@ static int SetAvailableVf(void) {
+             std::string execQuantumPath = ((kernel == 5) ? kDrmCard0Vf : kDrmCard0Vf6Ker);
+             execQuantumPath.append(std::to_string(i) + ((kernel == 5) ? kGtExecQuantumMs : kGtExecQuantumMs6Ker));
+             WriteSysFile(execQuantumPath.c_str(), std::to_string(kExecQuantum));
++            vf_used = i;
+             return i;
+         }
+     }
+ 
+     LOG(error) << "Failed to find 1 available VF!";
+-
+     return -1;
+ }
+ 
+@@ -386,14 +418,38 @@ bool VmBuilderQemu::SetupSriov(void) {
+     if (vf < 0)
+         return false;
+ 
++    int kVfUsed = vf;
++    if (kVfUsed == 0) {
++        LOG(error) << "Error: No VFs available";
++        return false;
++    }
++
+     emul_cmd_.append(" -device virtio-vga,max_outputs=" + ((numberOfDisplays > 0 ) ? std::to_string(numberOfDisplays) : "1") + ",blob=true"
+                     " -device vfio-pci,host=0000:00:02." + std::to_string(vf) +
+                     " -object memory-backend-memfd,hugetlb=on,id=mem_sriov,size=" + mem_size +
+                     " -machine memory-backend=mem_sriov");
+-
+     return true;
+ }
+ 
++void VmBuilderQemu::CleanupSriov() {
++    // Detect number of VFs
++    int numvf = ReadSysFile(kIntelGpuSriovNumVfs, std::ios_base::dec);
++
++    if (numvf != 0) {
++        // Check that all VFs are disabled
++        do_cleanup=true;
++        for (int avail=1; avail<=numvf; avail++ ) {
++	    std::string sd(kIntelGpuDevPath);
++            sd.replace(sd.end() - 2, sd.end(), std::to_string(avail) + "/enable");
++            int is_enabled = ReadSysFile(sd.c_str(), std::ios_base::dec);
++            if (is_enabled == 1) {
++                do_cleanup = false;
++                break;
++	    }
++	}
++    }
++}
++
+ void VmBuilderQemu::BuildExtraGuestPmCtrlCmd(void) {
+     std::string ex_cmd = cfg_.GetValue(kGroupExtra, kExtraPwrCtrlMultiOS);
+     if (ex_cmd == "true") {
+@@ -742,7 +798,12 @@ void VmBuilderQemu::BuildRpmbCmd(void) {
+     time(&rawtime);
+     localtime_r(&rawtime, &timeinfo);
+     strftime(t_buf, 80 , "%Y-%m-%d_%T", &timeinfo);
+-    std::string rpmb_sock = std::string(kRpmbSockPrefix) + t_buf;
++    std::string vm_name = cfg_.GetValue(kGroupGlob, kGlobName);
++    boost::trim(vm_name);
++    if (vm_name.empty()) {
++        return;
++    }
++    std::string rpmb_sock = std::string(kRpmbSockPrefix) + t_buf + vm_name;
+ 
+     if (!rpmb_bin.empty() && !rpmb_data.empty()) {
+         emul_cmd_.append(" -device virtio-serial,addr=1"
+@@ -927,6 +988,36 @@ void VmBuilderQemu::BuildVdiskCmd(void) {
+         " -device virtio-blk-pci,drive=disk1,bootindex=1");
+ }
+ 
++void VmBuilderQemu::SetupLockAcquire(void) {
++    setup_lock_fd = open(kSetupLock, O_RDWR | O_CREAT, S_IRWXU);
++    int wait_cnt = 0;
++    if (setup_lock_fd != -1) {
++        while (flock(setup_lock_fd, LOCK_EX | LOCK_NB) == -1) {
++	    if (errno == EWOULDBLOCK) {
++                if(wait_cnt++ > 120) {
++                    LOG(error) << "Timeout while waiting to acquire lock";
++		    exit(-1);
++                }
++	        boost::this_thread::sleep_for(boost::chrono::milliseconds(1000));
++            }
++        }
++    } else {
++          LOG(error)<<"file open failed";
++          exit(-1);
++    }
++}
++
++void VmBuilderQemu::SetupLockRelease(void) {
++    if (setup_lock_fd != -1) {
++        if (flock(setup_lock_fd, LOCK_UN) == -1) {
++            LOG(error)<<"release failed - ";
++            return;
++        }
++        close(setup_lock_fd);
++        setup_lock_fd = -1;
++    }
++}
++
+ bool VmBuilderQemu::BuildVmArgs(void) {
+     LOG(info) << "build qemu vm args";
+ 
+@@ -942,8 +1033,12 @@ bool VmBuilderQemu::BuildVmArgs(void) {
+ 
+     InitAafCfg();
+ 
+-    if (!BuildVgpuCmd())
++    SetupLockAcquire();
++    if (!BuildVgpuCmd()) {
++        SetupLockRelease();
+         return false;
++    }
++    SetupLockRelease();
+ 
+     BuildVinputCmd();
+ 
+@@ -1030,6 +1125,19 @@ void VmBuilderQemu::StartVm() {
+     main_proc_->Run();
+     LOG(info) << "Main Proc is started";
+     state_ = VmBuilder::VmState::kVmBooting;
++
++    int wait_cnt = 0;
++    int status = 0;
++    while (status == 0) {
++        std::string sd(kIntelGpuDevPath);
++        sd.replace(sd.end() - 2, sd.end(), std::to_string(vf_used) + "/enable");
++        status = ReadSysFile(sd.c_str(), std::ios_base::dec);
++        if (wait_cnt++ > 500) {
++            LOG(error) << "Cannot set val!";
++            return;
++        }
++        boost::this_thread::sleep_for(boost::chrono::microseconds(1000));
++    }
+ }
+ 
+ bool VmBuilderQemu::WaitVmReady(void) {
+@@ -1082,6 +1190,10 @@ void VmBuilderQemu::StopVm() {
+ 
+ VmBuilderQemu::~VmBuilderQemu() {
+     StopVm();
++    SetupLockAcquire();
++    CleanupSriov();
++    CleanupHugePages();
++    SetupLockRelease();
+ }
+ 
+ }  //  namespace vm_manager
+diff --git a/src/guest/vm_builder_qemu.h b/src/guest/vm_builder_qemu.h
+index 6e2b713..5fe6036 100644
+--- a/src/guest/vm_builder_qemu.h
++++ b/src/guest/vm_builder_qemu.h
+@@ -16,6 +16,7 @@
+ #include <utility>
+ #include <memory>
+ #include <queue>
++#include <sys/file.h>
+ 
+ #include <boost/ptr_container/ptr_vector.hpp>
+ #include <boost/thread/latch.hpp>
+@@ -70,9 +71,15 @@ class VmBuilderQemu : public VmBuilder {
+ 
+     void SetPciDevicesCallback(void);
+     bool SetupSriov(void);
++    void CleanupSriov(void);
++    bool SetupHugePages(const std::string &mem_size);
++    void CleanupHugePages(void);
++    int SetAvailableVf(void);
+     void RunMediationSrv(void);
+     void SetExtraServices(void);
+     void SetProcLogDir(void);
++    void SetupLockAcquire(void);
++    void SetupLockRelease(void);
+ 
+     CivConfig cfg_;
+     std::unique_ptr<Aaf> aaf_cfg_;
+@@ -85,6 +92,11 @@ class VmBuilderQemu : public VmBuilder {
+     boost::latch vm_ready_latch_;
+     std::queue<std::function<void(void)>> end_call_;
+     std::mutex stopvm_mutex_;
++
++    bool do_cleanup = false;
++    int vf_used = 0;
++    int setup_lock_fd;
++    int hp_alloc = 0;
+ };
+ 
+ }  // namespace vm_manager
+-- 
+2.34.1
+
