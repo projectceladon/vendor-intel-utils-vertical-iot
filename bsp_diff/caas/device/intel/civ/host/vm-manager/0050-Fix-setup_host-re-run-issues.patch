@@ -1,0 +1,41 @@
+From 68b6bcc7da5a56f9d5a1a8a55774df6c665f0a1f Mon Sep 17 00:00:00 2001
+From: "Suresh, Prashanth" <prashanth.suresh@intel.com>
+Date: Thu, 14 Sep 2023 10:07:49 +0530
+Subject: [PATCH] Fix setup_host re-run issues
+
+- Fix bugs in vm-manager installation
+- Handle Android-CIV folder creation failure
+
+Tracked-On: OAM-112228
+Signed-off-by: Suresh, Prashanth <prashanth.suresh@intel.com>
+---
+ scripts/setup_host.sh | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
+
+diff --git a/scripts/setup_host.sh b/scripts/setup_host.sh
+index 8a59286..55a604e 100755
+--- a/scripts/setup_host.sh
++++ b/scripts/setup_host.sh
+@@ -173,6 +173,10 @@ function ubu_build_ovmf_gvt(){
+ 
+ function install_vm_manager_src() {
+     #Try to build from source code
++    if [ -d $CIV_WORK_DIR/vm_manager ]
++    then
++        rm -rf $CIV_WORK_DIR/vm_manager
++    fi
+     sudo apt-get install --yes make gcc
+     if [ ! -z $VM_MANAGER_VERSION ]; then
+         git clone -b $VM_MANAGER_VERSION --single-branch https://github.com/projectceladon/vm_manager.git
+@@ -351,7 +355,7 @@ function create_vm_dir() {
+                 echo "Folder with name $VM_NAME already present. Delete and create new folder? Please enter yes/no"
+ 		read input
+ 		if [ $input = "yes" ]; then
+-	                rm -rf $CIV_DIR/$VM_NAME
++	                rm -rf $CIV_WORK_DIR/$VM_NAME
+ 	        else
+ 	                exit
+ 	        fi
+-- 
+2.42.0
+
