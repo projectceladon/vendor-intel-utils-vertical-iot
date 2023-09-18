@@ -1,0 +1,29 @@
+From 762f2421c6f40d9c31c9308af88167fa98c2f545 Mon Sep 17 00:00:00 2001
+From: "Suresh, Prashanth" <prashanth.suresh@intel.com>
+Date: Wed, 27 Sep 2023 19:18:41 +0530
+Subject: [PATCH] Remove firmware update as it is part of kernel.
+
+Firmware update is not necessary as GuC, HuC and DMC are part of
+host kernel.
+
+Tracked-On: OAM-112288
+Signed-off-by: Suresh, Prashanth <prashanth.suresh@intel.com>
+---
+ scripts/setup_host.sh | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/scripts/setup_host.sh b/scripts/setup_host.sh
+index dfa8cf8..f675266 100755
+--- a/scripts/setup_host.sh
++++ b/scripts/setup_host.sh
+@@ -664,7 +664,6 @@ ubu_changes_require
+ ubu_install_qemu_gvt
+ ubu_build_ovmf_gvt
+ ubu_enable_host_gvt
+-ubu_update_fw
+ install_vm_manager
+ 
+ create_vm_dir
+-- 
+2.42.0
+
