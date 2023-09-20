@@ -1,0 +1,28 @@
+From ee88a563205861e4e10083e3a20c8fe410560883 Mon Sep 17 00:00:00 2001
+From: "Nagappa Koppad, Basanagouda" <basanagouda.nagappa.koppad@intel.com>
+Date: Wed, 4 Oct 2023 12:39:25 +0530
+Subject: [PATCH] Include sample_encode and sample_decode as part of build
+ system
+
+Tracked-On: OAM-112315
+Signed-off-by: Nagappa Koppad, Basanagouda <basanagouda.nagappa.koppad@intel.com>
+
+diff --git a/groups/media/auto/product.mk b/groups/media/auto/product.mk
+index 44272f7..4066ff8 100644
+--- a/groups/media/auto/product.mk
++++ b/groups/media/auto/product.mk
+@@ -11,7 +11,9 @@ PRODUCT_PACKAGES += \
+ 
+ # MediaSDK library
+ PRODUCT_PACKAGES += \
+-    libmfxhw32
++    libmfxhw32 \
++    sample_encode \
++    sample_decode
+ 
+ ifeq ($(BOARD_USE_64BIT_USERSPACE),true)
+ PRODUCT_PACKAGES += \
+-- 
+2.42.0
+
+
