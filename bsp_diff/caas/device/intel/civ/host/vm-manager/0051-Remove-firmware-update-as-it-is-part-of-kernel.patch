@@ -1,0 +1,61 @@
+From ab65b43ccfe86cfc4a68d0915d759db21376e6a4 Mon Sep 17 00:00:00 2001
+From: "Suresh, Prashanth" <prashanth.suresh@intel.com>
+Date: Mon, 25 Sep 2023 21:09:38 +0530
+Subject: [PATCH] Remove firmware update as it is part of kernel.
+
+Firmware update is not necessary as GuC, HuC and DMC are part of
+host kernel.
+
+Tracked-On: OAM-112288
+Signed-off-by: Suresh, Prashanth <prashanth.suresh@intel.com>
+---
+ scripts/setup_host.sh | 26 --------------------------
+ 1 file changed, 26 deletions(-)
+
+diff --git a/scripts/setup_host.sh b/scripts/setup_host.sh
+index dfa8cf8..eaad49d 100755
+--- a/scripts/setup_host.sh
++++ b/scripts/setup_host.sh
+@@ -226,31 +226,6 @@ function ubu_enable_host_gvt(){
+     fi
+ }
+ 
+-function ubu_update_fw(){
+-    FW_REL="linux-firmware-20220310"
+-    GUC_REL="70.0.3"
+-    HUC_REL="7.9.3"
+-    S_DMC_REL="2_01"
+-    P_DMC_REL="2_12"
+-
+-    [ ! -f $CIV_WORK_DIR/$FW_REL.tar.xz ] && wget "https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git/snapshot/linux-firmware-20220310.tar.gz" -P $CIV_WORK_DIR
+-
+-    [ -d $CIV_WORK_DIR/$FW_REL ] && rm -rf $CIV_WORK_DIR/$FW_REL
+-    tar -xf $CIV_WORK_DIR/$FW_REL.tar.gz
+-
+-    cd $CIV_WORK_DIR/$FW_REL/i915/
+-    wget https://github.com/intel/intel-linux-firmware/raw/main/adlp_guc_$GUC_REL.bin
+-    wget https://github.com/intel/intel-linux-firmware/raw/main/tgl_guc_$GUC_REL.bin
+-    cp adlp_guc_$GUC_REL.bin tgl_guc_$GUC_REL.bin adlp_dmc_ver$P_DMC_REL.bin adls_dmc_ver$S_DMC_REL.bin tgl_huc_$HUC_REL.bin /lib/firmware/i915/
+-
+-    cd $CIV_WORK_DIR
+-    rm -rf $CIV_WORK_DIR/$FW_REL*
+-
+-    update-initramfs -u -k all
+-
+-    reboot_required=1
+-}
+-
+ function setup_remote_infer() {
+     $CIV_WORK_DIR/scripts/setup_rinfer_host.sh
+     reboot_required=1
+@@ -664,7 +639,6 @@ ubu_changes_require
+ ubu_install_qemu_gvt
+ ubu_build_ovmf_gvt
+ ubu_enable_host_gvt
+-ubu_update_fw
+ install_vm_manager
+ 
+ create_vm_dir
+-- 
+2.42.0
+
