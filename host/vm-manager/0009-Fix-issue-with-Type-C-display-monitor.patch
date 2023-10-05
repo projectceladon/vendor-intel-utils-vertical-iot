@@ -1,0 +1,61 @@
+From c5c15b7bf8405743ba8d396fc30c2f0b024b8cc9 Mon Sep 17 00:00:00 2001
+From: Prashanth <Prashanth.suresh@intel.com>
+Date: Fri, 6 Oct 2023 00:41:59 +0530
+Subject: [PATCH] Fix issue with Type C display monitor.
+
+---
+ src/guest/vm_builder_qemu.cc | 23 +++++------------------
+ 1 file changed, 5 insertions(+), 18 deletions(-)
+
+diff --git a/src/guest/vm_builder_qemu.cc b/src/guest/vm_builder_qemu.cc
+index b673cdb..a376a8d 100644
+--- a/src/guest/vm_builder_qemu.cc
++++ b/src/guest/vm_builder_qemu.cc
+@@ -74,17 +74,6 @@ constexpr const unsigned int kExecQuantum = 25;
+ constexpr const char *kQmpPowerSocket = "/tmp/qmp-pwr-socket-";
+ constexpr const char *kSetupLock = "/tmp/sriov.setup.lock";
+ 
+-const std::string connectors[8] = {
+-                "HDMI-1",
+-                "HDMI-2",
+-                "HDMI-3",
+-                "HDMI-4",
+-                "DP-1",
+-                "DP-2",
+-                "DP-3",
+-                "DP-4",
+-        };
+-
+ static bool CheckUuid(std::string uuid) {
+     try {
+         boost::uuids::string_generator gen;
+@@ -377,21 +366,19 @@ bool VmBuilderQemu::SetupSriov(void) {
+ 	return false;
+     }
+ 
+-    for(int i = 0; i < 8; i++) {
+-        if(!connectors_0.empty() && connectors_0.compare(connectors[i]) == 0) {
++    if(!connectors_0.empty() && ( connectors_0.find("HDMI-") == 0 || connectors_0.find("DP-") == 0)) {
+                         numberOfDisplays++;
+                         connector_str.append("connectors.0=");
+                         connector_str.append(connectors_0);
+                         connector_str.append(",");
+-			isConnector0Valid = true;
+-        }
+-        if(!connectors_1.empty() && connectors_1.compare(connectors[i]) == 0) {
++                        isConnector0Valid = true;
++    }
++    if(!connectors_1.empty() && (connectors_1.find("HDMI-") == 0 || connectors_1.find("DP-") == 0)) {
+                         numberOfDisplays++;
+                         connector_str.append("connectors.1=");
+                         connector_str.append(connectors_1);
+                         connector_str.append(",");
+-			isConnector1Valid = true;
+-        }
++                        isConnector1Valid = true;
+     }
+ 
+     if((!connectors_0.empty() && isConnector0Valid == false) || (!connectors_1.empty() && isConnector1Valid == false)) {
+-- 
+2.34.1
+
