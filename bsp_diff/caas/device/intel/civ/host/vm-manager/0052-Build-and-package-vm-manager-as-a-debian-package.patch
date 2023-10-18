@@ -1,0 +1,95 @@
+From a1b36ae66a057ebaacc936beeb48a168e97e862b Mon Sep 17 00:00:00 2001
+From: "Suresh, Prashanth" <prashanth.suresh@intel.com>
+Date: Wed, 18 Oct 2023 16:58:11 +0530
+Subject: [PATCH] Build and package vm-manager as a debian package.
+
+Build and package vm-manager as a debian package, which
+can be used on multiple devices.
+
+Tracked-On: OAM-112484
+
+Signed-off-by: Suresh, Prashanth <prashanth.suresh@intel.com>
+---
+ scripts/setup_host.sh | 30 +++++++++++++++++++-----------
+ 1 file changed, 19 insertions(+), 11 deletions(-)
+
+diff --git a/scripts/setup_host.sh b/scripts/setup_host.sh
+index f675266..a0200ae 100755
+--- a/scripts/setup_host.sh
++++ b/scripts/setup_host.sh
+@@ -17,8 +17,9 @@ QEMU_CACHE_DIR="$HOME/.cache/civ/qemu"
+ 
+ CIV_WORK_DIR=$(pwd)
+ CIV_GOP_DIR=$CIV_WORK_DIR/GOP_PKG
+-CIV_VERTICAl_DIR=$CIV_WORK_DIR/vertical_patches/host
++CIV_VERTICAL_DIR=$CIV_WORK_DIR/vertical_patches/host
+ VM_MANAGER_VERSION=v1.2.3
++VM_MANAGER_VERSION_DEB=1.2.3
+ VSOCK_ID=3
+ VM_NAME=Android-CIV1
+ ADB_PORT=5555
+@@ -92,9 +93,9 @@ function ubu_install_qemu_gvt(){
+         done
+     fi
+ 
+-    vertical_qemu_patch_num=$(ls $CIV_VERTICAl_DIR/qemu/*.patch 2> /dev/null | wc -l)
++    vertical_qemu_patch_num=$(ls $CIV_VERTICAL_DIR/qemu/*.patch 2> /dev/null | wc -l)
+     if [ "$vertical_qemu_patch_num" != "0" ]; then
+-        for i in $CIV_VERTICAl_DIR/qemu/*.patch; do
++        for i in $CIV_VERTICAL_DIR/qemu/*.patch; do
+             echo "applying qemu patch $i"
+             patch -p1 < $i
+         done
+@@ -135,9 +136,9 @@ function ubu_build_ovmf_gvt(){
+         cp $CIV_GOP_DIR/ovmf/Vbt.bin OvmfPkg/Vbt/Vbt.bin
+     fi
+ 
+-    vertical_ovmf_patch_num=$(ls $CIV_VERTICAl_DIR/ovmf/*.patch 2> /dev/null | wc -l)
++    vertical_ovmf_patch_num=$(ls $CIV_VERTICAL_DIR/ovmf/*.patch 2> /dev/null | wc -l)
+     if [ "$vertical_ovmf_patch_num" != "0" ]; then
+-        for i in $CIV_VERTICAl_DIR/ovmf/*.patch; do
++        for i in $CIV_VERTICAL_DIR/ovmf/*.patch; do
+             echo "applying ovmf patch $i"
+             patch -p1 < $i
+         done
+@@ -181,7 +182,7 @@ function install_vm_manager_src() {
+     then
+         rm -rf $CIV_WORK_DIR/vm_manager
+     fi
+-    sudo apt-get install --yes make gcc
++    sudo apt-get install --yes make gcc build-essential cmake devscripts lintian debhelper
+     if [ ! -z $VM_MANAGER_VERSION ]; then
+         git clone -b $VM_MANAGER_VERSION --single-branch https://github.com/projectceladon/vm_manager.git
+     else
+@@ -189,16 +190,23 @@ function install_vm_manager_src() {
+     fi
+     sudo apt install -y cmake
+     cd vm_manager/
+-    git apply $CIV_WORK_DIR/vertical_patches/host/vm-manager/*.patch
+-    mkdir build && cd build
+-    cmake -DCMAKE_BUILD_TYPE=Release ..
+-    cmake --build . --config Release
+-    cp src/vm-manager /usr/bin/
++    git apply $CIV_VERTICAL_DIR/vm-manager/*.patch
++    debuild --preserve-env -b -uc -us --lintian-opts --profile debian
++    mkdir -p $CIV_WORK_DIR/vm-manager_binary
++    cp $CIV_WORK_DIR/vm-manager_${VM_MANAGER_VERSION_DEB}_amd64.deb $CIV_WORK_DIR/vm-manager_binary/
+     cd $CIV_WORK_DIR
+     rm -rf vm_manager/
++    dpkg -i $CIV_WORK_DIR/vm-manager_binary/vm-manager_${VM_MANAGER_VERSION_DEB}_amd64.deb
+ }
+ 
+ function install_vm_manager() {
++    if [ -f $CIV_WORK_DIR/vm-manager_binary/vm-manager_${VM_MANAGER_VERSION_DEB}_amd64.deb ]; then
++        dpkg -i $CIV_WORK_DIR/vm-manager_binary/vm-manager_${VM_MANAGER_VERSION_DEB}_amd64.deb
++        return
++    else
++        echo "Building vm-manager"
++    fi
++
+     sudo apt-get update
+     sudo apt-get install --yes libglib2.0-dev libncurses-dev libuuid1 uuid-dev libjson-c-dev wget lsb-release git
+     install_vm_manager_src
+-- 
+2.42.0
+
