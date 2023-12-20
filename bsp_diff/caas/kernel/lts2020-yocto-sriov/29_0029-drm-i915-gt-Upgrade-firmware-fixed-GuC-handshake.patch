@@ -1,0 +1,60 @@
+From f882400d78eb7e4b6260c57a32f1b753b3cb56b5 Mon Sep 17 00:00:00 2001
+From: "Kothapeta, BikshapathiX" <bikshapathix.kothapeta@intel.com>
+Date: Wed, 20 Dec 2023 12:05:09 +0530
+Subject: [PATCH] drm/i915/gt:Upgrade firmware, fixed GuC handshake
+
+updated the GuC firmware,
+To  Do initial handshake with GuC.
+GuC firmware already loaded by the PF and VF must only check that
+interface version exposed by GuC matches VF expectations
+
+Tracked-On: OAM-114361
+Signed-off-by: Kothapeta, BikshapathiX <bikshapathix.kothapeta@intel.com>
+Signed-off-by: Mazlan, Hazwan Arif <hazwan.arif.mazlan@intel.com>
+
+diff --git a/drivers/gpu/drm/i915/gt/iov/intel_iov_query.c b/drivers/gpu/drm/i915/gt/iov/intel_iov_query.c
+index ca010db84b2b5..5aeaa27bf2d51 100644
+--- a/drivers/gpu/drm/i915/gt/iov/intel_iov_query.c
++++ b/drivers/gpu/drm/i915/gt/iov/intel_iov_query.c
+@@ -100,9 +100,11 @@ static int vf_handshake_with_guc(struct intel_iov *iov)
+ 	if (unlikely(err))
+ 		goto fail;
+ 
+-	/* XXX we only support one version, there must be a match */
+-	if (major != GUC_VF_VERSION_LATEST_MAJOR || minor != GUC_VF_VERSION_LATEST_MINOR)
+-		goto fail;
++       /* we shouldn't get anything newer than requested */
++       if (major > GUC_VF_VERSION_LATEST_MAJOR) {
++               err = -EPROTO;
++               goto fail;
++        }
+ 
+ 	dev_info(iov_to_dev(iov), "%s interface version %u.%u.%u.%u\n",
+ 		 intel_uc_fw_type_repr(guc->fw.type),
+diff --git a/drivers/gpu/drm/i915/gt/uc/abi/guc_version_abi.h b/drivers/gpu/drm/i915/gt/uc/abi/guc_version_abi.h
+index 17272f76f20d8..22315fecf9d73 100644
+--- a/drivers/gpu/drm/i915/gt/uc/abi/guc_version_abi.h
++++ b/drivers/gpu/drm/i915/gt/uc/abi/guc_version_abi.h
+@@ -7,6 +7,6 @@
+ #define _ABI_GUC_VERSION_ABI_H
+ 
+ #define GUC_VF_VERSION_LATEST_MAJOR	1
+-#define GUC_VF_VERSION_LATEST_MINOR	0
++#define GUC_VF_VERSION_LATEST_MINOR	1
+ 
+ #endif /* _ABI_GUC_VERSION_ABI_H */
+diff --git a/drivers/gpu/drm/i915/gt/uc/intel_uc_fw.c b/drivers/gpu/drm/i915/gt/uc/intel_uc_fw.c
+index 61859f185155f..7820ca96d7026 100644
+--- a/drivers/gpu/drm/i915/gt/uc/intel_uc_fw.c
++++ b/drivers/gpu/drm/i915/gt/uc/intel_uc_fw.c
+@@ -71,6 +71,7 @@ void intel_uc_fw_change_status(struct intel_uc_fw *uc_fw,
+ 	fw_def(ALDERLAKE_P,  0, guc_maj(adlp, 70, 5)) \
+ 	fw_def(ALDERLAKE_P,  0, guc_mmp(adlp, 70, 1, 1)) \
+ 	fw_def(ALDERLAKE_S,  0, guc_maj(tgl,  70, 5)) \
++	fw_def(ALDERLAKE_S,  0, guc_mmp(tgl,  70, 13,1)) \
+ 	fw_def(DG1,          0, guc_maj(dg1,  70, 5)) \
+ 	fw_def(DG1,          0, guc_mmp(dg1,  70, 1, 1)) \
+ 	fw_def(ROCKETLAKE,   0, guc_maj(tgl,  70, 5)) \
+-- 
+2.43.0
+
