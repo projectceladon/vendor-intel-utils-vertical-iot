@@ -1,0 +1,37 @@
+From 34283a65d5539de84efa17009abcb6a36e63adb9 Mon Sep 17 00:00:00 2001
+From: celadon <celadon@intel.com>
+Date: Thu, 15 Feb 2024 12:05:06 +0000
+Subject: [PATCH] Revert "Update SRIOV QEMU patching"
+
+This reverts commit e8bade5aab76029c0cd69c20915da3940050d0ee.
+
+Tracked-On: OAM-115627
+Signed-off-by: vdanix <vishwanathx.dani@intel.com>
+
+diff --git a/scripts/setup_host.sh b/scripts/setup_host.sh
+index f675266..ac8d820 100755
+--- a/scripts/setup_host.sh
++++ b/scripts/setup_host.sh
+@@ -76,17 +76,9 @@ function ubu_install_qemu_gvt(){
+         for i in $CIV_GOP_DIR/qemu/*.patch; do patch -p1 < $i; done
+     fi
+ 
+-    sriov_qemu_cve_patch_num=$(ls $CIV_WORK_DIR/sriov_patches/qemu/cve/*.patch 2> /dev/null | wc -l)
+-    if [ "$sriov_qemu_cve_patch_num" != "0" ]; then
+-        for i in $CIV_WORK_DIR/sriov_patches/qemu/cve/*.patch; do
+-            echo "applying qemu patch $i"
+-            patch -p1 < $i
+-        done
+-    fi
+-
+-    sriov_qemu_patch_num=$(ls $CIV_WORK_DIR/sriov_patches/qemu/qemu/*.patch 2> /dev/null | wc -l)
++    sriov_qemu_patch_num=$(ls $CIV_WORK_DIR/sriov_patches/qemu/*.patch 2> /dev/null | wc -l)
+     if [ "$sriov_qemu_patch_num" != "0" ]; then
+-        for i in $CIV_WORK_DIR/sriov_patches/qemu/qemu/*.patch; do
++        for i in $CIV_WORK_DIR/sriov_patches/qemu/*.patch; do
+             echo "applying qemu patch $i"
+             patch -p1 < $i
+         done
+-- 
+2.34.1
+
