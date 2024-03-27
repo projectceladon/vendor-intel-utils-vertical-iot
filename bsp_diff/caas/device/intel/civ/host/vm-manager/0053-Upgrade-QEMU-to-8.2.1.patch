@@ -1,0 +1,26 @@
+From 554e4c80f65374c17fa84a15e54edad9ffb61535 Mon Sep 17 00:00:00 2001
+From: Prashanth Suresh <prashanth-intel@github.com>
+Date: Wed, 27 Mar 2024 13:49:33 +0000
+Subject: [PATCH] Upgrade QEMU to 8.2.1
+
+Upgrade QEMU version to 8.2.1
+---
+ scripts/setup_host.sh | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/scripts/setup_host.sh b/scripts/setup_host.sh
+index ac8d820..ea3c1d2 100755
+--- a/scripts/setup_host.sh
++++ b/scripts/setup_host.sh
+@@ -9,7 +9,7 @@ set -eE
+ 
+ #---------      Global variable     -------------------
+ reboot_required=0
+-QEMU_REL="qemu-8.0.0"
++QEMU_REL="qemu-8.2.1"
+ skip_install_qemu=false
+ 
+ #Directory to keep versions of qemu which can be reused instead of downloading again
+-- 
+2.34.1
+
