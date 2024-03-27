@@ -1,0 +1,35 @@
+From dff3af81c44a75b578ffd4583958cb377fc35a81 Mon Sep 17 00:00:00 2001
+From: Prashanth Suresh <prashanth-intel@github.com>
+Date: Wed, 27 Mar 2024 13:45:57 +0000
+Subject: [PATCH] Resolve conflicts for QEMU upgrade
+
+Resolve conflicts for QEMU upgrade to 8.2.1
+---
+ .../0033-CiV-SRIOV-virtio-gpu-power-management-qemu.patch | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/host/qemu/0033-CiV-SRIOV-virtio-gpu-power-management-qemu.patch b/host/qemu/0033-CiV-SRIOV-virtio-gpu-power-management-qemu.patch
+index e3157541..5557965a 100644
+--- a/host/qemu/0033-CiV-SRIOV-virtio-gpu-power-management-qemu.patch
++++ b/host/qemu/0033-CiV-SRIOV-virtio-gpu-power-management-qemu.patch
+@@ -16,13 +16,13 @@ index 25a091465..a8c46f6d8 100644
+ --- a/hw/display/virtio-gpu.c
+ +++ b/hw/display/virtio-gpu.c
+ @@ -1336,6 +1336,7 @@ void virtio_gpu_device_realize(DeviceState *qdev, Error **errp)
+-     g->cursor_vq = virtio_get_queue(vdev, 1);
+-     g->ctrl_bh = qemu_bh_new(virtio_gpu_ctrl_bh, g);
+-     g->cursor_bh = qemu_bh_new(virtio_gpu_cursor_bh, g);
++     g->cursor_bh = qemu_bh_new_guarded(virtio_gpu_cursor_bh, g,
++                                        &qdev->mem_reentrancy_guard);
++     g->reset_bh = qemu_bh_new(virtio_gpu_reset_bh, g);
+ +    g->suspended = false;
++     qemu_cond_init(&g->reset_cond);
+      QTAILQ_INIT(&g->reslist);
+      QTAILQ_INIT(&g->cmdq);
+-     QTAILQ_INIT(&g->fenceq);
+ @@ -1347,6 +1348,10 @@ void virtio_gpu_reset(VirtIODevice *vdev)
+      struct virtio_gpu_simple_resource *res, *tmp;
+      struct virtio_gpu_ctrl_command *cmd;
+-- 
+2.34.1
+
