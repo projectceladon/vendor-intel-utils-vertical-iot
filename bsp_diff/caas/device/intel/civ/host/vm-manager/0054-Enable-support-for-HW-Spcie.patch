@@ -1,0 +1,30 @@
+From d4903b3ff1b3749223e926467d11bf8e6c444f9c Mon Sep 17 00:00:00 2001
+From: Prashanth Suresh <prashanth-intel@github.com>
+Date: Mon, 8 Apr 2024 06:57:58 +0000
+Subject: [PATCH] Enable support for HW Spcie
+
+Enable HW Spice support for Android through vm-manager
+---
+ sample/guest01.ini | 6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/sample/guest01.ini b/sample/guest01.ini
+index d2c687d..afd9c14 100644
+--- a/sample/guest01.ini
++++ b/sample/guest01.ini
+@@ -79,6 +79,12 @@ audio_type=legacy-hda
+ #show_fps=
+ #disable_host_input=no
+ 
++#Set hw_spice=true to view VM over HW Spice. false by default. Please add IP address and
++#port for Spice display to work
++#hw_spice=true
++#ip_addr=10.49.4.30
++#port=3001
++
+ [passthrough]
+ #specified the PCI id here if you want to passthrough it to guest, seperate them with comma
+ passthrough_pci=0000:00:14.0,
+-- 
+2.34.1
+

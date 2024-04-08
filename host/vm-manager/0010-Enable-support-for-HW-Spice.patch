@@ -1,0 +1,72 @@
+From 4679dbb55533b3474d8356d82741e06e4a47efac Mon Sep 17 00:00:00 2001
+From: Prashanth suresh <Prashanth.suresh@intel.com>
+Date: Mon, 8 Apr 2024 12:21:15 +0530
+Subject: [PATCH] Enable support for HW Spice
+
+Enable HW Spice support for Android through vm-manager
+---
+ src/guest/config_parser.cc   |  2 +-
+ src/guest/config_parser.h    |  3 +++
+ src/guest/vm_builder_qemu.cc | 16 +++++++++++++++-
+ 3 files changed, 19 insertions(+), 2 deletions(-)
+
+diff --git a/src/guest/config_parser.cc b/src/guest/config_parser.cc
+index 6cfaae5..c8fb5bc 100644
+--- a/src/guest/config_parser.cc
++++ b/src/guest/config_parser.cc
+@@ -35,7 +35,7 @@ map<string_view, vector<string_view>> kConfigMap = {
+     { kGroupFirm,    { kFirmType, kFirmPath, kFirmCode, kFirmVars } },
+     { kGroupDisk,    { kDiskSize, kDiskPath } },
+     { kGroupVgpu,    { kVgpuType, kVgpuGvtgVer, kVgpuUuid, kVgpuMonId, kVgpuOutputs } },
+-    { kGroupDisplay, { kDispOptions, kDispConnector0, kDispConnector1, kDispShowFps, kDisableHostInput } },
++    { kGroupDisplay, { kDispOptions, kDispConnector0, kDispConnector1, kDispShowFps, kDisableHostInput, kHwSpice, kHwSpiceIp, kHwSpicePort } },
+     { kGroupNet,     { kNetModel, kNetAdbPort, kNetFastbootPort } },
+     { kGroupVtpm,    { kVtpmBinPath, kVtpmDataDir } },
+     { kGroupRpmb,    { kRpmbBinPath, kRpmbDataDir } },
+diff --git a/src/guest/config_parser.h b/src/guest/config_parser.h
+index 80d8a12..7be9848 100644
+--- a/src/guest/config_parser.h
++++ b/src/guest/config_parser.h
+@@ -65,6 +65,9 @@ constexpr char kDispConnector0[] = "connectors_0";
+ constexpr char kDispConnector1[] = "connectors_1";
+ constexpr char kDispShowFps[] = "show_fps";
+ constexpr char kDisableHostInput[] = "disable_host_input";
++constexpr char kHwSpice[]  = "hw_spice";
++constexpr char kHwSpiceIp[] = "ip_addr";
++constexpr char kHwSpicePort[] = "port";
+ 
+ constexpr char kNetModel[] = "model";
+ constexpr char kNetAdbPort[] = "adb_port";
+diff --git a/src/guest/vm_builder_qemu.cc b/src/guest/vm_builder_qemu.cc
+index 3406a45..558240f 100644
+--- a/src/guest/vm_builder_qemu.cc
++++ b/src/guest/vm_builder_qemu.cc
+@@ -411,10 +411,24 @@ bool VmBuilderQemu::SetupSriov(void) {
+         return false;
+     }
+ 
+-    emul_cmd_.append(" -device virtio-vga,max_outputs=" + ((numberOfDisplays > 0 ) ? std::to_string(numberOfDisplays) : "1") + ",blob=true"
++    std::string hw_spice = cfg_.GetValue(kGroupDisplay, kHwSpice);
++    std::string spice_ip = cfg_.GetValue(kGroupDisplay, kHwSpiceIp);
++    std::string spice_port = cfg_.GetValue(kGroupDisplay, kHwSpicePort);
++    if((!hw_spice.empty()) && hw_spice.compare("true") == 0) {
++        LOG(info) << "Enabling hw spice display";
++        emul_cmd_.append(" -device virtio-gpu-pci,max_outputs=" + ((numberOfDisplays > 0 ) ? std::to_string(numberOfDisplays) : "1") + ",blob=true"
++                    ",xres=1920,yres=1080" +
+                     " -device vfio-pci,host=0000:00:02." + std::to_string(vf) +
+                     " -object memory-backend-memfd,hugetlb=on,id=mem_sriov,size=" + mem_size +
+                     " -machine memory-backend=mem_sriov");
++
++        emul_cmd_.append(" -spice gl=on,addr=" + spice_ip + ",port=" + spice_port  + ",disable-ticketing=on,streaming-video=filter,preferred-codec=gstreamer:h264");
++    } else {
++        emul_cmd_.append(" -device virtio-vga,max_outputs=" + ((numberOfDisplays > 0 ) ? std::to_string(numberOfDisplays) : "1") + ",blob=true"
++                    " -device vfio-pci,host=0000:00:02." + std::to_string(vf) +
++                    " -object memory-backend-memfd,hugetlb=on,id=mem_sriov,size=" + mem_size +
++                    " -machine memory-backend=mem_sriov");
++    }
+     return true;
+ }
+ 
+-- 
+2.34.1
+
