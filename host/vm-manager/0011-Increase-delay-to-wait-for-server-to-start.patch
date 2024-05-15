@@ -1,0 +1,27 @@
+From dfcb2e1d941ae4a4db3a9b7019cdcb758c73923f Mon Sep 17 00:00:00 2001
+From: Your Name <you@example.com>
+Date: Wed, 15 May 2024 10:31:46 +0530
+Subject: [PATCH] Increase delay to wait for server to start.
+
+First Android launch fails as server is not started within
+stipulated time. Increase wait time before exiting due to failure.
+---
+ src/vm_manager.cc | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/vm_manager.cc b/src/vm_manager.cc
+index e67bae8..136e077 100644
+--- a/src/vm_manager.cc
++++ b/src/vm_manager.cc
+@@ -266,7 +266,7 @@ class CivOptions final {
+                         LOG(error) << "Cannot start server!";
+                         return false;
+                     }
+-                    boost::this_thread::sleep_for(boost::chrono::microseconds(1000));
++                    boost::this_thread::sleep_for(boost::chrono::milliseconds(5));
+                 }
+             }
+         }
+-- 
+2.34.1
+
