@@ -1,23 +1,23 @@
-From ea84e6c518e99db522f534c1d6b81cb092d8fd53 Mon Sep 17 00:00:00 2001
-From: Prashanth <prashanth.suresh@gmail.com>
-Date: Fri, 14 Jun 2024 22:07:46 +0800
-Subject: [PATCH] Solve mouse lag issue in Android.
+From 5f2fbb427376baa350cd88f844598214c810e0d0 Mon Sep 17 00:00:00 2001
+From: youm <you@intel.com>
+Date: Fri, 21 Jun 2024 20:41:58 +0530
+Subject: [PATCH] Resolve mouse lag issue in Android when playing video
 
-Add render_sync=false to resolve mouse lag issue.
+render_sync=false to be added to parameters.
 ---
  src/guest/vm_builder_qemu.cc | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/src/guest/vm_builder_qemu.cc b/src/guest/vm_builder_qemu.cc
-index cfc74d5..a87eb11 100644
+index 8e62fa6..32b3fb9 100644
 --- a/src/guest/vm_builder_qemu.cc
 +++ b/src/guest/vm_builder_qemu.cc
-@@ -411,7 +411,7 @@ bool VmBuilderQemu::SetupSriov(void) {
-         return false;
-     }
+@@ -424,7 +424,7 @@ bool VmBuilderQemu::SetupSriov(void) {
  
--    emul_cmd_.append(" -device virtio-vga,max_outputs=" + ((numberOfDisplays > 0 ) ? std::to_string(numberOfDisplays) : "1") + ",blob=true"
-+    emul_cmd_.append(" -device virtio-vga,max_outputs=" + ((numberOfDisplays > 0 ) ? std::to_string(numberOfDisplays) : "1") + ",blob=true,render_sync=false"
+         emul_cmd_.append(" -spice gl=on,addr=" + spice_ip + ",port=" + spice_port  + ",disable-ticketing=on,streaming-video=filter,preferred-codec=gstreamer:h264");
+     } else {
+-        emul_cmd_.append(" -device virtio-vga,max_outputs=" + ((numberOfDisplays > 0 ) ? std::to_string(numberOfDisplays) : "1") + ",blob=true"
++        emul_cmd_.append(" -device virtio-vga,max_outputs=" + ((numberOfDisplays > 0 ) ? std::to_string(numberOfDisplays) : "1") + ",blob=true,render_sync=false"
                      " -device vfio-pci,host=0000:00:02." + std::to_string(vf) +
                      " -object memory-backend-memfd,hugetlb=on,id=mem_sriov,size=" + mem_size +
                      " -machine memory-backend=mem_sriov");
