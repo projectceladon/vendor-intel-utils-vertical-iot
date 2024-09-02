@@ -1,0 +1,109 @@
+From b5d1082be99ebf6db2852bc58ef687c11b4ca84d Mon Sep 17 00:00:00 2001
+From: Basanagouda Nagappa Koppad <Basanagouda.Nagappa.Koppad@intel.com>
+Date: Thu, 29 Aug 2024 08:17:05 +0000
+Subject: [PATCH] BaseTools: fix gcc warnings in edk2
+
+Sdk/C/LzmaEnc.c: In function ?LzmaEnc_CodeOneMemBlock?:
+Sdk/C/LzmaEnc.c:2828:19: error: storing the address of local variable ?outStream? in ?*p.rc.outStream? [-Werror=dangling-pointer=]
+ 2828 |   p->rc.outStream = &outStream.vt;
+
+GenFfs.c:545:5: error: pointer ?InFileHandle? used after ?fclose? [-Werror=use-after-free]
+  545 |     Error(NULL, 0, 4001, "Resource", "memory cannot be allocated  of %s", InFileHandle);
+      |     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+GenFfs.c:544:5: note: call to ?fclose? here
+  544 |     fclose (InFileHandle);
+
+MdeModulePkg/Bus/Usb/UsbBusDxe/UsbBus.c: In function 'UsbIoBulkTransfer':
+MdeModulePkg/Bus/Usb/UsbBusDxe/UsbBus.c:267:13: error: 'UsbHcBulkTransfer' accessing 80 bytes in a region of size 8 [-Werror=stringop-overflow=]
+
+Tracked-on: NEXVIRTMOS-897
+Signed-off-by: Basanagouda Nagappa Koppad <Basanagouda.Nagappa.Koppad@intel.com>
+
+diff --git a/BaseTools/Source/C/DevicePath/GNUmakefile b/BaseTools/Source/C/DevicePath/GNUmakefile
+index 7ca08af966..b05d2bddfa 100644
+--- a/BaseTools/Source/C/DevicePath/GNUmakefile
++++ b/BaseTools/Source/C/DevicePath/GNUmakefile
+@@ -13,6 +13,9 @@ OBJECTS = DevicePath.o UefiDevicePathLib.o DevicePathFromText.o  DevicePathUtili
+ 
+ include $(MAKEROOT)/Makefiles/app.makefile
+ 
++# gcc 12 trips over device path handling
++BUILD_CFLAGS += -Wno-error=stringop-overflow
++
+ LIBS = -lCommon
+ ifeq ($(CYGWIN), CYGWIN)
+   LIBS += -L/lib/e2fsprogs -luuid
+diff --git a/BaseTools/Source/C/GenFfs/GenFfs.c b/BaseTools/Source/C/GenFfs/GenFfs.c
+index 949025c333..05dc4f5580 100644
+--- a/BaseTools/Source/C/GenFfs/GenFfs.c
++++ b/BaseTools/Source/C/GenFfs/GenFfs.c
+@@ -542,7 +542,7 @@ GetAlignmentFromFile(char *InFile, UINT32 *Alignment)
+   PeFileBuffer = (UINT8 *) malloc (PeFileSize);
+   if (PeFileBuffer == NULL) {
+     fclose (InFileHandle);
+-    Error(NULL, 0, 4001, "Resource", "memory cannot be allocated  of %s", InFileHandle);
++    Error(NULL, 0, 4001, "Resource", "memory cannot be allocated  for %s", InFile);
+     return EFI_OUT_OF_RESOURCES;
+   }
+   fread (PeFileBuffer, sizeof (UINT8), PeFileSize, InFileHandle);
+diff --git a/BaseTools/Source/C/GenSec/GenSec.c b/BaseTools/Source/C/GenSec/GenSec.c
+index d54a4f9e0a..b1d05367ec 100644
+--- a/BaseTools/Source/C/GenSec/GenSec.c
++++ b/BaseTools/Source/C/GenSec/GenSec.c
+@@ -1062,7 +1062,7 @@ GetAlignmentFromFile(char *InFile, UINT32 *Alignment)
+   PeFileBuffer = (UINT8 *) malloc (PeFileSize);
+   if (PeFileBuffer == NULL) {
+     fclose (InFileHandle);
+-    Error(NULL, 0, 4001, "Resource", "memory cannot be allocated  of %s", InFileHandle);
++    Error(NULL, 0, 4001, "Resource", "memory cannot be allocated for %s", InFile);
+     return EFI_OUT_OF_RESOURCES;
+   }
+   fread (PeFileBuffer, sizeof (UINT8), PeFileSize, InFileHandle);
+diff --git a/BaseTools/Source/C/LzmaCompress/Sdk/C/LzmaEnc.c b/BaseTools/Source/C/LzmaCompress/Sdk/C/LzmaEnc.c
+index 4e9b499f8d..4b9f5fa692 100644
+--- a/BaseTools/Source/C/LzmaCompress/Sdk/C/LzmaEnc.c
++++ b/BaseTools/Source/C/LzmaCompress/Sdk/C/LzmaEnc.c
+@@ -2825,12 +2825,13 @@ SRes LzmaEnc_CodeOneMemBlock(CLzmaEncHandle pp, BoolInt reInit,
+ 
+   nowPos64 = p->nowPos64;
+   RangeEnc_Init(&p->rc);
+-  p->rc.outStream = &outStream.vt;
+ 
+   if (desiredPackSize == 0)
+     return SZ_ERROR_OUTPUT_EOF;
+ 
++  p->rc.outStream = &outStream.vt;
+   res = LzmaEnc_CodeOneBlock(p, desiredPackSize, *unpackSize);
++  p->rc.outStream = NULL;
+ 
+   *unpackSize = (UInt32)(p->nowPos64 - nowPos64);
+   *destLen -= outStream.rem;
+diff --git a/MdeModulePkg/Bus/Usb/UsbBusDxe/UsbUtility.c b/MdeModulePkg/Bus/Usb/UsbBusDxe/UsbUtility.c
+index 7529e03e85..b2ce97ca37 100644
+--- a/MdeModulePkg/Bus/Usb/UsbBusDxe/UsbUtility.c
++++ b/MdeModulePkg/Bus/Usb/UsbBusDxe/UsbUtility.c
+@@ -285,7 +285,7 @@ UsbHcBulkTransfer (
+   IN  UINT8                               DevSpeed,
+   IN  UINTN                               MaxPacket,
+   IN  UINT8                               BufferNum,
+-  IN  OUT VOID                            *Data[EFI_USB_MAX_BULK_BUFFER_NUM],
++  IN  OUT VOID                            *Data[],
+   IN  OUT UINTN                           *DataLength,
+   IN  OUT UINT8                           *DataToggle,
+   IN  UINTN                               TimeOut,
+diff --git a/MdeModulePkg/Bus/Usb/UsbBusDxe/UsbUtility.h b/MdeModulePkg/Bus/Usb/UsbBusDxe/UsbUtility.h
+index 1d2b8a6174..1316a5981f 100644
+--- a/MdeModulePkg/Bus/Usb/UsbBusDxe/UsbUtility.h
++++ b/MdeModulePkg/Bus/Usb/UsbBusDxe/UsbUtility.h
+@@ -149,7 +149,7 @@ UsbHcBulkTransfer (
+   IN  UINT8                               DevSpeed,
+   IN  UINTN                               MaxPacket,
+   IN  UINT8                               BufferNum,
+-  IN  OUT VOID                            *Data[EFI_USB_MAX_BULK_BUFFER_NUM],
++  IN  OUT VOID                            *Data[],
+   IN  OUT UINTN                           *DataLength,
+   IN  OUT UINT8                           *DataToggle,
+   IN  UINTN                               TimeOut,
+-- 
+2.34.1
+
