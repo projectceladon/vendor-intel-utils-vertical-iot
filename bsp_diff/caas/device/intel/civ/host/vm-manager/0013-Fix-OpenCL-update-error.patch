@@ -1,0 +1,34 @@
+From 7bf102bf64b13a267e6991660dbf4ac4bbc039e6 Mon Sep 17 00:00:00 2001
+From: Basil Chew <basil.chew@intel.com>
+Date: Thu, 31 Mar 2022 15:54:59 +0800
+Subject: [PATCH 13/18] Fix OpenCL update error
+
+Change:
+- added installation of dependent package
+- added copyright license
+
+diff --git a/scripts/sriov_setup_host.sh b/scripts/sriov_setup_host.sh
+index a324b7c..1bed779 100644
+--- a/scripts/sriov_setup_host.sh
++++ b/scripts/sriov_setup_host.sh
+@@ -1,4 +1,10 @@
+ #!/bin/bash
++
++# Copyright (c) 2022 Intel Corporation.
++# All rights reserved.
++#
++# SPDX-License-Identifier: Apache-2.0
++
+ RED='\033[0;31m'
+ NC='\033[0m'
+ GREEN='\033[0;32m'
+@@ -213,5 +219,6 @@ wget https://github.com/intel/intel-graphics-compiler/releases/download/igc-1.0.
+ wget https://github.com/intel/intel-graphics-compiler/releases/download/igc-1.0.10409/intel-igc-opencl_1.0.10409_amd64.deb
+ wget https://github.com/intel/compute-runtime/releases/download/22.10.22597/intel-opencl-icd_22.10.22597_amd64.deb
+ wget https://github.com/intel/compute-runtime/releases/download/22.10.22597/intel-level-zero-gpu_1.3.22597_amd64.deb
++sudo apt install ocl-icd-libopencl1
+ sudo dpkg -i *.deb
+ cd $WrkDir
+-- 
+2.40.0
+

@@ -1,0 +1,56 @@
+From 6dfb7da01ccd38e3ff1779c786ca08f341016c20 Mon Sep 17 00:00:00 2001
+From: "Suresh, Prashanth" <prashanth.suresh@intel.com>
+Date: Thu, 2 Mar 2023 14:26:11 +0530
+Subject: [PATCH 18/18] Remove user prompts from host setup
+
+Changes:
+- removed prompt to update QEMU
+- removed prompt to update grub
+- removed prompt for reboot
+
+Tracked-On:
+Signed-off-by: Suresh, Prashanth <prashanth.suresh@intel.com>
+
+diff --git a/scripts/setup_host.sh b/scripts/setup_host.sh
+index 88412e8..16be3dc 100755
+--- a/scripts/setup_host.sh
++++ b/scripts/setup_host.sh
+@@ -30,10 +30,6 @@ function error() {
+ function ubu_changes_require(){
+     echo "Please make sure your apt is working"
+     echo "If you run the installation first time, reboot is required"
+-    read -p "QEMU version will be replaced (it could be recovered by 'apt purge ^qemu, apt install qemu'), do you want to continue? [Y/n]" res
+-    if [ x$res = xn ]; then
+-        return 1
+-    fi
+     sudo apt install -y wget mtools ovmf dmidecode python3-usb python3-pyudev pulseaudio jq
+ 
+     # Install libs for vm-manager
+@@ -198,10 +194,6 @@ function install_vm_manager() {
+ function ubu_enable_host_gvt(){
+     if [[ ! `cat /etc/default/grub` =~ "i915.enable_guc="(0x)?0*"7" ]] &&
+        [[ ! `cat /etc/default/grub` =~ "i915.enable_gvt=1" ]]; then
+-        read -p "Do you want to update the grub entry in '/etc/default/grub' for enabling GVT-g and GVT-d? [Y/n]" res
+-        if [ x$res = xn ]; then
+-            return
+-        fi
+         if [[ ! `cat /etc/default/grub` =~ "intel_iommu=on i915.force_probe=*" ]]; then
+             sed -i "s/GRUB_CMDLINE_LINUX=\"/GRUB_CMDLINE_LINUX=\"intel_iommu=on i915.force_probe=* /g" /etc/default/grub
+         fi
+@@ -299,12 +291,7 @@ function check_sriov_setup() {
+ 
+ function ask_reboot(){
+     if [ $reboot_required -eq 1 ];then
+-        read -p "Reboot is required, do you want to reboot it NOW? [y/N]" res
+-        if [ x$res = xy ]; then
+-            reboot
+-        else
+-            echo "Please reboot system later to take effect"
+-        fi
++       echo "Please reboot system to take effect"
+     fi
+ }
+ 
+-- 
+2.40.0
+

@@ -1,0 +1,26 @@
+From 01551e1d60a554f4d756c60c5f79049cfd3429a9 Mon Sep 17 00:00:00 2001
+From: "Suresh, Prashanth" <prashanth.suresh@intel.com>
+Date: Thu, 2 Mar 2023 11:11:18 +0530
+Subject: [PATCH 15/18] Update logic to add GVT-d grub cmdline
+
+Change:
+- updated logic to add GVT-d grub cmdline only for non-SRIOV case
+Tracked-On:
+
+diff --git a/scripts/setup_host.sh b/scripts/setup_host.sh
+index 5a10771..be32911 100755
+--- a/scripts/setup_host.sh
++++ b/scripts/setup_host.sh
+@@ -188,7 +188,8 @@ function install_vm_manager() {
+ }
+ 
+ function ubu_enable_host_gvt(){
+-    if [[ ! `cat /etc/default/grub` =~ "i915.enable_gvt=1" ]]; then
++    if [[ ! `cat /etc/default/grub` =~ "i915.enable_guc=0x7 udmabuf.list_limit=8192" ]] &&
++       [[ ! `cat /etc/default/grub` =~ "i915.enable_gvt=1" ]]; then
+         read -p "Do you want to update the grub entry in '/etc/default/grub' for enabling GVT-g and GVT-d? [Y/n]" res
+         if [ x$res = xn ]; then
+             return
+-- 
+2.40.0
+

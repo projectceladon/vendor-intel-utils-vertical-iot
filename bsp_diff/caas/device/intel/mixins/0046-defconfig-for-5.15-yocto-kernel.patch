@@ -1,0 +1,90 @@
+From 9d83fc8b46f31e489f06a924f953effd81cee152 Mon Sep 17 00:00:00 2001
+From: "Kothapeta, BikshapathiX" <bikshapathix.kothapeta@intel.com>
+Date: Wed, 5 Apr 2023 19:23:44 +0530
+Subject: [PATCH] defconfig for 5.15 yocto kernel
+
+Change is fixing the VtsKernel Compatability test.
+No compatible kernel requirement found (kernel FCM version = 7).
+For Kernel requirements at matrix level 7, Missing config
+Below VTS tests are fixed
+KernelApiSysfsTest
+  com.android.tests.sysfs.KernelApiSysfsTest#testKfenceSampleRate
+
+vts_treble_vintf_framework_test
+  SystemVendorTest#KernelCompatibility
+  SystemVendorTest#VendorFrameworkCompatibility
+
+Tracked-On: OAM-108692
+Signed-off-by: Kothapeta, BikshapathiX <bikshapathix.kothapeta@intel.com>
+
+diff --git a/groups/kernel/gmin64/config-lts/linux-intel-lts2021/x86_64_defconfig b/groups/kernel/gmin64/config-lts/linux-intel-lts2021/x86_64_defconfig
+index 54f84c9..d3c58fe 100644
+--- a/groups/kernel/gmin64/config-lts/linux-intel-lts2021/x86_64_defconfig
++++ b/groups/kernel/gmin64/config-lts/linux-intel-lts2021/x86_64_defconfig
+@@ -46,8 +46,7 @@ CONFIG_KERNEL_GZIP=y
+ CONFIG_DEFAULT_INIT=""
+ CONFIG_DEFAULT_HOSTNAME="(none)"
+ CONFIG_SWAP=y
+-CONFIG_SYSVIPC=y
+-CONFIG_SYSVIPC_SYSCTL=y
++# CONFIG_SYSVIPC is not set
+ CONFIG_POSIX_MQUEUE=y
+ CONFIG_POSIX_MQUEUE_SYSCTL=y
+ # CONFIG_WATCH_QUEUE is not set
+@@ -614,7 +613,6 @@ CONFIG_IA32_EMULATION=y
+ CONFIG_COMPAT_32=y
+ CONFIG_COMPAT=y
+ CONFIG_COMPAT_FOR_U64_ALIGNMENT=y
+-CONFIG_SYSVIPC_COMPAT=y
+ # end of Binary Emulations
+ 
+ CONFIG_HAVE_KVM=y
+@@ -854,7 +852,7 @@ CONFIG_ARCH_HAS_SYSCALL_WRAPPER=y
+ # CONFIG_GKI_HIDDEN_USB_CONFIGS is not set
+ # CONFIG_GKI_HIDDEN_SOC_BUS_CONFIGS is not set
+ # CONFIG_GKI_HIDDEN_RPMSG_CONFIGS is not set
+-# CONFIG_GKI_HIDDEN_GPU_CONFIGS is not set
++CONFIG_GKI_HIDDEN_GPU_CONFIGS=y
+ # CONFIG_GKI_HIDDEN_IRQ_CONFIGS is not set
+ # CONFIG_GKI_HIDDEN_HYPERVISOR_CONFIGS is not set
+ # CONFIG_GKI_HIDDEN_NET_CONFIGS is not set
+@@ -1006,6 +1004,7 @@ CONFIG_INET_TUNNEL=y
+ CONFIG_INET_DIAG=y
+ CONFIG_INET_TCP_DIAG=y
+ CONFIG_INET_UDP_DIAG=y
++CONFIG_TRACE_GPU_MEM=y
+ # CONFIG_INET_RAW_DIAG is not set
+ CONFIG_INET_DIAG_DESTROY=y
+ CONFIG_TCP_CONG_ADVANCED=y
+@@ -4240,6 +4239,7 @@ CONFIG_DRM_BOCHS=y
+ # CONFIG_DRM_GUD is not set
+ # CONFIG_DRM_SSD130X is not set
+ # CONFIG_DRM_LEGACY is not set
++
+ CONFIG_DRM_PANEL_ORIENTATION_QUIRKS=y
+ CONFIG_DRM_NOMODESET=y
+ 
+@@ -6758,7 +6758,8 @@ CONFIG_HAVE_HARDENED_USERCOPY_ALLOCATOR=y
+ CONFIG_HARDENED_USERCOPY=y
+ CONFIG_HARDENED_USERCOPY_FALLBACK=y
+ # CONFIG_HARDENED_USERCOPY_PAGESPAN is not set
+-# CONFIG_STATIC_USERMODEHELPER is not set
++CONFIG_STATIC_USERMODEHELPER=y
++CONFIG_STATIC_USERMODEHELPER_PATH=""
+ CONFIG_SECURITY_SELINUX=y
+ CONFIG_SECURITY_SELINUX_BOOTPARAM=y
+ CONFIG_SECURITY_SELINUX_DISABLE=y
+@@ -7240,8 +7241,8 @@ CONFIG_CC_HAS_WORKING_NOSANITIZE_ADDRESS=y
+ # CONFIG_KASAN is not set
+ CONFIG_HAVE_ARCH_KFENCE=y
+ CONFIG_KFENCE=y
+-CONFIG_KFENCE_SAMPLE_INTERVAL=100
+-CONFIG_KFENCE_NUM_OBJECTS=255
++CONFIG_KFENCE_SAMPLE_INTERVAL=500
++CONFIG_KFENCE_NUM_OBJECTS=63
+ CONFIG_KFENCE_STRESS_TEST_FAULTS=0
+ # end of Memory Debugging
+ 
+-- 
+2.40.0
+

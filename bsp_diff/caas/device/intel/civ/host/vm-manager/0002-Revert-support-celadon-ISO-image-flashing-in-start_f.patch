@@ -1,0 +1,85 @@
+From 9ac68c60dfd5cab2bcfa620e8e3b15f0af16867e Mon Sep 17 00:00:00 2001
+From: vdanix <vishwanathx.dani@intel.com>
+Date: Mon, 3 Oct 2022 15:20:48 +0530
+Subject: [PATCH 02/18] Revert "support celadon ISO image flashing in
+ start_flash_usb.sh script"
+
+This reverts commit f5a5f05a0a30ed137585d2163b763179c0587c6b.
+
+diff --git a/scripts/start_flash_usb.sh b/scripts/start_flash_usb.sh
+index eb13016..df2f88d 100755
+--- a/scripts/start_flash_usb.sh
++++ b/scripts/start_flash_usb.sh
+@@ -7,7 +7,7 @@
+ 
+ WORK_DIR=$PWD
+ 
+-[ $# -lt 1 ] && echo "Usage: $0 [caas-flashfiles-<variant>.zip] [caas-flashfile-<variant>.iso] [caas-flashfile-<variant>.iso.zip]" && exit -1
++[ $# -lt 1 ] && echo "Usage: $0 caas-flashfiles-eng-<user>.zip" && exit -1
+ 
+ if [ -f android.qcow2 ]
+ then
+@@ -41,34 +41,25 @@ else
+ 	qemu-img create -f qcow2 android.qcow2 32G
+ fi
+ 
+-decompress=flashfiles_decompress
+-zip_file=$(file $1 | grep -i "Zip archive data")
+-if [[ $zip_file != "" ]]; then
+-	rm -rf "$decompress" && mkdir $decompress
+-	unzip $1 -d $decompress
++[ -d "./flashfiles_decompress" ] && rm -rf "./flashfiles_decompress"
++mkdir ./flashfiles_decompress
++unzip $1 -d ./flashfiles_decompress
+ 
+-	if [[ -f $decompress/boot.img ]]; then
+-		G_size=$((1<<32))
+-		for i in `ls $decompress`; do
+-			size=$(stat -c %s "$decompress/"$i)
+-			if [[ $size -gt $G_size ]]; then
+-				echo "Split $i due to its size bigger than 4G"
+-				split --bytes=$((G_size-1)) --numeric-suffixes "$decompress/"$i "$decompress/"$i.part
+-				rm "$decompress/"$i
+-			fi
+-		done
+-
+-		dd if=/dev/zero of=./flash.vfat bs=63M count=160
+-		mkfs.vfat ./flash.vfat
+-		mcopy -i flash.vfat $decompress/* ::
+-
+-		virt_disk=flash.vfat
+-	else
+-		virt_disk=$decompress/`ls $decompress`
++G_size=$((1<<32))
++for i in `ls ./flashfiles_decompress`;do
++	if [ -f "./flashfiles_decompress/"$i ] && [ "`grep $i ./flashfiles_decompress/installer.cmd`" ]; then
++		size=$(stat -c %s "./flashfiles_decompress/"$i)
++		if [[ $size -gt $G_size ]]; then
++			echo "Split $i due to its size bigger than 4G\n"
++			split --bytes=$((G_size-1)) --numeric-suffixes "./flashfiles_decompress/"$i "./flashfiles_decompress/"$i.part
++			rm "./flashfiles_decompress/"$i
++		fi
+ 	fi
+-else
+-	virt_disk=$1
+-fi
++done
++
++dd if=/dev/zero of=./flash.vfat bs=63M count=160
++mkfs.vfat ./flash.vfat
++mcopy -i flash.vfat flashfiles_decompress/* ::
+ 
+ if [ "$support_dedicated_data" = true ]
+ then
+@@ -99,7 +90,7 @@ qemu-system-x86_64 \
+   -chardev socket,id=charserial0,path=./kernel-console,server=on,wait=off \
+   -device isa-serial,chardev=charserial0,id=serial0 \
+   -device qemu-xhci,id=xhci,addr=0x5 \
+-  -drive file=$virt_disk,id=udisk1,format=raw,if=none \
++  -drive file=./flash.vfat,id=udisk1,format=raw,if=none \
+   -device usb-storage,drive=udisk1,bus=xhci.0 \
+   -device virtio-scsi-pci,id=scsi0,addr=0x8 \
+   -drive file=./android.qcow2,if=none,format=qcow2,id=scsidisk1 \
+-- 
+2.40.0
+

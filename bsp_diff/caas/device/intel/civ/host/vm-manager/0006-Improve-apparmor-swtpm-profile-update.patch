@@ -1,0 +1,28 @@
+From 33bf4524dad98a67e77ffa3daf30f6b3c3394bd4 Mon Sep 17 00:00:00 2001
+From: Basil Chew <basil.chew@intel.com>
+Date: Fri, 19 Aug 2022 17:35:56 +0800
+Subject: [PATCH 06/18] Improve apparmor swtpm profile update
+
+Change:
+- updated host setup to load apparmor profile without reboot
+
+Change-Id: Ibb19ad436e6b7f96d0370aed2cb8d5ee471a7f51
+
+diff --git a/scripts/setup_host.sh b/scripts/setup_host.sh
+index 7dc4976..9abe9a8 100755
+--- a/scripts/setup_host.sh
++++ b/scripts/setup_host.sh
+@@ -409,7 +409,9 @@ function ubu_install_swtpm() {
+             echo -e "$rule" | sudo tee -a /etc/apparmor.d/local/usr.bin.swtpm
+         fi
+     done
+-    reboot_required=1
++    #load profile
++    sudo apparmor_parser -r /etc/apparmor.d/usr.bin.swtpm
++
+ }
+ 
+ function ubu_install_libssl() {
+-- 
+2.40.0
+
