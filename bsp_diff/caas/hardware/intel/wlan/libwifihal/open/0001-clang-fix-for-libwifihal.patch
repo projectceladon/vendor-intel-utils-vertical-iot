@@ -1,0 +1,58 @@
+From 019c42a5e63601ff10b3d5ca328eb3d292fa0472 Mon Sep 17 00:00:00 2001
+From: vdanix <vishwanathx.dani@intel.com>
+Date: Tue, 25 Jul 2023 07:49:48 +0530
+Subject: [PATCH] clang fix for A12 libwifihal
+
+Tracked-On: OAM-111118
+Signed-off-by: vdanix <vishwanathx.dani@intel.com>
+
+diff --git a/lib/driver_if.cpp b/lib/driver_if.cpp
+index 5d6baed..e76e78b 100644
+--- a/lib/driver_if.cpp
++++ b/lib/driver_if.cpp
+@@ -34,10 +34,6 @@
+ #include <linux/nl80211.h>
+ #include "hal_debug.h"
+ 
+-#ifdef __clang_analyzer__
+-#define free
+-#endif
+-
+ /* libnl 1.x compatibility code */
+ #if !defined(CONFIG_LIBNL20) && !defined(CONFIG_LIBNL30)
+ 
+@@ -1168,14 +1164,13 @@ static int station_dump_handler(struct nl_msg *msg, void *arg)
+ 		hal_printf(MSG_ERROR, "%s: Failed to allocate memory", __func__);
+ 		return NL_SKIP;
+ 	}
+-	assert(s);
+ 	if (station_dump(msg, tb, s)) {
+ 		free(s);
+ 		return NL_SKIP;
+ 	}
+ 
+ 	dl_list_add_tail(sta_list, &s->list);
+-
++	free(s);
+ 	return NL_SKIP;
+ }
+ 
+@@ -1387,6 +1382,7 @@ static int survey_handler(struct nl_msg *msg, void *arg)
+ 
+ 	dl_list_add_tail(survey_list, &survey->list);
+ 
++	free(survey);
+ 	return NL_SKIP;
+ }
+ 
+@@ -1573,7 +1569,6 @@ void *driver_if_init(void *handle, drv_event_cb event_cb, u32 ifidx)
+ 
+ 	hal_printf(MSG_DEBUG, "%s: ifidx=%u", __func__, ifidx);
+ 
+-	assert(drv);
+ 	drv->nl_cb = nl_cb_alloc(NL_CB_DEFAULT);
+ 	if (!drv->nl_cb) {
+ 		hal_printf(MSG_ERROR, "Failed to allocate netlink callback!");
+-- 
+2.41.0
+
