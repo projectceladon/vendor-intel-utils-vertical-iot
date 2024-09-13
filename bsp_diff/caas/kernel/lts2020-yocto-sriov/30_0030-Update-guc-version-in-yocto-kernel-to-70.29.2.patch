@@ -1,0 +1,28 @@
+From caa15be3bd9a468c19b16b05b8c1c411bd320bfc Mon Sep 17 00:00:00 2001
+From: celadon <celadon@intel.com>
+Date: Fri, 13 Sep 2024 04:23:07 +0000
+Subject: [PATCH] Update guc version in yocto kernel to 70.29.2
+
+Tracked-on: OAM-124695
+Signed-off-by: Basanagouda.Nagappa.Koppad <Basanagouda.Nagappa.Koppad@intel.com>
+
+diff --git a/drivers/gpu/drm/i915/gt/uc/intel_uc_fw.c b/drivers/gpu/drm/i915/gt/uc/intel_uc_fw.c
+index 7820ca96d702..f6a5e985705b 100644
+--- a/drivers/gpu/drm/i915/gt/uc/intel_uc_fw.c
++++ b/drivers/gpu/drm/i915/gt/uc/intel_uc_fw.c
+@@ -68,10 +68,8 @@ void intel_uc_fw_change_status(struct intel_uc_fw *uc_fw,
+  * security fixes, etc. to be enabled.
+  */
+ #define INTEL_GUC_FIRMWARE_DEFS(fw_def, guc_maj, guc_mmp) \
+-	fw_def(ALDERLAKE_P,  0, guc_maj(adlp, 70, 5)) \
+-	fw_def(ALDERLAKE_P,  0, guc_mmp(adlp, 70, 1, 1)) \
+-	fw_def(ALDERLAKE_S,  0, guc_maj(tgl,  70, 5)) \
+-	fw_def(ALDERLAKE_S,  0, guc_mmp(tgl,  70, 13,1)) \
++	fw_def(ALDERLAKE_P,  0, guc_mmp(adlp, 70, 29, 2)) \
++	fw_def(ALDERLAKE_S,  0, guc_mmp(tgl,  70, 29, 2)) \
+ 	fw_def(DG1,          0, guc_maj(dg1,  70, 5)) \
+ 	fw_def(DG1,          0, guc_mmp(dg1,  70, 1, 1)) \
+ 	fw_def(ROCKETLAKE,   0, guc_maj(tgl,  70, 5)) \
+-- 
+2.34.1
+
