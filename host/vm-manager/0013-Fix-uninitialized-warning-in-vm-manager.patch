@@ -1,0 +1,36 @@
+From dd7c698c823fba249e7c343bb4b7db5860309ecb Mon Sep 17 00:00:00 2001
+From: Basanagouda Nagappa Koppad <Basanagouda.Nagappa.Koppad@intel.com>
+Date: Wed, 18 Sep 2024 08:27:44 +0000
+Subject: [PATCH] Fix uninitialized warning in vm-manager
+
+Tracked-On: OAM-124185
+Signed-off-by: Basanagouda Nagappa Koppad <Basanagouda.Nagappa.Koppad@intel.com>
+
+diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
+index 182ae24..e1be000 100644
+--- a/src/CMakeLists.txt
++++ b/src/CMakeLists.txt
+@@ -26,7 +26,7 @@ add_subdirectory(services/protos)
+ 
+ set(PROJECT_NAME "vm-manager")
+ project(${PROJECT_NAME})
+-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-unused-result -Wno-unused-variable -Wno-narrowing -O2")
++set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-unused-result -Wno-maybe-uninitialized -Wno-unused-variable -Wno-narrowing -O2")
+ set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -g1 -O3 -fstack-protector-strong -Wdate-time -D_FORTIFY_SOURCE=2" CACHE STRING "CXX Release Flags" FORCE)
+ set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O2 -g3")
+ 
+diff --git a/src/cmake/FTXUICMake.cmake b/src/cmake/FTXUICMake.cmake
+index 60bf7cc..8aa69be 100644
+--- a/src/cmake/FTXUICMake.cmake
++++ b/src/cmake/FTXUICMake.cmake
+@@ -15,6 +15,7 @@ FetchContent_Declare(ftxui
+   #GIT_SHALLOW 1
+ )
+ set(FETCHCONTENT_QUIET OFF)
++set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-maybe-uninitialized")
+ 
+ FetchContent_GetProperties(ftxui)
+ if(NOT ftxui_POPULATED)
+-- 
+2.34.1
+
