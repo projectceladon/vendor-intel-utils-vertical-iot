@@ -1,0 +1,28 @@
+From b67b9e0865dcf5b6fc3357dc73fd71a0b7e0ccf8 Mon Sep 17 00:00:00 2001
+From: celadon <celadon@intel.com>
+Date: Tue, 22 Oct 2024 15:22:41 +0000
+Subject: [PATCH] [Android] Enable HW Cursor in Android VM
+
+Add configurable parameter in VM-manager
+
+Tracked-On: OAM-126590
+Signed-off-by: Suresh, Prashanth <prashanth.suresh@intel.com>
+---
+ sample/guest01.ini | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/sample/guest01.ini b/sample/guest01.ini
+index afd9c14..2ba180a 100644
+--- a/sample/guest01.ini
++++ b/sample/guest01.ini
+@@ -78,6 +78,7 @@ audio_type=legacy-hda
+ #connectors_1=
+ #show_fps=
+ #disable_host_input=no
++hw_cursor=true
+ 
+ #Set hw_spice=true to view VM over HW Spice. false by default. Please add IP address and
+ #port for Spice display to work
+-- 
+2.34.1
+
