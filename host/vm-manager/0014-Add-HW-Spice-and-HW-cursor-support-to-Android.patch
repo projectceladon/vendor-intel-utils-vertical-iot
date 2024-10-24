@@ -1,0 +1,159 @@
+From dc7b2ae25baf98ccc87eedcb0d42c8998893d3f0 Mon Sep 17 00:00:00 2001
+From: Your Name <you@example.com>
+Date: Thu, 24 Oct 2024 15:35:54 +0530
+Subject: [PATCH] Add HW Spice and HW cursor support to Android.
+
+Add HW Spice support to Android which cane be enabled via
+ini file.
+Add configurable render_sync parameter in VM-manager
+Add configurable HW cursor parameter in VM-manager
+---
+ src/guest/config_parser.cc   |  2 +-
+ src/guest/config_parser.h    |  7 ++--
+ src/guest/vm_builder_qemu.cc | 76 ++++++++++++++++++++++++------------
+ 3 files changed, 55 insertions(+), 30 deletions(-)
+
+diff --git a/src/guest/config_parser.cc b/src/guest/config_parser.cc
+index c8fb5bc..349ab5f 100644
+--- a/src/guest/config_parser.cc
++++ b/src/guest/config_parser.cc
+@@ -35,7 +35,7 @@ map<string_view, vector<string_view>> kConfigMap = {
+     { kGroupFirm,    { kFirmType, kFirmPath, kFirmCode, kFirmVars } },
+     { kGroupDisk,    { kDiskSize, kDiskPath } },
+     { kGroupVgpu,    { kVgpuType, kVgpuGvtgVer, kVgpuUuid, kVgpuMonId, kVgpuOutputs } },
+-    { kGroupDisplay, { kDispOptions, kDispConnector0, kDispConnector1, kDispShowFps, kDisableHostInput, kHwSpice, kHwSpiceIp, kHwSpicePort } },
++    { kGroupDisplay, { kDispOptions, kDispConnector0, kDispConnector1, kDispShowFps, kDisableHostInput, kSpice, kSpicePort, kHwCursor, kRenderSync } },
+     { kGroupNet,     { kNetModel, kNetAdbPort, kNetFastbootPort } },
+     { kGroupVtpm,    { kVtpmBinPath, kVtpmDataDir } },
+     { kGroupRpmb,    { kRpmbBinPath, kRpmbDataDir } },
+diff --git a/src/guest/config_parser.h b/src/guest/config_parser.h
+index 7be9848..1e8153f 100644
+--- a/src/guest/config_parser.h
++++ b/src/guest/config_parser.h
+@@ -65,9 +65,10 @@ constexpr char kDispConnector0[] = "connectors_0";
+ constexpr char kDispConnector1[] = "connectors_1";
+ constexpr char kDispShowFps[] = "show_fps";
+ constexpr char kDisableHostInput[] = "disable_host_input";
+-constexpr char kHwSpice[]  = "hw_spice";
+-constexpr char kHwSpiceIp[] = "ip_addr";
+-constexpr char kHwSpicePort[] = "port";
++constexpr char kSpice[]  = "spice";
++constexpr char kSpicePort[] = "port";
++constexpr char kRenderSync[]  = "render_sync";
++constexpr char kHwCursor[]  = "hw_cursor";
+ 
+ constexpr char kNetModel[] = "model";
+ constexpr char kNetAdbPort[] = "adb_port";
+diff --git a/src/guest/vm_builder_qemu.cc b/src/guest/vm_builder_qemu.cc
+index 32b3fb9..5eb6921 100644
+--- a/src/guest/vm_builder_qemu.cc
++++ b/src/guest/vm_builder_qemu.cc
+@@ -343,30 +343,15 @@ int VmBuilderQemu::SetAvailableVf(void) {
+ }
+ 
+ bool VmBuilderQemu::SetupSriov(void) {
+-    std::string vgpu_mon_id = cfg_.GetValue(kGroupVgpu, kVgpuMonId);
+-    if (vgpu_mon_id.empty()) {
+-        emul_cmd_.append(" -display gtk,gl=on");
+-    } else {
+-        emul_cmd_.append(" -display gtk,gl=on,monitor=" + vgpu_mon_id);
+-    }
+-
++   
+     int numberOfDisplays = 0;
+     std::string connectors_0 = cfg_.GetValue(kGroupDisplay, kDispConnector0);
+     std::string connectors_1 = cfg_.GetValue(kGroupDisplay, kDispConnector1);
+     std::string connector_str;
+     bool isConnector0Valid = false;
+     bool isConnector1Valid = false;
+-    std::string show_fps = cfg_.GetValue(kGroupDisplay, kDispShowFps);
+-    if (!show_fps.empty() && (show_fps.compare("on") == 0 || show_fps.compare("off") == 0)) {
+-        emul_cmd_.append(",show-fps=" + show_fps + ",");
+-    } else if (show_fps.empty()){
+-        emul_cmd_.append(",show-fps=off,");
+-    } else {
+-	LOG(error) << "Please enter a valid value for show_fps.";
+-	return false;
+-    }
+ 
+-    if(!connectors_0.empty() && ( connectors_0.find("HDMI-") == 0 || connectors_0.find("DP-") == 0)) {
++    if(!connectors_0.empty() && (connectors_0.find("HDMI-") == 0 || connectors_0.find("DP-") == 0)) {
+                         numberOfDisplays++;
+                         connector_str.append("connectors.0=");
+                         connector_str.append(connectors_0);
+@@ -410,24 +395,63 @@ bool VmBuilderQemu::SetupSriov(void) {
+         LOG(error) << "Error: No VFs available";
+         return false;
+     }
++    std::string spice = cfg_.GetValue(kGroupDisplay, kSpice);
++    std::string spice_port = cfg_.GetValue(kGroupDisplay, kSpicePort);
++    std::string render_sync = cfg_.GetValue(kGroupDisplay, kRenderSync);
++    if((!render_sync.empty()) && render_sync.compare("false") == 0) {
++        LOG(info) << "render_sync false";
++       render_sync = "false";
++    }
++    else {
++        LOG(info) << "render_sync true";
++        render_sync = "true";
++    }
+ 
+-    std::string hw_spice = cfg_.GetValue(kGroupDisplay, kHwSpice);
+-    std::string spice_ip = cfg_.GetValue(kGroupDisplay, kHwSpiceIp);
+-    std::string spice_port = cfg_.GetValue(kGroupDisplay, kHwSpicePort);
+-    if((!hw_spice.empty()) && hw_spice.compare("true") == 0) {
+-        LOG(info) << "Enabling hw spice display";
+-        emul_cmd_.append(" -device virtio-gpu-pci,max_outputs=" + ((numberOfDisplays > 0 ) ? std::to_string(numberOfDisplays) : "1") + ",blob=true"
+-                    ",xres=1920,yres=1080" +
++    if((!spice.empty()) && spice.compare("HW") == 0) {
++        LOG(info) << "Enabling HW spice display";
++        emul_cmd_.append(" -device virtio-vga,max_outputs=" + ((numberOfDisplays > 0 ) ? std::to_string(numberOfDisplays) : "1") + ",blob=true,render_sync=" + render_sync +
+                     " -device vfio-pci,host=0000:00:02." + std::to_string(vf) +
+                     " -object memory-backend-memfd,hugetlb=on,id=mem_sriov,size=" + mem_size +
+                     " -machine memory-backend=mem_sriov");
+ 
+-        emul_cmd_.append(" -spice gl=on,addr=" + spice_ip + ",port=" + spice_port  + ",disable-ticketing=on,streaming-video=filter,preferred-codec=gstreamer:h264");
++        emul_cmd_.append(" -spice gl=on,port=" + spice_port  + ",disable-ticketing=on,streaming-video=filter,preferred-codec=gstreamer:h264,agent-mouse=on");
++    } else if ((!spice.empty()) && spice.compare("SW") == 0) {
++        LOG(info) << "Enabling SW spice display";
++        emul_cmd_.append(" -device virtio-vga,max_outputs=" + ((numberOfDisplays > 0 ) ? std::to_string(numberOfDisplays) : "1") + ",blob=true,render_sync=" + render_sync +
++                    " -device vfio-pci,host=0000:00:02." + std::to_string(vf) +
++                    " -object memory-backend-memfd,hugetlb=on,id=mem_sriov,size=" + mem_size +
++                    " -machine memory-backend=mem_sriov");
++        emul_cmd_.append(" -spice port=" + spice_port  + ",disable-ticketing=on" + " -display egl-headless ");
+     } else {
+-        emul_cmd_.append(" -device virtio-vga,max_outputs=" + ((numberOfDisplays > 0 ) ? std::to_string(numberOfDisplays) : "1") + ",blob=true,render_sync=false"
++        emul_cmd_.append(" -device virtio-vga,max_outputs=" + ((numberOfDisplays > 0 ) ? std::to_string(numberOfDisplays) : "1") + ",blob=true,render_sync=" + render_sync +
+                     " -device vfio-pci,host=0000:00:02." + std::to_string(vf) +
+                     " -object memory-backend-memfd,hugetlb=on,id=mem_sriov,size=" + mem_size +
+                     " -machine memory-backend=mem_sriov");
++
++        if ((spice.empty()) || ((spice.compare("HW") != 0) && (spice.compare("SW") != 0))) {
++            std::string vgpu_mon_id = cfg_.GetValue(kGroupVgpu, kVgpuMonId);
++            if (vgpu_mon_id.empty()) {
++                emul_cmd_.append(" -display gtk,gl=on");
++            } else {
++                emul_cmd_.append(" -display gtk,gl=on,monitor=" + vgpu_mon_id);
++            }
++        }
++        std::string hw_cursor = cfg_.GetValue(kGroupDisplay, kHwCursor);
++        if ((!hw_cursor.empty()) && hw_cursor.compare("true") == 0) {
++            LOG(info) << "Enabling hw cursor";
++            emul_cmd_.append(",hw-cursor=true");
++        } else {
++            emul_cmd_.append(",hw-cursor=false");
++        }
++        std::string show_fps = cfg_.GetValue(kGroupDisplay, kDispShowFps);
++        if (!show_fps.empty() && (show_fps.compare("on") == 0 || show_fps.compare("off") == 0)) {
++            emul_cmd_.append(",show-fps=" + show_fps + ",");
++        } else if (show_fps.empty()){
++            emul_cmd_.append(",show-fps=off,");
++        } else {
++            LOG(error) << "Please enter a valid value for show_fps.";
++            return false;
++        }
+     }
+     return true;
+ }
+-- 
+2.43.0
+
