@@ -1,0 +1,38 @@
+From fbe89bb3bb86fa41140b147ff902794b59e89799 Mon Sep 17 00:00:00 2001
+From: celadon <celadon@intel.com>
+Date: Thu, 24 Oct 2024 06:27:44 +0000
+Subject: [PATCH] Add HW Spice support to Android.
+
+Add HW Spice support to Android which cane be enabled via
+ini file.
+
+Signed-off-by: Suresh, Prashanth <prashanth.suresh@intel.com>
+---
+ sample/guest01.ini | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
+
+diff --git a/sample/guest01.ini b/sample/guest01.ini
+index 2ba180a..d10aacc 100644
+--- a/sample/guest01.ini
++++ b/sample/guest01.ini
+@@ -78,12 +78,12 @@ audio_type=legacy-hda
+ #connectors_1=
+ #show_fps=
+ #disable_host_input=no
+-#hw_cursor=false
++hw_cursor=true
++render_sync=true
+ 
+-#Set hw_spice=true to view VM over HW Spice. false by default. Please add IP address and
+-#port for Spice display to work
+-#hw_spice=true
+-#ip_addr=10.49.4.30
++#Set spice=HWto view VM over HW Spice and SW to view VM over SW Spice.
++#Add port for Spice display to work
++#spice=SW
+ #port=3001
+ 
+ [passthrough]
+-- 
+2.34.1
+
