@@ -1,0 +1,34 @@
+From 8ad3ec08a4eb959b33f47ad9b978d8ac5700241a Mon Sep 17 00:00:00 2001
+From: "Kothapeta, BikshapathiX" <bikshapathix.kothapeta@intel.com>
+Date: Thu, 6 Feb 2025 05:28:09 +0000
+Subject: [PATCH] Test patch-1
+
+Signed-off-by: Kothapeta, BikshapathiX <bikshapathix.kothapeta@intel.com>
+
+diff --git a/media/codec2/sfplugin/CCodecBufferChannel.cpp b/media/codec2/sfplugin/CCodecBufferChannel.cpp
+index e78dd5c413..1eeb260470 100644
+--- a/media/codec2/sfplugin/CCodecBufferChannel.cpp
++++ b/media/codec2/sfplugin/CCodecBufferChannel.cpp
+@@ -69,6 +69,7 @@ using namespace hardware::cas::native::V1_0;
+ using CasStatus = hardware::cas::V1_0::Status;
+ using DrmBufferType = hardware::drm::V1_0::BufferType;
+ 
++int xyz;
+ namespace {
+ 
+ constexpr size_t kSmoothnessFactor = 4;
+diff --git a/services/mediametrics/Android.bp b/services/mediametrics/Android.bp
+index 5989181daf..8bfbc3dc38 100644
+--- a/services/mediametrics/Android.bp
++++ b/services/mediametrics/Android.bp
+@@ -46,7 +46,6 @@ tidy_errors = [
+     "modernize-use-equals-delete",
+     // "modernize-use-nodiscard", // found in TimeMachine.h
+     "modernize-use-noexcept",
+-    "modernize-use-nullptr",
+     "modernize-use-override",
+     //"modernize-use-trailing-return-type", // not necessarily more readable
+     "modernize-use-transparent-functors",
+-- 
+2.34.1
+
