@@ -1,0 +1,17 @@
+From b5755433730fbb2904aa725c1a1db4bb7ae8a5fa Mon Sep 17 00:00:00 2001
+From: "Kothapeta, BikshapathiX" <bikshapathix.kothapeta@intel.com>
+Date: Mon, 5 Jun 2023 13:52:50 +0530
+Subject: [PATCH] [A12]compilation fix for IO-stream error:
+
+Disable make for the virtual_input_manager
+
+Tracked-On:
+Signed-off-by: Kothapeta, BikshapathiX <bikshapathix.kothapeta@intel.com>
+
+diff --git a/Makefile b/DisableMakefile
+similarity index 100%
+rename from Makefile
+rename to DisableMakefile
+-- 
+2.40.1
+

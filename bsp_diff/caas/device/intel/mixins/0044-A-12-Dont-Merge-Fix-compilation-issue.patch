@@ -1,0 +1,34 @@
+From 4093aff383ab9d7fac6f4d03b68510b91db67fd2 Mon Sep 17 00:00:00 2001
+From: "Kothapeta, BikshapathiX" <bikshapathix.kothapeta@intel.com>
+Date: Mon, 5 Jun 2023 13:54:29 +0530
+Subject: [PATCH] [A-12][Dont Merge]Fix compilation issue.
+
+Tracked-On:
+Signed-off-by: Kothapeta, BikshapathiX <bikshapathix.kothapeta@intel.com>
+
+diff --git a/groups/device-specific/caas/AndroidBoard.mk b/groups/device-specific/caas/AndroidBoard.mk
+index e9d8594..cabbf2a 100644
+--- a/groups/device-specific/caas/AndroidBoard.mk
++++ b/groups/device-specific/caas/AndroidBoard.mk
+@@ -12,12 +12,6 @@ LOCAL_MAKE:= \
+         PATH="$(LOCAL_CLANG_PATH):$(PWD)/prebuilts/gcc/linux-x86/host/x86_64-linux-glibc2.17-4.8/x86_64-linux/bin:$$PATH" \
+ 	$(PWD)/prebuilts/build-tools/linux-x86/bin/make
+ 
+-.PHONY: vinput-manager
+-vinput-manager:
+-	cd device/intel/civ/host/virtual-input-manager && $(LOCAL_MAKE)
+-	cp device/intel/civ/host/virtual-input-manager/vinput-manager $(PRODUCT_OUT)/scripts/
+-	cp device/intel/civ/host/virtual-input-manager/sendkey $(PRODUCT_OUT)/scripts/
+-
+ .PHONY: em-host-utilities
+ em-host-utilities:
+ 	mkdir -p $(PRODUCT_OUT)/scripts/
+@@ -32,4 +26,4 @@ ini-sample:
+ 	cp device/intel/civ/host/vm-manager/scripts/setup_civ_ini.sh $(PRODUCT_OUT)/scripts/setup_civ_ini.sh
+ 
+ .PHONY: host-pkg
+-host-pkg: em-host-utilities vinput-manager ini-sample
++host-pkg: em-host-utilities ini-sample
+-- 
+2.40.1
+
