@@ -1,0 +1,91 @@
+From 0db2d8b5cf5df5b6db71c68424c5b161c0db88bf Mon Sep 17 00:00:00 2001
+From: "Suresh, Prashanth" <prashanth.suresh@intel.com>
+Date: Wed, 16 Apr 2025 15:49:08 +0000
+Subject: [PATCH] Incorporate additional checks for SRIOV Changes: - added
+ checks for bios settings needed for virtualization - added checks for bios
+ settings needed for sriov - added checks in client host setup
+
+Tracked-on: OAM-131945
+
+Signed-off-by: Suresh, Prashanth <prashanth.suresh@intel.com>
+---
+ scripts/setup_host.sh | 56 +++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 56 insertions(+)
+
+diff --git a/scripts/setup_host.sh b/scripts/setup_host.sh
+index b831b60..f5af6e1 100755
+--- a/scripts/setup_host.sh
++++ b/scripts/setup_host.sh
+@@ -255,6 +255,60 @@ function setup_remote_infer() {
+     reboot_required=1
+ }
+ 
++function check_virtualization() {
++    local error=0
++
++    # Check VT-x
++    local vtx
++    vtx=$(lscpu | grep Virtualization | awk '{print $2}' || :;)
++    if [[ "$vtx" != "VT-x" ]]; then
++        echo "Error: VT-x is not enabled."
++        error=1
++    fi
++
++    # Check VMX
++    local kvm
++    which kvm-ok > /dev/null || sudo apt-get install -y cpu-checker
++    kvm=$(kvm-ok 2>&1 | grep "KVM acceleration can be used" || :;)
++    if [[ -z "$kvm" ]]; then
++        echo "Error: VMX is not enabled."
++        error=1
++    fi
++    # Check VT-d
++    local vtd
++    vtd=$(journalctl -k -b | grep -e DMAR -e IOMMU | \
++          grep -e "Virtualization Technology for Directed I/O" || :;)
++    if [[ -z "$vtd" ]]; then
++        echo "Error: VT-d is not enabled"
++        error=1
++    fi
++
++    if [[ "$error" -eq 1 ]]; then
++        echo "Please check the BIOS settings"
++        exit 255
++    fi
++}
++
++function check_sriov() {
++    # Check SR-IOV only if there is GUI
++    if [[ "$(systemctl get-default)" == "graphical.target" ]]; then
++        local gfx_devnum
++        gfx_devnum=$(lspci | grep -i vga | awk '{print $1}' | head -n 1 || :;)
++        if [[ -z "$gfx_devnum" ]]; then
++            echo "Error: No VGA device found"
++            exit 255
++        fi
++
++        local sriov
++        sriov=$(sudo lspci -s "$gfx_devnum" -vvv | grep "SR-IOV" || :;)
++        if [[ -z "$sriov" ]]; then
++            echo "Error: GFX SR-IOV is either not available or not enabled"
++            echo "Please check the BIOS settings"
++            exit 255
++        fi
++    fi
++}
++
+ function check_os() {
+     local version=`cat /proc/version`
+ 
+@@ -656,6 +710,8 @@ trap 'error ${LINENO} "$BASH_COMMAND"' ERR
+ 
+ parse_arg "$@"
+ 
++check_virtualization
++check_sriov
+ check_os
+ check_network
+ check_kernel_version
+-- 
+2.34.1
+
