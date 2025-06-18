@@ -1,0 +1,24 @@
+From 5a70ea28c76ed7fa96bae63c27243e1d0275537c Mon Sep 17 00:00:00 2001
+From: celadon <celadon@intel.com>
+Date: Wed, 18 Jun 2025 12:40:33 +0000
+Subject: [PATCH] [onevpl-gpu] Add TWL Pci IDs
+
+Tracked-On: OAM-XXXX
+Signed-off-by: celadon <celadon@intel.com>
+
+diff --git a/_studio/shared/include/mfxstructures-int.h b/_studio/shared/include/mfxstructures-int.h
+index dffb317e..1cb2854b 100755
+--- a/_studio/shared/include/mfxstructures-int.h
++++ b/_studio/shared/include/mfxstructures-int.h
+@@ -461,6 +461,8 @@ typedef struct {
+     { 0x46D0, MFX_HW_ADL_N, MFX_GT1 },//ADL-N
+     { 0x46D1, MFX_HW_ADL_N, MFX_GT1 },//ADL-N
+     { 0x46D2, MFX_HW_ADL_N, MFX_GT1 },//ADL-N
++    { 0x46D3, MFX_HW_ADL_N, MFX_GT1 },//ADL-N
++    { 0x46D4, MFX_HW_ADL_N, MFX_GT1 },//ADL-N
+ 
+     /*RPL-P*/
+     { 0xA7A0, MFX_HW_ADL_P, MFX_GT2 },//RPL-P
+-- 
+2.34.1
+

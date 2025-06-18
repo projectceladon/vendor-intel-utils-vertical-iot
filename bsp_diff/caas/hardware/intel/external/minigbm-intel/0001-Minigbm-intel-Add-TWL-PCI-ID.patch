@@ -1,0 +1,54 @@
+From ab95a2a2f3586062b333d900cffed9dfcb94253a Mon Sep 17 00:00:00 2001
+From: celadon <celadon@intel.com>
+Date: Wed, 18 Jun 2025 12:03:41 +0000
+Subject: [PATCH] [Minigbm-intel] Add TWL PCI ID
+
+Tracked-On: OAM-xxx
+Signed-off-by: celadon <celadon@intel.com>
+
+diff --git a/0001-Minigbm-intel-Add-TWL-PCI-ID.patch b/0001-Minigbm-intel-Add-TWL-PCI-ID.patch
+new file mode 100644
+index 0000000..b390dea
+--- /dev/null
++++ b/0001-Minigbm-intel-Add-TWL-PCI-ID.patch
+@@ -0,0 +1,24 @@
++From 83368303280c60b79dee1d3c44437b307a80d415 Mon Sep 17 00:00:00 2001
++From: celadon <celadon@intel.com>
++Date: Wed, 18 Jun 2025 12:03:41 +0000
++Subject: [PATCH] [Minigbm-intel] Add TWL PCI ID
++
++Tracked-On: OAM-xxx
++Signed-off-by: celadon <celadon@intel.com>
++
++diff --git a/i915.c b/i915.c
++index 3b27b25..a660cd3 100644
++--- a/i915.c
+++++ b/i915.c
++@@ -80,7 +80,7 @@ static void i915_info_from_device_id(struct i915_device *i915)
++ 			0x46A0, 0x46A1, 0x46A2, 0x46A3, 0x46A6, 0x46A8,
++ 			0x46AA, 0x462A, 0x4626, 0x4628, 0x46B0, 0x46B1,
++ 			0x46B2, 0x46B3, 0x46C0, 0x46C1, 0x46C2, 0x46C3,
++-			0x46D0, 0x46D1, 0x46D2
+++			0x46D0, 0x46D1, 0x46D2, 0x46D3, 0x46D4,
++ 	};
++ 
++ 	unsigned i;
++-- 
++2.34.1
++
+diff --git a/i915.c b/i915.c
+index 3b27b25..a1e63b3 100644
+--- a/i915.c
++++ b/i915.c
+@@ -80,7 +80,7 @@ static void i915_info_from_device_id(struct i915_device *i915)
+ 			0x46A0, 0x46A1, 0x46A2, 0x46A3, 0x46A6, 0x46A8,
+ 			0x46AA, 0x462A, 0x4626, 0x4628, 0x46B0, 0x46B1,
+ 			0x46B2, 0x46B3, 0x46C0, 0x46C1, 0x46C2, 0x46C3,
+-			0x46D0, 0x46D1, 0x46D2
++			0x46D0, 0x46D1, 0x46D2, 0x46D3, 0x46D4
+ 	};
+ 
+ 	unsigned i;
+-- 
+2.34.1
+

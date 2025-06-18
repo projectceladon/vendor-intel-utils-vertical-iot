@@ -1,0 +1,28 @@
+From 1f3daa4093e06272a10121e3c95d34d207f6b766 Mon Sep 17 00:00:00 2001
+From: celadon <celadon@intel.com>
+Date: Wed, 18 Jun 2025 12:07:08 +0000
+Subject: [PATCH] [mod] add twl pci ids
+
+Tracked-On: OAM-xxx
+Signed-off-by: celadon <celadon@intel.com>
+
+diff --git a/media_driver/linux/gen12/ddi/media_sysinfo_g12.cpp b/media_driver/linux/gen12/ddi/media_sysinfo_g12.cpp
+index 1fcf39c36..7813ce6bf 100644
+--- a/media_driver/linux/gen12/ddi/media_sysinfo_g12.cpp
++++ b/media_driver/linux/gen12/ddi/media_sysinfo_g12.cpp
+@@ -563,6 +563,12 @@ static bool adlnGt1Device46D1 = DeviceInfoFactory<GfxDeviceInfo>::
+ 
+ static bool adlnGt1Device46D2 = DeviceInfoFactory<GfxDeviceInfo>::
+     RegisterDevice(0x46D2, &adlnGt1Info);
++
++static bool adlnGt1Device46D3 = DeviceInfoFactory<GfxDeviceInfo>::
++    RegisterDevice(0x46D3, &adlnGt1Info);
++
++static bool adlnGt1Device46D4 = DeviceInfoFactory<GfxDeviceInfo>::
++    RegisterDevice(0x46D4, &adlnGt1Info);
+ #endif
+ 
+ static bool tgllpGt2Device9a40 = DeviceInfoFactory<GfxDeviceInfo>::
+-- 
+2.34.1
+
