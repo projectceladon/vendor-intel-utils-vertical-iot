@@ -1,0 +1,24 @@
+From 46da51dea51cfe485e263df4b39663d285e11011 Mon Sep 17 00:00:00 2001
+From: celadon <celadon@intel.com>
+Date: Wed, 18 Jun 2025 12:05:44 +0000
+Subject: [PATCH] [gmmlib] Add twl pci ids
+
+Tracked-On: OAM-xxx
+Signed-off-by: celadon <celadon@intel.com>
+
+diff --git a/Source/inc/common/igfxfmid.h b/Source/inc/common/igfxfmid.h
+index 37fe520..8448312 100644
+--- a/Source/inc/common/igfxfmid.h
++++ b/Source/inc/common/igfxfmid.h
+@@ -1750,6 +1750,8 @@ typedef enum __NATIVEGTTYPE
+ #define DEV_ID_46D0                            0x46D0
+ #define DEV_ID_46D1                            0x46D1
+ #define DEV_ID_46D2                            0x46D2
++#define DEV_ID_46D3                            0x46D3
++#define DEV_ID_46D4                            0x46D4
+ 
+ #define MGM_HAS     0
+ 
+-- 
+2.34.1
+

@@ -1,0 +1,26 @@
+From d7d0592359d3419ed4e4c04f3874feb61a00fc83 Mon Sep 17 00:00:00 2001
+From: celadon <celadon@intel.com>
+Date: Thu, 19 Jun 2025 04:25:07 +0000
+Subject: [PATCH] Add TWL PCI IDs
+
+Tracked-On: OAM-xxx
+Signed-off-by: Basanagouda Nagappa Koppad <Basanagouda.Nagappa.Koppad@intel.com>
+
+diff --git a/include/drm/i915_pciids.h b/include/drm/i915_pciids.h
+index a84157463ba8..77383d40c319 100644
+--- a/include/drm/i915_pciids.h
++++ b/include/drm/i915_pciids.h
+@@ -672,7 +672,9 @@
+ #define INTEL_ADLN_IDS(info) \
+ 	INTEL_VGA_DEVICE(0x46D0, info), \
+ 	INTEL_VGA_DEVICE(0x46D1, info), \
+-	INTEL_VGA_DEVICE(0x46D2, info)
++	INTEL_VGA_DEVICE(0x46D2, info), \
++	INTEL_VGA_DEVICE(0x46D3, info), \
++	INTEL_VGA_DEVICE(0x46D4, info)
+ 
+ /* RPL-S */
+ #define INTEL_RPLS_IDS(info) \
+-- 
+2.34.1
+
