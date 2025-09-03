@@ -1,0 +1,59 @@
+From 5b6b92e825c8789591033639751b68c5af9bfdec Mon Sep 17 00:00:00 2001
+From: "Kalenahally Madegowda, NandishaX"
+ <nandishax.kalenahally.madegowda@intel.com>
+Date: Wed, 16 Feb 2022 17:24:32 +0530
+Subject: [PATCH] Add missing ADL device IDs
+
+Tracked On: HSD-16015846020
+Signed-off-by: Kalenahally Madegowda, NandishaX <nandishax.kalenahally.madegowda@intel.com>
+---
+ _studio/shared/include/mfxstructures-int.h | 13 ++++++-------
+ 1 file changed, 6 insertions(+), 7 deletions(-)
+
+diff --git a/_studio/shared/include/mfxstructures-int.h b/_studio/shared/include/mfxstructures-int.h
+index e5f09575..e73f80d5 100644
+--- a/_studio/shared/include/mfxstructures-int.h
++++ b/_studio/shared/include/mfxstructures-int.h
+@@ -433,6 +433,7 @@ typedef struct {
+     { 0x4682, MFX_HW_ADL_S, MFX_GT1 },//ADL-S
+     { 0x4683, MFX_HW_ADL_S, MFX_GT1 },//ADL-S
+     { 0x4688, MFX_HW_ADL_S, MFX_GT1 },//ADL-S
++    { 0x4689, MFX_HW_ADL_S, MFX_GT1 },//ADL-S
+     { 0x468A, MFX_HW_ADL_S, MFX_GT1 },//ADL-S
+     { 0x4690, MFX_HW_ADL_S, MFX_GT1 },//ADL-S
+     { 0x4691, MFX_HW_ADL_S, MFX_GT1 },//ADL-S
+@@ -459,26 +460,24 @@ typedef struct {
+     { 0xA78E, MFX_HW_ADL_S, MFX_GT1 },//RPL-S
+ 
+     /* ADL-P */
++    { 0x4626, MFX_HW_ADL_P, MFX_GT2 },//ADL-P
++    { 0x4628, MFX_HW_ADL_P, MFX_GT2 },//ADL-P
++    { 0x462A, MFX_HW_ADL_P, MFX_GT2 },//ADL-P
+     { 0x46A0, MFX_HW_ADL_P, MFX_GT2 },//ADL-P
+     { 0x46A1, MFX_HW_ADL_P, MFX_GT2 },//ADL-P
+     { 0x46A2, MFX_HW_ADL_P, MFX_GT2 },//ADL-P
+     { 0x46A3, MFX_HW_ADL_P, MFX_GT2 },//ADL-P
+     { 0x46A6, MFX_HW_ADL_P, MFX_GT2 },//ADL-P
+-    { 0x4626, MFX_HW_ADL_P, MFX_GT2 },//ADL-P
+-
++    { 0x46A8, MFX_HW_ADL_P, MFX_GT2 },//ADL-P
++    { 0x46AA, MFX_HW_ADL_P, MFX_GT2 },//ADL-P
+     { 0x46B0, MFX_HW_ADL_P, MFX_GT2 },//ADL-P
+     { 0x46B1, MFX_HW_ADL_P, MFX_GT2 },//ADL-P
+     { 0x46B2, MFX_HW_ADL_P, MFX_GT2 },//ADL-P
+     { 0x46B3, MFX_HW_ADL_P, MFX_GT2 },//ADL-P
+-    { 0x46A8, MFX_HW_ADL_P, MFX_GT2 },//ADL-P
+-    { 0x4628, MFX_HW_ADL_P, MFX_GT2 },//ADL-P
+-
+     { 0x46C0, MFX_HW_ADL_P, MFX_GT2 },//ADL-P
+     { 0x46C1, MFX_HW_ADL_P, MFX_GT2 },//ADL-P
+     { 0x46C2, MFX_HW_ADL_P, MFX_GT2 },//ADL-P
+     { 0x46C3, MFX_HW_ADL_P, MFX_GT2 },//ADL-P
+-    { 0x46AA, MFX_HW_ADL_P, MFX_GT2 },//ADL-P
+-    { 0x462A, MFX_HW_ADL_P, MFX_GT2 },//ADL-P
+ 
+     /* RPL-P */
+     { 0xA7A0, MFX_HW_ADL_P, MFX_GT2 },
+-- 
+2.40.0
+

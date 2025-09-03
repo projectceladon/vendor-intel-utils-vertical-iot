@@ -1,0 +1,43 @@
+From d9c4728e7202141271ff9504b55f021d28302729 Mon Sep 17 00:00:00 2001
+From: "Suresh, Prashanth" <prashanth.suresh@intel.com>
+Date: Wed, 12 Apr 2023 09:53:24 +0530
+Subject: [PATCH] Fix build failure on Android 13 widevine
+
+Resolve dpkg-deb error for Release builds.
+
+Tracked-On: OAM-108763
+---
+ tasks/flashfiles.mk | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/tasks/flashfiles.mk b/tasks/flashfiles.mk
+index 785d429..620fe95 100755
+--- a/tasks/flashfiles.mk
++++ b/tasks/flashfiles.mk
+@@ -323,6 +323,7 @@ ifneq (,$(wildcard out/dist))
+ 	$(hide)rm -rf $(TOP)/pub/$(TARGET_PRODUCT)/$(TARGET_BUILD_VARIANT)/Release/
+ 	$(hide)rm -rf $(PRODUCT_OUT)/RELEASE
+ 	$(hide)mkdir -p $(TOP)/pub/$(TARGET_PRODUCT)/$(TARGET_BUILD_VARIANT)/Release/Release_Deb
++	$(hide)mkdir -p $(PRODUCT_OUT)/Release
+ ifeq ($(BUILD_GPTIMAGE), true)
+ 	$(hide)cp -r $(PRODUCT_OUT)/release_sign/caas*.img.gz $(TOP)/pub/$(TARGET_PRODUCT)/$(TARGET_BUILD_VARIANT)/Release/Release_Deb
+ endif
+@@ -330,6 +331,7 @@ endif
+ 	$(hide)cp -r device/intel/mixins/groups/device-specific/caas/addon/debian/* $(TOP)/pub/$(TARGET_PRODUCT)/$(TARGET_BUILD_VARIANT)/Release/DEBIAN/
+ 	$(hide)cp -r $(PRODUCT_OUT)/scripts $(TOP)/pub/$(TARGET_PRODUCT)/$(TARGET_BUILD_VARIANT)/Release/Release_Deb
+ 	$(hide)cp -r $(TOP)/pub/$(TARGET_PRODUCT)/$(TARGET_BUILD_VARIANT)/Release/ $(PRODUCT_OUT)
++	$(hide)chmod -R 0775 $(PRODUCT_OUT)/Release
+ 	$(hide)(cd $(PRODUCT_OUT) && $(LOCAL_TOOL) dpkg-deb --build Release/)
+ 	$(hide) cp -r $(PRODUCT_OUT)/*.deb $(TOP)/pub/$(TARGET_PRODUCT)/$(TARGET_BUILD_VARIANT)
+ else
+@@ -377,6 +379,7 @@ endif
+ 	$(hide)cp -r device/intel/mixins/groups/device-specific/caas/addon/debian/* $(TOP)/pub/$(TARGET_PRODUCT)/$(TARGET_BUILD_VARIANT)/Release/DEBIAN/
+ 	$(hide)cp -r $(PRODUCT_OUT)/scripts $(TOP)/pub/$(TARGET_PRODUCT)/$(TARGET_BUILD_VARIANT)/Release/Release_Deb
+ 	$(hide)cp -r $(TOP)/pub/$(TARGET_PRODUCT)/$(TARGET_BUILD_VARIANT)/Release/ $(PRODUCT_OUT)
++	$(hide)chmod -R 0775 $(PRODUCT_OUT)/Release
+ 	$(hide)(cd $(PRODUCT_OUT) && $(LOCAL_TOOL) dpkg-deb --build Release/)
+ 	$(hide) cp -r $(PRODUCT_OUT)/*.deb $(TOP)/pub/$(TARGET_PRODUCT)/$(TARGET_BUILD_VARIANT)
+ else
+-- 
+2.40.0
+

@@ -1,0 +1,209 @@
+From d4e5b15f39113953686033c4f53b2fcc58971302 Mon Sep 17 00:00:00 2001
+From: Jeevaka Prabu Badrappan <jeevaka.badrappan@intel.com>
+Date: Fri, 25 Sep 2020 09:30:40 +0530
+Subject: [PATCH] iwlwifi: Vendor command support in iwlwifi driver
+
+Adding vendor command support for querying driver & firmware
+version.
+
+Tracked-On: OAM-94267
+Change-Id: Ia375026206c8a98ecb0c3fc03577c5827b26ea1e
+Signed-off-by: Jeevaka Prabu Badrappan <jeevaka.badrappan@intel.com>
+Signed-off-by: Amrita Raju <amrita.raju@intel.com>
+
+diff --git a/drivers/net/wireless/intel/iwlwifi/mvm/mac80211.c b/drivers/net/wireless/intel/iwlwifi/mvm/mac80211.c
+index d37d83d24635..a6fa674807c3 100644
+--- a/drivers/net/wireless/intel/iwlwifi/mvm/mac80211.c
++++ b/drivers/net/wireless/intel/iwlwifi/mvm/mac80211.c
+@@ -786,7 +786,9 @@ int iwl_mvm_mac_setup_register(struct iwl_mvm *mvm)
+ 
+ 	hw->wiphy->available_antennas_tx = iwl_mvm_get_valid_tx_ant(mvm);
+ 	hw->wiphy->available_antennas_rx = iwl_mvm_get_valid_rx_ant(mvm);
+-
++#if IS_ENABLED(CONFIG_IWLMEI)
++	iwl_mvm_set_wiphy_vendor_commands(hw->wiphy);
++#endif
+ 	ret = ieee80211_register_hw(mvm->hw);
+ 	if (ret) {
+ 		iwl_mvm_leds_exit(mvm);
+diff --git a/drivers/net/wireless/intel/iwlwifi/mvm/mvm.h b/drivers/net/wireless/intel/iwlwifi/mvm/mvm.h
+index ef07cff203b0..afc9f3e83a30 100644
+--- a/drivers/net/wireless/intel/iwlwifi/mvm/mvm.h
++++ b/drivers/net/wireless/intel/iwlwifi/mvm/mvm.h
+@@ -2275,7 +2275,6 @@ int iwl_mvm_power_mac_dbgfs_read(struct iwl_mvm *mvm, struct ieee80211_vif *vif,
+ void iwl_mvm_power_vif_assoc(struct iwl_mvm *mvm, struct ieee80211_vif *vif);
+ void iwl_mvm_power_uapsd_misbehaving_ap_notif(struct iwl_mvm *mvm,
+ 					      struct iwl_rx_cmd_buffer *rxb);
+-
+ #ifdef CONFIG_IWLWIFI_LEDS
+ int iwl_mvm_leds_init(struct iwl_mvm *mvm);
+ void iwl_mvm_leds_exit(struct iwl_mvm *mvm);
+@@ -2477,6 +2476,7 @@ int iwl_mvm_ctdp_command(struct iwl_mvm *mvm, u32 op, u32 budget);
+ 
+ /* vendor commands */
+ void iwl_mvm_vendor_cmds_register(struct iwl_mvm *mvm);
++void iwl_mvm_set_wiphy_vendor_commands(struct wiphy *wiphy);
+ 
+ #else
+ 
+diff --git a/drivers/net/wireless/intel/iwlwifi/mvm/vendor-cmd.c b/drivers/net/wireless/intel/iwlwifi/mvm/vendor-cmd.c
+index 080a1587caa5..5c42738ddb69 100644
+--- a/drivers/net/wireless/intel/iwlwifi/mvm/vendor-cmd.c
++++ b/drivers/net/wireless/intel/iwlwifi/mvm/vendor-cmd.c
+@@ -5,6 +5,13 @@
+ #include "mvm.h"
+ #include <linux/nl80211-vnd-intel.h>
+ #include <net/netlink.h>
++#include <linux/etherdevice.h>
++#include <linux/utsname.h>
++#include <linux/version.h>
++#include <net/mac80211.h>
++
++#include "iwl-io.h"
++#include "iwl-prph.h"
+ 
+ static const struct nla_policy
+ iwl_mvm_vendor_attr_policy[NUM_IWL_MVM_VENDOR_ATTR] = {
+@@ -16,8 +23,60 @@ iwl_mvm_vendor_attr_policy[NUM_IWL_MVM_VENDOR_ATTR] = {
+ 	[IWL_MVM_VENDOR_ATTR_BAND] = { .type = NLA_U8 },
+ 	[IWL_MVM_VENDOR_ATTR_COLLOC_CHANNEL] = { .type = NLA_U8 },
+ 	[IWL_MVM_VENDOR_ATTR_COLLOC_ADDR] = { .type = NLA_BINARY, .len = ETH_ALEN },
++	[IWL_MVM_VENDOR_ATTR_FW_VER] = { .type = NLA_STRING, .len = 50 },
++	[IWL_MVM_VENDOR_ATTR_DRV_VER] = { .type = NLA_STRING, .len = 50 },
+ };
+ 
++static int iwl_mvm_vendor_get_fw_version(struct wiphy *wiphy,
++                                  struct wireless_dev *wdev,
++                                  const void *data, int data_len)
++{
++       int err = 0;
++       struct sk_buff *skb;
++       struct ieee80211_hw *hw = wiphy_to_ieee80211_hw(wiphy);
++       struct iwl_mvm *mvm = IWL_MAC80211_GET_MVM(hw);
++       const struct iwl_fw *fw = mvm->fw;
++
++       skb = cfg80211_vendor_cmd_alloc_reply_skb(wiphy, sizeof(fw->fw_version));
++        if (!skb)
++                return -ENOMEM;
++        if (nla_put_string(skb, IWL_MVM_VENDOR_ATTR_FW_VER, fw->fw_version)) {
++                kfree_skb(skb);
++                return -ENOBUFS;
++       }
++
++       return cfg80211_vendor_cmd_reply(skb);
++}
++
++static int iwl_mvm_vendor_get_drv_version(struct wiphy *wiphy,
++                                  struct wireless_dev *wdev,
++                                  const void *data, int data_len)
++{
++       int err = 0;
++       struct sk_buff *skb;
++       struct ieee80211_hw *hw = wiphy_to_ieee80211_hw(wiphy);
++       struct iwl_mvm *mvm = IWL_MAC80211_GET_MVM(hw);
++       const struct iwl_fw *fw = mvm->fw;
++
++       skb = cfg80211_vendor_cmd_alloc_reply_skb(wiphy, sizeof(utsname()->release));
++        if (!skb)
++                return -ENOMEM;
++        if (nla_put_string(skb, IWL_MVM_VENDOR_ATTR_DRV_VER, utsname()->release)) {
++                kfree_skb(skb);
++                return -ENOBUFS;
++       }
++
++       return cfg80211_vendor_cmd_reply(skb);
++}
++#if IS_ENABLED(CONFIG_IWLMEI)
++void iwl_mvm_set_wiphy_vendor_commands(struct wiphy *wiphy)
++{
++       wiphy->vendor_commands = iwl_mvm_vendor_commands;
++       wiphy->n_vendor_commands = ARRAY_SIZE(iwl_mvm_vendor_commands);
++       wiphy->vendor_events = NULL;;
++       wiphy->n_vendor_events = 0;
++}
++#endif
+ static int iwl_mvm_vendor_get_csme_conn_info(struct wiphy *wiphy,
+ 					     struct wireless_dev *wdev,
+ 					     const void *data, int data_len)
+@@ -101,6 +160,32 @@ static const struct wiphy_vendor_command iwl_mvm_vendor_commands[] = {
+ 		.policy = iwl_mvm_vendor_attr_policy,
+ 		.maxattr = MAX_IWL_MVM_VENDOR_ATTR,
+ 	},
++        {
++               .info = {
++                       .vendor_id = INTEL_OUI,
++                       .subcmd = IWL_MVM_VENDOR_CMD_GET_FW_VERSION,
++               },
++               .flags = WIPHY_VENDOR_CMD_NEED_NETDEV |
++                        WIPHY_VENDOR_CMD_NEED_RUNNING,
++               .doit = iwl_mvm_vendor_get_fw_version,
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(5,3,0)
++               .policy = iwl_mvm_vendor_attr_policy,
++               .maxattr = MAX_IWL_MVM_VENDOR_ATTR,
++#endif
++       },
++       {
++               .info = {
++                       .vendor_id = INTEL_OUI,
++                       .subcmd = IWL_MVM_VENDOR_CMD_GET_DRV_VERSION,
++               },
++               .flags = WIPHY_VENDOR_CMD_NEED_NETDEV |
++                        WIPHY_VENDOR_CMD_NEED_RUNNING,
++               .doit = iwl_mvm_vendor_get_drv_version,
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(5,3,0)
++               .policy = iwl_mvm_vendor_attr_policy,
++               .maxattr = MAX_IWL_MVM_VENDOR_ATTR,
++#endif
++       },
+ };
+ 
+ enum iwl_mvm_vendor_events_idx {
+diff --git a/include/uapi/linux/nl80211-vnd-intel.h b/include/uapi/linux/nl80211-vnd-intel.h
+index 4ed7d0b24512..a11d9fb1be8f 100644
+--- a/include/uapi/linux/nl80211-vnd-intel.h
++++ b/include/uapi/linux/nl80211-vnd-intel.h
+@@ -45,12 +45,17 @@
+  * @IWL_MVM_VENDOR_CMD_ROAMING_FORBIDDEN_EVENT: notifies if roaming is allowed.
+  *	It contains a &IWL_MVM_VENDOR_ATTR_ROAMING_FORBIDDEN and a
+  *	&IWL_MVM_VENDOR_ATTR_VIF_ADDR attributes.
++ *
++ * @IWL_MVM_VENDOR_CMD_GET_FW_VERSION: Firmware version
++ * @IWL_MVM_VENDOR_CMD_GET_DRV_VERSION: Driver version
+  */
+ 
+ enum iwl_mvm_vendor_cmd {
+ 	IWL_MVM_VENDOR_CMD_GET_CSME_CONN_INFO			= 0x2d,
+ 	IWL_MVM_VENDOR_CMD_HOST_GET_OWNERSHIP			= 0x30,
+ 	IWL_MVM_VENDOR_CMD_ROAMING_FORBIDDEN_EVENT		= 0x32,
++	IWL_MVM_VENDOR_CMD_GET_FW_VERSION			= 0x37,
++	IWL_MVM_VENDOR_CMD_GET_DRV_VERSION			= 0x38,
+ };
+ 
+ enum iwl_vendor_auth_akm_mode {
+@@ -84,8 +89,13 @@ enum iwl_vendor_auth_akm_mode {
+  *
+  * @NUM_IWL_MVM_VENDOR_ATTR: number of vendor attributes
+  * @MAX_IWL_MVM_VENDOR_ATTR: highest vendor attribute number
+-
++ *
++ * @IWL_MVM_VENDOR_ATTR_DRV_VER: string attribute.Driver Version
++ * @IWL_MVM_VENDOR_ATTR_FW_VER: string attribute.Firmware version
++ * @NUM_IWL_MVM_VENDOR_ATTR: number of vendor attributes
++ * @MAX_IWL_MVM_VENDOR_ATTR: highest vendor attribute number
+  */
++
+ enum iwl_mvm_vendor_attr {
+ 	__IWL_MVM_VENDOR_ATTR_INVALID				= 0x00,
+ 	IWL_MVM_VENDOR_ATTR_VIF_ADDR				= 0x02,
+@@ -98,6 +108,8 @@ enum iwl_mvm_vendor_attr {
+ 	IWL_MVM_VENDOR_ATTR_BAND				= 0x69,
+ 	IWL_MVM_VENDOR_ATTR_COLLOC_CHANNEL			= 0x70,
+ 	IWL_MVM_VENDOR_ATTR_COLLOC_ADDR				= 0x71,
++	IWL_MVM_VENDOR_ATTR_FW_VER				= 0x79,
++	IWL_MVM_VENDOR_ATTR_DRV_VER				= 0x7a,
+ 
+ 	NUM_IWL_MVM_VENDOR_ATTR,
+ 	MAX_IWL_MVM_VENDOR_ATTR = NUM_IWL_MVM_VENDOR_ATTR - 1,
+-- 
+2.34.1
+

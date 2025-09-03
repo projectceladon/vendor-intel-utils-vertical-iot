@@ -1,0 +1,90 @@
+From 07e29736c65afc161864f19b3db7beabc0f82e25 Mon Sep 17 00:00:00 2001
+From: Samuel Pitoiset <samuel.pitoiset@gmail.com>
+Date: Fri, 31 Dec 2021 09:10:03 +0100
+Subject: [PATCH 09/22] amdgpu: implement new CTX OP to set/get stable pstates
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Signed-off-by: Samuel Pitoiset <samuel.pitoiset@gmail.com>
+Reviewed-by: Marek Olšák <marek.olsak@amd.com>
+---
+ amdgpu/amdgpu-symbols.txt |  1 +
+ amdgpu/amdgpu.h           | 15 +++++++++++++++
+ amdgpu/amdgpu_cs.c        | 22 ++++++++++++++++++++++
+ 3 files changed, 38 insertions(+)
+
+diff --git a/amdgpu/amdgpu-symbols.txt b/amdgpu/amdgpu-symbols.txt
+index af2b6439..d41d9c24 100644
+--- a/amdgpu/amdgpu-symbols.txt
++++ b/amdgpu/amdgpu-symbols.txt
+@@ -25,6 +25,7 @@ amdgpu_cs_ctx_create
+ amdgpu_cs_ctx_create2
+ amdgpu_cs_ctx_free
+ amdgpu_cs_ctx_override_priority
++amdgpu_cs_ctx_stable_pstate
+ amdgpu_cs_destroy_semaphore
+ amdgpu_cs_destroy_syncobj
+ amdgpu_cs_export_syncobj
+diff --git a/amdgpu/amdgpu.h b/amdgpu/amdgpu.h
+index cde8585c..5ef2524a 100644
+--- a/amdgpu/amdgpu.h
++++ b/amdgpu/amdgpu.h
+@@ -939,6 +939,21 @@ int amdgpu_cs_ctx_override_priority(amdgpu_device_handle dev,
+                                     int master_fd,
+                                     unsigned priority);
+ 
++/**
++ * Set or query the stable power state for GPU profiling.
++ *
++ * \param   dev        - \c [in] device handle
++ * \param   op         - \c [in] AMDGPU_CTX_OP_{GET,SET}_STABLE_PSTATE
++ * \param   flags      - \c [in] AMDGPU_CTX_STABLE_PSTATE_*
++ * \param   out_flags  - \c [out] output current stable pstate
++ *
++ * \return  0 on success otherwise POSIX Error code.
++ */
++int amdgpu_cs_ctx_stable_pstate(amdgpu_context_handle context,
++			        uint32_t op,
++			        uint32_t flags,
++			        uint32_t *out_flags);
++
+ /**
+  * Query reset state for the specific GPU Context
+  *
+diff --git a/amdgpu/amdgpu_cs.c b/amdgpu/amdgpu_cs.c
+index fad484bf..638fd7d6 100644
+--- a/amdgpu/amdgpu_cs.c
++++ b/amdgpu/amdgpu_cs.c
+@@ -167,6 +167,28 @@ drm_public int amdgpu_cs_ctx_override_priority(amdgpu_device_handle dev,
+ 	return 0;
+ }
+ 
++drm_public int amdgpu_cs_ctx_stable_pstate(amdgpu_context_handle context,
++					   uint32_t op,
++					   uint32_t flags,
++					   uint32_t *out_flags)
++{
++	union drm_amdgpu_ctx args;
++	int r;
++
++	if (!context)
++		return -EINVAL;
++
++	memset(&args, 0, sizeof(args));
++	args.in.op = op;
++	args.in.ctx_id = context->id;
++	args.in.flags = flags;
++	r = drmCommandWriteRead(context->dev->fd, DRM_AMDGPU_CTX,
++				&args, sizeof(args));
++	if (!r && out_flags)
++		*out_flags = args.out.pstate.flags;
++	return r;
++}
++
+ drm_public int amdgpu_cs_query_reset_state(amdgpu_context_handle context,
+ 					   uint32_t *state, uint32_t *hangs)
+ {
+-- 
+2.40.1
+

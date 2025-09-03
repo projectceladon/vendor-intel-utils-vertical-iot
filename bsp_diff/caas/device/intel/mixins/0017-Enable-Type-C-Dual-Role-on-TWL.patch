@@ -1,0 +1,68 @@
+From 9107396900a87a81d59c59ebeebb7324b5efef9b Mon Sep 17 00:00:00 2001
+From: Avinash Kumar <avinash3.kumar@intel.com>
+Date: Fri, 29 Aug 2025 04:56:39 +0000
+Subject: [PATCH] Enable Type-C Dual Role on TWL
+
+Enable USB device stack at kernel level
+1) change dwc3 driver to built-in to prevent any race condition
+2) enable TPS6598X for type-c PD controller
+3) enable UCSI and UCSI_CCG due to TWL design
+4) enable SERIAL_MULTI_INSTANTIATE platform driver to WA wrong acpi
+
+Signed-off-by: Avinash Kumar <avinash3.kumar@intel.com>
+---
+ .../linux-intel-lts2024/x86_64_defconfig       | 18 +++++++++++-------
+ 1 file changed, 11 insertions(+), 7 deletions(-)
+
+diff --git a/groups/kernel/gmin64/config-lts/linux-intel-lts2024/x86_64_defconfig b/groups/kernel/gmin64/config-lts/linux-intel-lts2024/x86_64_defconfig
+index 8aa0735c..88333af0 100644
+--- a/groups/kernel/gmin64/config-lts/linux-intel-lts2024/x86_64_defconfig
++++ b/groups/kernel/gmin64/config-lts/linux-intel-lts2024/x86_64_defconfig
+@@ -5495,16 +5495,16 @@ CONFIG_REALTEK_AUTOPM=y
+ #
+ # CONFIG_USB_CDNS_SUPPORT is not set
+ # CONFIG_USB_MUSB_HDRC is not set
+-CONFIG_USB_DWC3=m
++CONFIG_USB_DWC3=y
+ CONFIG_USB_DWC3_ULPI=y
+ # CONFIG_USB_DWC3_HOST is not set
+-CONFIG_USB_DWC3_GADGET=y
+-# CONFIG_USB_DWC3_DUAL_ROLE is not set
++# CONFIG_USB_DWC3_GADGET is not set
++CONFIG_USB_DWC3_DUAL_ROLE=y
+ 
+ #
+ # Platform Glue Driver Support
+ #
+-CONFIG_USB_DWC3_PCI=m
++CONFIG_USB_DWC3_PCI=y
+ CONFIG_USB_DWC3_HAPS=m
+ CONFIG_USB_DWC2=y
+ # CONFIG_USB_DWC2_HOST is not set
+@@ -5712,8 +5712,12 @@ CONFIG_TYPEC_TCPCI=y
+ # CONFIG_TYPEC_RT1711H is not set
+ # CONFIG_TYPEC_TCPCI_MAXIM is not set
+ # CONFIG_TYPEC_FUSB302 is not set
+-# CONFIG_TYPEC_UCSI is not set
+-# CONFIG_TYPEC_TPS6598X is not set
++CONFIG_TYPEC_UCSI=y
++CONFIG_UCSI_CCG=y
++CONFIG_UCSI_ACPI=y
++# CONFIG_UCSI_STM32G0 is not set
++CONFIG_TYPEC_TPS6598X=y
++
+ # CONFIG_TYPEC_ANX7411 is not set
+ # CONFIG_TYPEC_RT1719 is not set
+ # CONFIG_TYPEC_HD3SS3220 is not set
+@@ -6218,7 +6222,7 @@ CONFIG_INTEL_RST=y
+ # CONFIG_SONY_LAPTOP is not set
+ # CONFIG_SYSTEM76_ACPI is not set
+ # CONFIG_TOPSTAR_LAPTOP is not set
+-# CONFIG_SERIAL_MULTI_INSTANTIATE is not set
++CONFIG_SERIAL_MULTI_INSTANTIATE=y
+ # CONFIG_MLX_PLATFORM is not set
+ # CONFIG_INSPUR_PLATFORM_PROFILE is not set
+ # CONFIG_LENOVO_WMI_CAMERA is not set
+-- 
+2.34.1
+

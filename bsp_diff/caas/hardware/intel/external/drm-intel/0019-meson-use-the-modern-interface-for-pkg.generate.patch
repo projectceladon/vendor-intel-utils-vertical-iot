@@ -1,0 +1,213 @@
+From 22d4b656fbd8780d7eee70a6b9aaa4df54b0464b Mon Sep 17 00:00:00 2001
+From: Dylan Baker <dylan@pnwbakers.com>
+Date: Wed, 19 Jan 2022 11:14:17 -0800
+Subject: [PATCH 16/22] meson: use the modern interface for pkg.generate
+
+This produces no differences in the generated output. I've had to
+manually add `requires : 'libdrm'` to libdrm_intel, otherwise libdrm
+ends up in `Requires.private` instead of `Requires`.
+
+Signed-off-by: Dylan Baker <dylan@pnwbakers.com>
+Reviewed-by: Simon Ser <contact@emersion.fr>
+---
+ amdgpu/meson.build    | 4 +---
+ etnaviv/meson.build   | 4 +---
+ exynos/meson.build    | 3 +--
+ freedreno/meson.build | 4 +---
+ intel/meson.build     | 3 +--
+ libkms/meson.build    | 3 +--
+ meson.build           | 3 +--
+ nouveau/meson.build   | 4 +---
+ omap/meson.build      | 3 +--
+ radeon/meson.build    | 4 +---
+ tegra/meson.build     | 4 +---
+ 11 files changed, 11 insertions(+), 28 deletions(-)
+
+diff --git a/amdgpu/meson.build b/amdgpu/meson.build
+index b2d19875..a1cca5a2 100644
+--- a/amdgpu/meson.build
++++ b/amdgpu/meson.build
+@@ -44,11 +44,9 @@ libdrm_amdgpu = library(
+ install_headers('amdgpu.h', subdir : 'libdrm')
+ 
+ pkg.generate(
++  libdrm_amdgpu,
+   name : 'libdrm_amdgpu',
+-  libraries : libdrm_amdgpu,
+   subdirs : ['.', 'libdrm'],
+-  version : meson.project_version(),
+-  requires_private : 'libdrm',
+   description : 'Userspace interface to kernel DRM services for amdgpu',
+ )
+ 
+diff --git a/etnaviv/meson.build b/etnaviv/meson.build
+index 7cc89fd2..591f20f0 100644
+--- a/etnaviv/meson.build
++++ b/etnaviv/meson.build
+@@ -40,11 +40,9 @@ libdrm_etnaviv = library(
+ install_headers('etnaviv_drmif.h', subdir : 'libdrm')
+ 
+ pkg.generate(
++  libdrm_etnaviv,
+   name : 'libdrm_etnaviv',
+-  libraries : libdrm_etnaviv,
+   subdirs : ['.', 'libdrm'],
+-  version : meson.project_version(),
+-  requires_private : 'libdrm',
+   description : 'Userspace interface to Tegra kernel DRM services',
+ )
+ 
+diff --git a/exynos/meson.build b/exynos/meson.build
+index 862d2b7b..2f02ae71 100644
+--- a/exynos/meson.build
++++ b/exynos/meson.build
+@@ -43,11 +43,10 @@ if meson.version().version_compare('>= 0.54.0')
+ endif
+ 
+ pkg.generate(
++  libdrm_exynos,
+   name : 'libdrm_exynos',
+-  libraries : libdrm_exynos,
+   subdirs : ['.', 'libdrm', 'exynos'],
+   version : '0.7',
+-  requires_private : 'libdrm',
+   description : 'Userspace interface to exynos kernel DRM services',
+ )
+ 
+diff --git a/freedreno/meson.build b/freedreno/meson.build
+index 4fdc8143..de9ee148 100644
+--- a/freedreno/meson.build
++++ b/freedreno/meson.build
+@@ -65,11 +65,9 @@ install_headers(
+ )
+ 
+ pkg.generate(
++  libdrm_freedreno,
+   name : 'libdrm_freedreno',
+-  libraries : libdrm_freedreno,
+   subdirs : ['.', 'libdrm', 'freedreno'],
+-  version : meson.project_version(),
+-  requires_private : 'libdrm',
+   description : 'Userspace interface to freedreno kernel DRM services',
+ )
+ 
+diff --git a/intel/meson.build b/intel/meson.build
+index 4ce36b9f..e6550daa 100644
+--- a/intel/meson.build
++++ b/intel/meson.build
+@@ -51,10 +51,9 @@ install_headers(
+ )
+ 
+ pkg.generate(
++  libdrm_intel,
+   name : 'libdrm_intel',
+-  libraries : libdrm_intel,
+   subdirs : ['.', 'libdrm'],
+-  version : meson.project_version(),
+   requires : 'libdrm',
+   description : 'Userspace interface to intel kernel DRM services',
+ )
+diff --git a/libkms/meson.build b/libkms/meson.build
+index cc487227..e2adaea3 100644
+--- a/libkms/meson.build
++++ b/libkms/meson.build
+@@ -63,11 +63,10 @@ endif
+ install_headers('libkms.h', subdir : 'libkms')
+ 
+ pkg.generate(
++  libkms,
+   name : 'libkms',
+-  libraries : libkms,
+   subdirs : ['libkms'],
+   version : '1.0.0',
+-  requires_private : 'libdrm',
+   description : 'Library that abstracts away the different mm interfaces for kernel drivers',
+ )
+ 
+diff --git a/meson.build b/meson.build
+index e59fce5a..615bb55d 100644
+--- a/meson.build
++++ b/meson.build
+@@ -347,10 +347,9 @@ if with_vmwgfx
+ endif
+ 
+ pkg.generate(
++  libdrm,
+   name : 'libdrm',
+-  libraries : libdrm,
+   subdirs : ['.', 'libdrm'],
+-  version : meson.project_version(),
+   description : 'Userspace interface to kernel DRM services',
+ )
+ 
+diff --git a/nouveau/meson.build b/nouveau/meson.build
+index 1724b2ed..350f34c4 100644
+--- a/nouveau/meson.build
++++ b/nouveau/meson.build
+@@ -48,11 +48,9 @@ install_headers(
+ )
+ 
+ pkg.generate(
++  libdrm_nouveau,
+   name : 'libdrm_nouveau',
+-  libraries : libdrm_nouveau,
+   subdirs : ['.', 'libdrm', 'libdrm/nouveau'],
+-  version : meson.project_version(),
+-  requires_private : 'libdrm',
+   description : 'Userspace interface to nouveau kernel DRM services',
+ )
+ 
+diff --git a/omap/meson.build b/omap/meson.build
+index e3d8b5eb..22159184 100644
+--- a/omap/meson.build
++++ b/omap/meson.build
+@@ -43,11 +43,10 @@ install_headers('omap_drmif.h', subdir : 'libdrm')
+ install_headers('omap_drm.h', subdir : 'omap')
+ 
+ pkg.generate(
++  libdrm_omap,
+   name : 'libdrm_omap',
+-  libraries : libdrm_omap,
+   subdirs : ['.', 'libdrm', 'omap'],
+   version : '0.6',
+-  requires_private : 'libdrm',
+   description : 'Userspace interface to omap kernel DRM services',
+ )
+ 
+diff --git a/radeon/meson.build b/radeon/meson.build
+index 7e8b4a93..4c1c71e0 100644
+--- a/radeon/meson.build
++++ b/radeon/meson.build
+@@ -53,11 +53,9 @@ install_headers(
+ )
+ 
+ pkg.generate(
++  libdrm_radeon,
+   name : 'libdrm_radeon',
+-  libraries : libdrm_radeon,
+   subdirs : ['.', 'libdrm'],
+-  version : meson.project_version(),
+-  requires_private : 'libdrm',
+   description : 'Userspace interface to kernel DRM services for radeon',
+ )
+ 
+diff --git a/tegra/meson.build b/tegra/meson.build
+index 281c8944..7585c8b5 100644
+--- a/tegra/meson.build
++++ b/tegra/meson.build
+@@ -42,11 +42,9 @@ endif
+ install_headers('tegra.h', subdir : 'libdrm')
+ 
+ pkg.generate(
++  libdrm_tegra,
+   name : 'libdrm_tegra',
+-  libraries : libdrm_tegra,
+   subdirs : ['.', 'libdrm'],
+-  version : meson.project_version(),
+-  requires_private : 'libdrm',
+   description : 'Userspace interface to Tegra kernel DRM services',
+ )
+ 
+-- 
+2.40.1
+

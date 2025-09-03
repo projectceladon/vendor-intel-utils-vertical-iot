@@ -1,13 +1,16 @@
-From 6974e4ed942343fe7d65c767997712c2c3c9a8eb Mon Sep 17 00:00:00 2001
+From 1346ddac71d8923d85d80f8f3713193c0be872d1 Mon Sep 17 00:00:00 2001
 From: vdanix <vishwanathx.dani@intel.com>
 Date: Thu, 12 Jan 2023 06:57:12 +0530
-Subject: [PATCH] [ADL Android-S] Media Performance range fix
+Subject: [PATCH 2/5] Media Performance range fix
 
 Tracked-On: OAM-105448
 Signed-off-by: vdanix <vishwanathx.dani@intel.com>
+---
+ .../true/media_codecs_performance_c2_adl.xml  | 32 +++++++++----------
+ 1 file changed, 16 insertions(+), 16 deletions(-)
 
 diff --git a/groups/codec2/true/media_codecs_performance_c2_adl.xml b/groups/codec2/true/media_codecs_performance_c2_adl.xml
-index db674a3..c23ca97 100644
+index ebfafbf6..a7445da8 100644
 --- a/groups/codec2/true/media_codecs_performance_c2_adl.xml
 +++ b/groups/codec2/true/media_codecs_performance_c2_adl.xml
 @@ -21,7 +21,7 @@
@@ -17,9 +20,9 @@ index db674a3..c23ca97 100644
 -            <Limit name="measured-frame-rate-320x240" range="336-760" />
 +            <Limit name="measured-frame-rate-320x240" range="650-1200" />
              <Limit name="measured-frame-rate-720x480" range="448-720" />
-             <Limit name="measured-frame-rate-1280x720" range="152-240" />
-             <Limit name="measured-frame-rate-1920x1080" range="68-106" />
-@@ -43,24 +43,24 @@
+             <Limit name="measured-frame-rate-1280x720" range="57-240" />
+             <Limit name="measured-frame-rate-1920x1080" range="25-106" />
+@@ -45,10 +45,10 @@
              <Limit name="measured-frame-rate-1920x1080" range="83-124" />
          </MediaCodec>
          <MediaCodec name="c2.android.vp9.decoder" type="video/x-vnd.on2.vp9" update="true">
@@ -31,6 +34,11 @@ index db674a3..c23ca97 100644
 +            <Limit name="measured-frame-rate-640x360" range="550-1200" />
 +            <Limit name="measured-frame-rate-1280x720" range="250-500" />
 +            <Limit name="measured-frame-rate-1920x1080" range="148-354" />
+         </MediaCodec>
+         <MediaCodec name="c2.android.av1.decoder" type="video/av01" update="true">
+             <Limit name="measured-frame-rate-352x288" range="448-720" />
+@@ -63,18 +63,18 @@
+             <Limit name="measured-frame-rate-1280x720" range="57-240" />
          </MediaCodec>
          <MediaCodec name="c2.intel.avc.decoder" type="video/avc" update="true">
 -            <Limit name="measured-frame-rate-320x240" range="3864-6146" />
@@ -55,13 +63,15 @@ index db674a3..c23ca97 100644
              <Limit name="measured-frame-rate-3840x2160" range="272-492" />
          </MediaCodec>
          <MediaCodec name="c2.intel.mp2.decoder" type="video/mpeg2" update="true">
-@@ -71,9 +71,9 @@
+@@ -84,10 +84,10 @@
+             <Limit name="measured-frame-rate-1920x1080" range="1108-1700" />
          </MediaCodec>
          <MediaCodec name="c2.intel.vp9.decoder" type="video/x-vnd.on2.vp9" update="true">
-             <Limit name="measured-frame-rate-320x180" range="3228-5688" />
--            <Limit name="measured-frame-rate-640x360" range="2916-4582" />
+-            <Limit name="measured-frame-rate-320x180" range="3228-5688" />
+-            <Limit name="measured-frame-rate-640x360" range="1000-2000" />
 -            <Limit name="measured-frame-rate-1280x720" range="1498-2374" />
 -            <Limit name="measured-frame-rate-1920x1080" range="1108-1700" />
++	    <Limit name="measured-frame-rate-320x180" range="3228-5688" />
 +            <Limit name="measured-frame-rate-640x360" range="650-952" />
 +            <Limit name="measured-frame-rate-1280x720" range="408-804" />
 +            <Limit name="measured-frame-rate-1920x1080" range="398-800" />
@@ -69,5 +79,5 @@ index db674a3..c23ca97 100644
          </MediaCodec>
          <MediaCodec name="c2.intel.av1.decoder" type="video/av01" update="true">
 -- 
-2.39.0
+2.34.1
 

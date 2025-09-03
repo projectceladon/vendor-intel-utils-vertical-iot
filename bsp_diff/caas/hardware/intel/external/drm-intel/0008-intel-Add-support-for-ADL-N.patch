@@ -1,0 +1,49 @@
+From 6b83880c8cf2b2965c9698b1d17ca711589cb89e Mon Sep 17 00:00:00 2001
+From: Tejas Upadhyay <tejaskumarx.surendrakumar.upadhyay@intel.com>
+Date: Tue, 21 Dec 2021 15:24:59 +0530
+Subject: [PATCH 05/22] intel: Add support for ADL-N
+
+Add ADL-N platform support and PCIIDs
+
+Align with kernel commit:
+7e28d0b26759 ("drm/i915/adl-n: Enable ADL-N platform")
+
+Reviewed-by: Lionel Landwerlin <lionel.g.landwerlin@intel.com>
+Signed-off-by: Tejas Upadhyay <tejaskumarx.surendrakumar.upadhyay@intel.com>
+---
+ intel/i915_pciids.h   | 6 ++++++
+ intel/intel_chipset.c | 1 +
+ 2 files changed, 7 insertions(+)
+
+diff --git a/intel/i915_pciids.h b/intel/i915_pciids.h
+index 9796a5aa..e53c730a 100644
+--- a/intel/i915_pciids.h
++++ b/intel/i915_pciids.h
+@@ -675,6 +675,12 @@
+        INTEL_VGA_DEVICE(0xA721, info), \
+        INTEL_VGA_DEVICE(0xA7A9, info)
+ 
++/* ADL-N */
++#define INTEL_ADLN_IDS(info) \
++	INTEL_VGA_DEVICE(0x46D0, info), \
++	INTEL_VGA_DEVICE(0x46D1, info), \
++	INTEL_VGA_DEVICE(0x46D2, info)
++
+ /* RPL-S */
+ #define INTEL_RPLS_IDS(info) \
+        INTEL_VGA_DEVICE(0xA780, info), \
+diff --git a/intel/intel_chipset.c b/intel/intel_chipset.c
+index c3401f08..89ea94a9 100644
+--- a/intel/intel_chipset.c
++++ b/intel/intel_chipset.c
+@@ -37,6 +37,7 @@ static const struct pci_device {
+ 	/* Keep ids sorted by gen; latest gen first */
+ 	INTEL_RPLS_IDS(12),
+ 	INTEL_RPLP_IDS(12),
++	INTEL_ADLN_IDS(12),
+ 	INTEL_ADLP_IDS(12),
+ 	INTEL_ADLS_IDS(12),
+ 	INTEL_RKL_IDS(12),
+-- 
+2.40.1
+

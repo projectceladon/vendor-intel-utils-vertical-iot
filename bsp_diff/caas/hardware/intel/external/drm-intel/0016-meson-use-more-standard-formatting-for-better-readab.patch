@@ -1,0 +1,32 @@
+From ea076096ad5d68b6aece35eb449ff41442ad089a Mon Sep 17 00:00:00 2001
+From: Dylan Baker <dylan@pnwbakers.com>
+Date: Wed, 19 Jan 2022 11:09:07 -0800
+Subject: [PATCH 13/22] meson: use more standard formatting for better
+ readability
+
+Signed-off-by: Dylan Baker <dylan@pnwbakers.com>
+Reviewed-by: Simon Ser <contact@emersion.fr>
+---
+ meson.build | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/meson.build b/meson.build
+index 646800ef..5c4618ab 100644
+--- a/meson.build
++++ b/meson.build
+@@ -54,8 +54,10 @@ intel_atomics = false
+ lib_atomics = false
+ 
+ python3 = import('python').find_installation()
+-format_mod_static_table = custom_target('format_mod_static_table',
+-  output : 'generated_static_table_fourcc.h', input: 'include/drm/drm_fourcc.h',
++format_mod_static_table = custom_target(
++  'format_mod_static_table',
++  output : 'generated_static_table_fourcc.h',
++  input : 'include/drm/drm_fourcc.h',
+   command : [python3, files('gen_table_fourcc.py'), '@INPUT@', '@OUTPUT@'])
+ 
+ dep_atomic_ops = dependency('atomic_ops', required : false)
+-- 
+2.40.1
+

@@ -1,0 +1,47 @@
+From eeed85eb0faf19d99ffc21003d064f8a23ba83a3 Mon Sep 17 00:00:00 2001
+From: Basanagouda Nagappa Koppad <Basanagouda.Nagappa.Koppad@intel.com>
+Date: Mon, 7 Jul 2025 14:15:34 +0000
+Subject: [PATCH] Fix LTS2024 conflict issue
+
+Tracked-on: OAM-xxxx
+Signed-off-by: Basanagouda Nagappa Koppad <Basanagouda.Nagappa.Koppad@intel.com>
+
+diff --git a/groups/kernel/AndroidBoard.mk b/groups/kernel/AndroidBoard.mk
+index 36a1c1a9..3e9b97f3 100644
+--- a/groups/kernel/AndroidBoard.mk
++++ b/groups/kernel/AndroidBoard.mk
+@@ -222,6 +222,7 @@ endif
+ 		find $(LOCAL_KERNEL_PATH)/lib/modules/ -name $$f -exec cp {} $(TARGET_RECOVERY_ROOT_OUT)/$(KERNEL_MODULES_ROOT)/ \; ;\
+ 		done
+ ifneq ($(BASE_LTS2024_ANDROID_KERNEL), true)
++ifneq ($(BASE_LINUX_INTEL_LTS2024_KERNEL), true)
+ ifeq ($(TARGET_PREBUILT_KERNEL), true)
+ 	echo "Copying mei modules from prebuilt"
+ #mei for recovery
+@@ -242,6 +243,7 @@ else
+ 		done
+ endif
+ endif
++endif
+ 
+ {{#camera_cos_hack}}
+ ifeq ($(KERNEL_MODULES_ROOT),vendor/lib/modules)
+@@ -319,6 +321,7 @@ $(foreach v,$(BOARD_DTB_VARIANTS),$(eval $(call board_dtb_per_variant,$(v))))
+ {{/build_dtbs}}
+ 
+ ifneq ($(BASE_LTS2024_ANDROID_KERNEL), true)
++ifneq ($(BASE_LINUX_INTEL_LTS2024_KERNEL), true)
+ {{#i915_ag_mods_version}}
+ 
+ I915_AG_ADDITIONS_PATH := ../modules/intel-gpu-i915-backports
+@@ -337,6 +340,7 @@ $(LOCAL_KERNEL_PATH)/copy_modules: $(I915_AG_MODS_TARGET)
+ 
+ {{/i915_ag_mods_version}}
+ endif
++endif
+ 
+ # Add a kernel target, so "make kernel" will build the kernel
+ .PHONY: kernel
+-- 
+2.34.1
+

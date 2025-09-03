@@ -1,0 +1,95 @@
+From 536fef8203815977a94c5245201edb510526b539 Mon Sep 17 00:00:00 2001
+From: Daniel Stone <daniels@collabora.com>
+Date: Wed, 19 May 2021 11:05:22 +0100
+Subject: [PATCH 18/22] drm/atomic: Stable sort for atomic request
+ de-duplication
+
+Atomic request property lists are defined to be de-duplicated: an atomic
+request can contain multiple sets for the same property on the same
+object, and only the last one will take effect.
+
+drmModeAtomicCommit already sorts the property set by object and
+property ID. We were relying on qsort to also sort by cursor - i.e.
+pointer value - when object and property ID are equal, however whilst
+glibc does this, the sort order is explicitly undefined when the
+comparator is equal. Using the pointer is also not stable on all
+implementations.
+
+Add an explicit 'cursor' member to each property set which is used as
+the tie-breaker comparator.
+
+Signed-off-by: Daniel Stone <daniels@collabora.com>
+Fixes: #46
+---
+ xf86drmMode.c | 19 ++++++++++++++-----
+ 1 file changed, 14 insertions(+), 5 deletions(-)
+
+diff --git a/xf86drmMode.c b/xf86drmMode.c
+index 84d3c771..87e96603 100644
+--- a/xf86drmMode.c
++++ b/xf86drmMode.c
+@@ -1324,6 +1324,7 @@ struct _drmModeAtomicReqItem {
+ 	uint32_t object_id;
+ 	uint32_t property_id;
+ 	uint64_t value;
++	uint32_t cursor;
+ };
+ 
+ struct _drmModeAtomicReq {
+@@ -1379,6 +1380,8 @@ drm_public drmModeAtomicReqPtr drmModeAtomicDuplicate(drmModeAtomicReqPtr old)
+ drm_public int drmModeAtomicMerge(drmModeAtomicReqPtr base,
+                                   drmModeAtomicReqPtr augment)
+ {
++	uint32_t i;
++
+ 	if (!base)
+ 		return -EINVAL;
+ 
+@@ -1401,6 +1404,8 @@ drm_public int drmModeAtomicMerge(drmModeAtomicReqPtr base,
+ 
+ 	memcpy(&base->items[base->cursor], augment->items,
+ 	       augment->cursor * sizeof(*augment->items));
++	for (i = base->cursor; i < base->cursor + augment->cursor; i++)
++		base->items[i].cursor = i;
+ 	base->cursor += augment->cursor;
+ 
+ 	return 0;
+@@ -1446,6 +1451,7 @@ drm_public int drmModeAtomicAddProperty(drmModeAtomicReqPtr req,
+ 	req->items[req->cursor].object_id = object_id;
+ 	req->items[req->cursor].property_id = property_id;
+ 	req->items[req->cursor].value = value;
++	req->items[req->cursor].cursor = req->cursor;
+ 	req->cursor++;
+ 
+ 	return req->cursor;
+@@ -1466,12 +1472,12 @@ static int sort_req_list(const void *misc, const void *other)
+ 	const drmModeAtomicReqItem *first = misc;
+ 	const drmModeAtomicReqItem *second = other;
+ 
+-	if (first->object_id < second->object_id)
+-		return -1;
+-	else if (first->object_id > second->object_id)
+-		return 1;
++	if (first->object_id != second->object_id)
++		return first->object_id - second->object_id;
++	else if (first->property_id != second->property_id)
++		return first->property_id - second->property_id;
+ 	else
+-		return second->property_id - first->property_id;
++		return first->cursor - second->cursor;
+ }
+ 
+ drm_public int drmModeAtomicCommit(int fd, drmModeAtomicReqPtr req,
+@@ -1523,6 +1529,9 @@ drm_public int drmModeAtomicCommit(int fd, drmModeAtomicReqPtr req,
+ 		sorted->cursor--;
+ 	}
+ 
++	for (i = 0; i < sorted->cursor; i++)
++		sorted->items[i].cursor = i;
++
+ 	objs_ptr = drmMalloc(atomic.count_objs * sizeof objs_ptr[0]);
+ 	if (!objs_ptr) {
+ 		errno = ENOMEM;
+-- 
+2.40.1
+
