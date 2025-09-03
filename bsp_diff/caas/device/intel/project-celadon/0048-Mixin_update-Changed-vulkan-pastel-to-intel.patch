@@ -1,0 +1,55 @@
+From fec090fa0aabff71e969ef0e080df7e055c080bc Mon Sep 17 00:00:00 2001
+From: vdanix <vishwanathx.dani@intel.com>
+Date: Mon, 21 Aug 2023 15:53:27 +0530
+Subject: [PATCH] Mixin update for Vulkan pastel to intel
+
+CtsSkQPTestCases Tests are failing due to
+SIGSEGV crash in /vendor/lib64/hw/vulkan.pastel.so
+
+Tracked-On: OAM-111784
+Signed-off-by: vdanix <vishwanathx.dani@intel.com>
+
+diff --git a/caas/extra_files/graphics/auto_hal.in b/caas/extra_files/graphics/auto_hal.in
+index ad48e5d7..ba36faa8 100755
+--- a/caas/extra_files/graphics/auto_hal.in
++++ b/caas/extra_files/graphics/auto_hal.in
+@@ -11,19 +11,25 @@ case "$(cat /proc/fb)" in
+                 setprop vendor.vulkan.set intel
+                 ;;
+ 	*virtio*)
+-                if [ "$(cat /sys/kernel/debug/dri/0/name |awk '{print $1}')" = "i915" ];then
+-                        echo "sriov rendering"
+-                        setprop vendor.egl.set mesa
+-                        setprop vendor.vulkan.set intel
++                if [ -d "/sys/class/drm/card0/engine" ];then
++                       echo "sriov rendering"
++                       setprop vendor.egl.set mesa
++                       setprop vendor.vulkan.set intel
+                 else
+-                        if [ "$(cat /sys/kernel/debug/dri/0/virtio-gpu-features |grep virgl |awk '{print $3}')" = "no" ];then
+-                                echo "angle rendering"
+-                                setprop vendor.egl.set angle
+-                                setprop vendor.vulkan.set pastel
+-                        else
+-                                echo "virtio rendering"
++                        if [ "$(cat /sys/kernel/debug/dri/0/name |awk '{print $1}')" = "i915" ];then
++                                echo "sriov rendering"
+                                 setprop vendor.egl.set mesa
+-                                setprop vendor.vulkan.set pastel
++                                setprop vendor.vulkan.set intel
++                        else
++                               if [ "$(cat /sys/kernel/debug/dri/0/virtio-gpu-features |grep virgl |awk '{print $3}')" = "no" ];then
++                                       echo "angle rendering"
++                                       setprop vendor.egl.set angle
++                                       setprop vendor.vulkan.set pastel
++                               else
++                                       echo "virtio rendering"
++                                       setprop vendor.egl.set mesa
++                                       setprop vendor.vulkan.set pastel
++                               fi
+                         fi
+                 fi
+                 ;;
+-- 
+2.41.0
+

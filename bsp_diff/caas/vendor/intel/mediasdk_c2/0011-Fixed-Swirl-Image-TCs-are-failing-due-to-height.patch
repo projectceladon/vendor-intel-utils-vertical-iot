@@ -1,0 +1,38 @@
+From d2aeddd6e9aa72e989222c6c46a733badd8a948b Mon Sep 17 00:00:00 2001
+From: "Kothapeta, BikshapathiX" <bikshapathix.kothapeta@intel.com>
+Date: Wed, 13 Dec 2023 14:41:47 +0530
+Subject: [PATCH] Fixed Swirl Image TCs are failing due to height.
+
+MediaDecoder 10bit swirl image TCs are failing because height is aligned
+with 16bit alignment. changed the alignment to 32bit alignment.
+
+Tracked-On: OAM-114207
+Signed-off-by: gollarx <ratnakumarix.golla@intel.com>
+---
+ c2_components/src/mfx_c2_decoder_component.cpp | 10 ++++++++--
+ 1 file changed, 8 insertions(+), 2 deletions(-)
+
+diff --git a/c2_components/src/mfx_c2_decoder_component.cpp b/c2_components/src/mfx_c2_decoder_component.cpp
+index 553c40f..41b14b6 100755
+--- a/c2_components/src/mfx_c2_decoder_component.cpp
++++ b/c2_components/src/mfx_c2_decoder_component.cpp
+@@ -1164,8 +1164,14 @@ mfxStatus MfxC2DecoderComponent::InitDecoder(std::shared_ptr<C2BlockPool> c2_all
+             }
+         }
+ 
+-        m_mfxVideoParams.mfx.FrameInfo.Width = MFX_MEM_ALIGN(m_mfxVideoParams.mfx.FrameInfo.Width, 16);
+-        m_mfxVideoParams.mfx.FrameInfo.Height = MFX_MEM_ALIGN(m_mfxVideoParams.mfx.FrameInfo.Height, 16);
++	if (MfxFourCCToGralloc(m_mfxVideoParams.mfx.FrameInfo.FourCC) == HAL_PIXEL_FORMAT_P010_INTEL) {
++           m_mfxVideoParams.mfx.FrameInfo.Width = MFX_MEM_ALIGN(m_mfxVideoParams.mfx.FrameInfo.Width, 32);
++           m_mfxVideoParams.mfx.FrameInfo.Height = MFX_MEM_ALIGN(m_mfxVideoParams.mfx.FrameInfo.Height, 32);
++	} else {
++           m_mfxVideoParams.mfx.FrameInfo.Width = MFX_MEM_ALIGN(m_mfxVideoParams.mfx.FrameInfo.Width, 16);
++           m_mfxVideoParams.mfx.FrameInfo.Height = MFX_MEM_ALIGN(m_mfxVideoParams.mfx.FrameInfo.Height, 16);
++	}
++
+         if (MFX_ERR_NONE == mfx_res) {
+             mfx_res = m_c2Bitstream->GetFrameConstructor()->Init(m_mfxVideoParams.mfx.CodecProfile, m_mfxVideoParams.mfx.FrameInfo);
+         }
+-- 
+2.43.0
+

@@ -1,0 +1,26 @@
+From 0ede27611ea0cfd757dc0a118853f92053d650fb Mon Sep 17 00:00:00 2001
+From: Avinash Kumar <avinash3.kumar@intel.com>
+Date: Fri, 29 Aug 2025 05:08:42 +0000
+Subject: [PATCH] [PATCH] Add ttyS4 for TWL CRB
+
+enable kernel logs with ttyS4.
+ttys4 is default uart port on TWL CRB board.
+
+Signed-off-by: Avinash Kumar <avinash3.kumar@intel.com>
+---
+ groups/serialport/ttyS4/BoardConfig.mk | 3 +++
+ 1 file changed, 3 insertions(+)
+ create mode 100644 groups/serialport/ttyS4/BoardConfig.mk
+
+diff --git a/groups/serialport/ttyS4/BoardConfig.mk b/groups/serialport/ttyS4/BoardConfig.mk
+new file mode 100644
+index 00000000..8e461ada
+--- /dev/null
++++ b/groups/serialport/ttyS4/BoardConfig.mk
+@@ -0,0 +1,3 @@
++ifneq ($(TARGET_BUILD_VARIANT),user)
++BOARD_KERNEL_CMDLINE += console=ttyS4,115200n8
++endif
+-- 
+2.34.1
+

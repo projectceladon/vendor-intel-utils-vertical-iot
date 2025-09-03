@@ -1,0 +1,23 @@
+From f1cb518156772048e4ef7bef35d55ee366e1176d Mon Sep 17 00:00:00 2001
+From: Basanagouda Nagappa Koppad <Basanagouda.Nagappa.Koppad@intel.com>
+Date: Tue, 15 Jul 2025 18:08:29 +0000
+Subject: [PATCH] Enable BT SCO HCI module
+
+Tracked-On: OAM-xxxx
+Signed-off-by: Basanagouda Nagappa Koppad <Basanagouda.Nagappa.Koppad@intel.com>
+
+diff --git a/groups/kernel/gmin64/config-lts/linux-intel-lts2024/x86_64_defconfig b/groups/kernel/gmin64/config-lts/linux-intel-lts2024/x86_64_defconfig
+index 49fccc55..8aa0735c 100644
+--- a/groups/kernel/gmin64/config-lts/linux-intel-lts2024/x86_64_defconfig
++++ b/groups/kernel/gmin64/config-lts/linux-intel-lts2024/x86_64_defconfig
+@@ -1621,6 +1621,7 @@ CONFIG_BT_INTEL=m
+ CONFIG_BT_BCM=m
+ CONFIG_BT_RTL=m
+ CONFIG_BT_HCIBTUSB=m
++CONFIG_BT_SCOHCI=m
+ # CONFIG_BT_HCIBTUSB_AUTOSUSPEND is not set
+ CONFIG_BT_HCIBTUSB_POLL_SYNC=y
+ CONFIG_BT_HCIBTUSB_BCM=y
+-- 
+2.34.1
+

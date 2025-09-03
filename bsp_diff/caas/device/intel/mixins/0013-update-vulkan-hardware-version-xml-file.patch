@@ -1,0 +1,30 @@
+From 52c8fb6a18a5ac93c79b1c99c58ea6a7bd461438 Mon Sep 17 00:00:00 2001
+From: "Kothapeta, BikshapathiX" <bikshapathix.kothapeta@intel.com>
+Date: Fri, 27 Oct 2023 16:59:41 +0530
+Subject: [PATCH 5/5] update vulkan hardware version xml file
+
+Tracked-On:
+Signed-off-by: Kothapeta, BikshapathiX <bikshapathix.kothapeta@intel.com>
+---
+ groups/graphics/mesa/product.mk | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/groups/graphics/mesa/product.mk b/groups/graphics/mesa/product.mk
+index 3ada8ead..20acfb77 100755
+--- a/groups/graphics/mesa/product.mk
++++ b/groups/graphics/mesa/product.mk
+@@ -82,7 +82,10 @@ PRODUCT_COPY_FILES += \
+ 
+ {{#vulkan}}
+ PRODUCT_COPY_FILES += \
+-    frameworks/native/data/etc/android.hardware.vulkan.version-1_1.xml:vendor/etc/permissions/android.hardware.vulkan.version.xml
++    frameworks/native/data/etc/android.hardware.vulkan.version-1_3.xml:vendor/etc/permissions/android.hardware.vulkan.version.xml
++
++PRODUCT_COPY_FILES += \
++    frameworks/native/data/etc/android.software.vulkan.deqp.level-2022-03-01.xml:vendor/etc/permissions/android.software.vulkan.deqp.level.xml
+ 
+ PRODUCT_PACKAGES += \
+     vulkan.$(TARGET_BOARD_PLATFORM) \
+-- 
+2.34.1
+

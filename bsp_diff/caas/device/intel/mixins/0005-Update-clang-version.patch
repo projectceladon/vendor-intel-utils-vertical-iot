@@ -1,0 +1,23 @@
+From 0a155cfe8f082b1bf932df568b4176d91246173c Mon Sep 17 00:00:00 2001
+From: celadon <celadon@intel.com>
+Date: Thu, 3 Jul 2025 18:30:48 +0000
+Subject: [PATCH] Update clang version
+
+Signed-off-by: celadon <celadon@intel.com>
+
+diff --git a/groups/kernel/AndroidBoard.mk b/groups/kernel/AndroidBoard.mk
+index 7453912d..36a1c1a9 100644
+--- a/groups/kernel/AndroidBoard.mk
++++ b/groups/kernel/AndroidBoard.mk
+@@ -6,7 +6,7 @@ PREBUILT_KERNEL_ROOT := vendor/intel/utils_priv/kernel/prebuilts/6.6/{{{prebuilt
+ endif
+ endif
+ 
+-TARGET_KERNEL_CLANG_VERSION := r530567b
++TARGET_KERNEL_CLANG_VERSION := r536225
+ CLANG_PREBUILTS_PATH := $(abspath $(INTEL_PATH_DEVICE)/../../../prebuilts/clang)
+ 
+ ifneq ($(TARGET_KERNEL_CLANG_VERSION),)
+-- 
+2.34.1
+

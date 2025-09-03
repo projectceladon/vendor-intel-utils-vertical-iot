@@ -1,0 +1,74 @@
+From dfd2155e18bdc0c4dc3b0af2b61f729f4702afb0 Mon Sep 17 00:00:00 2001
+From: Dylan Baker <dylan@pnwbakers.com>
+Date: Wed, 19 Jan 2022 10:43:04 -0800
+Subject: [PATCH 12/22] meson: switch to cc.get_supported_arguments
+
+This is generally faster, as meson is able to parallelize the checks for
+us.
+
+This also removes the workaround for checking gcc/clang -Wno-*
+arguments, which meson now handles internally so we don't need to handle
+it ourselves.
+
+Signed-off-by: Dylan Baker <dylan@pnwbakers.com>
+Reviewed-by: Simon Ser <contact@emersion.fr>
+---
+ meson.build | 35 ++++++++++-------------------------
+ 1 file changed, 10 insertions(+), 25 deletions(-)
+
+diff --git a/meson.build b/meson.build
+index f0211457..646800ef 100644
+--- a/meson.build
++++ b/meson.build
+@@ -23,7 +23,7 @@ project(
+   ['c'],
+   version : '2.4.109',
+   license : 'MIT',
+-  meson_version : '>= 0.46',
++  meson_version : '>= 0.48',
+   default_options : ['buildtype=debugoptimized', 'c_std=c99'],
+ )
+ 
+@@ -219,30 +219,15 @@ if (cc.has_header_symbol('sys/mkdev.h', 'major') and
+ endif
+ config.set10('HAVE_OPEN_MEMSTREAM', cc.has_function('open_memstream'))
+ 
+-warn_c_args = []
+-foreach a : ['-Wall', '-Wextra', '-Wsign-compare', '-Werror=undef',
+-             '-Werror=implicit-function-declaration', '-Wpointer-arith',
+-             '-Wwrite-strings', '-Wstrict-prototypes', '-Wmissing-prototypes',
+-             '-Wmissing-declarations', '-Wnested-externs', '-Wpacked',
+-             '-Wswitch-enum', '-Wmissing-format-attribute',
+-             '-Wstrict-aliasing=2', '-Winit-self', '-Winline', '-Wshadow',
+-             '-Wdeclaration-after-statement', '-Wold-style-definition']
+-  if cc.has_argument(a)
+-    warn_c_args += a
+-  endif
+-endforeach
+-# GCC will never error for -Wno-*, so check for -W* then add -Wno-* to the list
+-# of options
+-foreach a : ['unused-parameter', 'attributes', 'long-long',
+-             'missing-field-initializers']
+-  if cc.has_argument('-W@0@'.format(a))
+-    warn_c_args += '-Wno-@0@'.format(a)
+-  endif
+-endforeach
+-
+-# all c args:
+-
+-libdrm_c_args = warn_c_args
++libdrm_c_args = cc.get_supported_arguments([
++  '-Wsign-compare', '-Werror=undef', '-Werror=implicit-function-declaration',
++  '-Wpointer-arith', '-Wwrite-strings', '-Wstrict-prototypes',
++  '-Wmissing-prototypes', '-Wmissing-declarations', '-Wnested-externs',
++  '-Wpacked', '-Wswitch-enum', '-Wmissing-format-attribute',
++  '-Wstrict-aliasing=2', '-Winit-self', '-Winline', '-Wshadow',
++  '-Wdeclaration-after-statement', '-Wold-style-definition',
++  '-Wno-unused-parameter', '-Wno-attributes', '-Wno-long-long',
++  '-Wno-missing-field-initializers'])
+ 
+ dep_pciaccess = dependency('pciaccess', version : '>= 0.10', required : with_intel)
+ dep_cunit = dependency('cunit', version : '>= 2.1', required : false)
+-- 
+2.40.1
+

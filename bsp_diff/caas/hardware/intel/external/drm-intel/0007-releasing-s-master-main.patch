@@ -1,0 +1,32 @@
+From d0435c3267fb1996ef7a92d2ec5ec4844e79a44e Mon Sep 17 00:00:00 2001
+From: Simon Ser <contact@emersion.fr>
+Date: Mon, 8 Nov 2021 17:39:23 +0100
+Subject: [PATCH 04/22] releasing: s/master/main/
+
+This default branch name has been changed. Update RELEASING
+accordingly.
+
+Signed-off-by: Simon Ser <contact@emersion.fr>
+---
+ RELEASING | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/RELEASING b/RELEASING
+index 903c1761..838ba2b2 100644
+--- a/RELEASING
++++ b/RELEASING
+@@ -18,9 +18,9 @@ Follow these steps to release a new version of libdrm:
+      builddir/meson-dist/ matches the number you bumped to. Move that
+      tarball to the libdrm repo root for the release script to pick up.
+ 
+-  3) Push the updated master branch with the bumped version number:
++  3) Push the updated main branch with the bumped version number:
+ 
+-	git push origin master
++	git push origin main
+ 
+      assuming the remote for the upstream libdrm repo is called origin.
+ 
+-- 
+2.40.1
+

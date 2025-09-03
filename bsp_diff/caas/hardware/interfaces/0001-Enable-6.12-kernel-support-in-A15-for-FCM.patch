@@ -1,0 +1,23 @@
+From dd1f31de9b0a319bc91d4889037ee10fe37c0d15 Mon Sep 17 00:00:00 2001
+From: Basanagouda Nagappa Koppad <Basanagouda.Nagappa.Koppad@intel.com>
+Date: Mon, 7 Jul 2025 17:33:08 +0000
+Subject: [PATCH] Enable 6.12 kernel support in A15 for FCM
+
+Tracked-On: OAM-xxxx
+Signed-off-by: Basanagouda Nagappa Koppad <Basanagouda.Nagappa.Koppad@intel.com>
+
+diff --git a/compatibility_matrices/Android.bp b/compatibility_matrices/Android.bp
+index 825c931711..dfda83fa34 100644
+--- a/compatibility_matrices/Android.bp
++++ b/compatibility_matrices/Android.bp
+@@ -139,6 +139,7 @@ vintf_compatibility_matrix {
+     kernel_configs: [
+         "kernel_config_v_6.1",
+         "kernel_config_v_6.6",
++        "kernel_config_w_6.12",
+     ],
+ }
+ 
+-- 
+2.34.1
+

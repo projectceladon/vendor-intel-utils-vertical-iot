@@ -1,0 +1,22 @@
+From 76fa0d40ccca76633c149353d7a075c8b6accc88 Mon Sep 17 00:00:00 2001
+From: celadon <celadon@intel.com>
+Date: Fri, 4 Jul 2025 13:49:12 +0000
+Subject: [PATCH] Include header file defining the PRIu64 macro
+
+Signed-off-by: celadon <celadon@intel.com>
+
+diff --git a/primary/audio_hw.c b/primary/audio_hw.c
+index eaf965a..8859ae1 100755
+--- a/primary/audio_hw.c
++++ b/primary/audio_hw.c
+@@ -25,6 +25,7 @@
+ #include <stdlib.h>
+ #include <sys/time.h>
+ #include <unistd.h>
++#include <inttypes.h>
+ 
+ #include <log/log.h>
+ #include <cutils/properties.h>
+-- 
+2.34.1
+
