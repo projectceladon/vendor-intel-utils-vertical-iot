@@ -1,0 +1,194 @@
+From acb01b3a706df8a035d08fc347f53abbbffa3963 Mon Sep 17 00:00:00 2001
+From: Dylan Baker <dylan@pnwbakers.com>
+Date: Wed, 17 Nov 2021 12:57:54 -0800
+Subject: [PATCH 03/22] meson: add override_dependency when possible
+
+This allows consumers of libdrm as a subproject to use the simpler
+`dependency('libdrm', fallback : 'libdrm')` syntax, as the libdrm build
+files already tell meson that they override a dependency called
+"libdrm".
+
+Signed-off-by: Dylan Baker <dylan@pnwbakers.com>
+Reviewed-by: Simon Ser <contact@emersion.fr>
+---
+ amdgpu/meson.build    | 4 ++++
+ etnaviv/meson.build   | 4 ++++
+ exynos/meson.build    | 4 ++++
+ freedreno/meson.build | 4 ++++
+ intel/meson.build     | 4 ++++
+ libkms/meson.build    | 4 ++++
+ meson.build           | 4 ++++
+ nouveau/meson.build   | 4 ++++
+ omap/meson.build      | 4 ++++
+ radeon/meson.build    | 4 ++++
+ tegra/meson.build     | 4 ++++
+ 11 files changed, 44 insertions(+)
+
+diff --git a/amdgpu/meson.build b/amdgpu/meson.build
+index 3301a10e..b2d19875 100644
+--- a/amdgpu/meson.build
++++ b/amdgpu/meson.build
+@@ -57,6 +57,10 @@ ext_libdrm_amdgpu = declare_dependency(
+   include_directories : [inc_drm, include_directories('.')],
+ )
+ 
++if meson.version().version_compare('>= 0.54.0')
++  meson.override_dependency('libdrm_amdgpu', ext_libdrm_amdgpu)
++endif
++
+ test(
+   'amdgpu-symbols-check',
+   symbols_check,
+diff --git a/etnaviv/meson.build b/etnaviv/meson.build
+index 8b82ed07..ffc0a673 100644
+--- a/etnaviv/meson.build
++++ b/etnaviv/meson.build
+@@ -52,6 +52,10 @@ ext_libdrm_etnaviv = declare_dependency(
+   include_directories : [inc_drm, include_directories('.')],
+ )
+ 
++if meson.version().version_compare('>= 0.54.0')
++  meson.override_dependency('libdrm_etnaviv', ext_libdrm_etnaviv)
++endif
++
+ test(
+   'etnaviv-symbols-check',
+   symbols_check,
+diff --git a/exynos/meson.build b/exynos/meson.build
+index 7d1edfea..bd55a500 100644
+--- a/exynos/meson.build
++++ b/exynos/meson.build
+@@ -37,6 +37,10 @@ ext_libdrm_exynos = declare_dependency(
+   include_directories : [inc_drm, include_directories('.')],
+ )
+ 
++if meson.version().version_compare('>= 0.54.0')
++  meson.override_dependency('libdrm_exynos', ext_libdrm_exynos)
++endif
++
+ pkg.generate(
+   name : 'libdrm_exynos',
+   libraries : libdrm_exynos,
+diff --git a/freedreno/meson.build b/freedreno/meson.build
+index 49e66593..4fdc8143 100644
+--- a/freedreno/meson.build
++++ b/freedreno/meson.build
+@@ -55,6 +55,10 @@ ext_libdrm_freedreno = declare_dependency(
+   include_directories : [inc_drm, include_directories('.')],
+ )
+ 
++if meson.version().version_compare('>= 0.54.0')
++  meson.override_dependency('libdrm_freedreno', ext_libdrm_freedreno)
++endif
++
+ install_headers(
+   'freedreno_drmif.h', 'freedreno_ringbuffer.h',
+   subdir : 'freedreno'
+diff --git a/intel/meson.build b/intel/meson.build
+index 5fa06c28..75e6bc3e 100644
+--- a/intel/meson.build
++++ b/intel/meson.build
+@@ -40,6 +40,10 @@ ext_libdrm_intel = declare_dependency(
+   include_directories : [inc_drm, include_directories('.')],
+ )
+ 
++if meson.version().version_compare('>= 0.54.0')
++  meson.override_dependency('libdrm_intel', ext_libdrm_intel)
++endif
++
+ install_headers(
+   'intel_bufmgr.h', 'intel_aub.h', 'intel_debug.h',
+   subdir : 'libdrm',
+diff --git a/libkms/meson.build b/libkms/meson.build
+index 8d17bb2e..cc487227 100644
+--- a/libkms/meson.build
++++ b/libkms/meson.build
+@@ -56,6 +56,10 @@ ext_libkms = declare_dependency(
+   include_directories : [libkms_include],
+ )
+ 
++if meson.version().version_compare('>= 0.54.0')
++  meson.override_dependency('kms', ext_libkms)
++endif
++
+ install_headers('libkms.h', subdir : 'libkms')
+ 
+ pkg.generate(
+diff --git a/meson.build b/meson.build
+index 62dec8dd..f5704cf1 100644
+--- a/meson.build
++++ b/meson.build
+@@ -340,6 +340,10 @@ ext_libdrm = declare_dependency(
+   include_directories : [inc_root, inc_drm],
+ )
+ 
++if meson.version().version_compare('>= 0.54.0')
++  meson.override_dependency('libdrm', ext_libdrm)
++endif
++
+ install_headers('libsync.h', 'xf86drm.h', 'xf86drmMode.h')
+ install_headers(
+   'include/drm/drm.h', 'include/drm/drm_fourcc.h', 'include/drm/drm_mode.h',
+diff --git a/nouveau/meson.build b/nouveau/meson.build
+index af45336c..82947951 100644
+--- a/nouveau/meson.build
++++ b/nouveau/meson.build
+@@ -35,6 +35,10 @@ ext_libdrm_nouveau = declare_dependency(
+   include_directories : [inc_drm, include_directories('.')],
+ )
+ 
++if meson.version().version_compare('>= 0.54.0')
++  meson.override_dependency('libdrm_nouveau', ext_libdrm_nouveau)
++endif
++
+ install_headers('nouveau.h', subdir : 'libdrm/nouveau')
+ install_headers(
+   'nvif/class.h', 'nvif/cl0080.h', 'nvif/cl9097.h', 'nvif/if0002.h',
+diff --git a/omap/meson.build b/omap/meson.build
+index bfd59f05..bcf5b622 100644
+--- a/omap/meson.build
++++ b/omap/meson.build
+@@ -34,6 +34,10 @@ ext_libdrm_omap = declare_dependency(
+   include_directories : [inc_drm, include_directories('.')],
+ )
+ 
++if meson.version().version_compare('>= 0.54.0')
++  meson.override_dependency('libdrm_omap', ext_libdrm_omap)
++endif
++
+ install_headers('omap_drmif.h', subdir : 'libdrm')
+ install_headers('omap_drm.h', subdir : 'omap')
+ 
+diff --git a/radeon/meson.build b/radeon/meson.build
+index 31fe9cd0..abc9be83 100644
+--- a/radeon/meson.build
++++ b/radeon/meson.build
+@@ -41,6 +41,10 @@ ext_libdrm_radeon = declare_dependency(
+   include_directories : [inc_drm, include_directories('.')],
+ )
+ 
++if meson.version().version_compare('>= 0.54.0')
++  meson.override_dependency('libdrm_radeon', ext_libdrm_radeon)
++endif
++
+ install_headers(
+ 	'radeon_bo.h', 'radeon_cs.h', 'radeon_surface.h', 'radeon_bo_gem.h',
+ 	'radeon_cs_gem.h', 'radeon_bo_int.h', 'radeon_cs_int.h', 'r600_pci_ids.h',
+diff --git a/tegra/meson.build b/tegra/meson.build
+index edddf72b..51caf67a 100644
+--- a/tegra/meson.build
++++ b/tegra/meson.build
+@@ -34,6 +34,10 @@ ext_libdrm_tegra = declare_dependency(
+   include_directories : [inc_drm, include_directories('.')],
+ )
+ 
++if meson.version().version_compare('>= 0.54.0')
++  meson.override_dependency('libdrm_tegra', ext_libdrm_tegra)
++endif
++
+ install_headers('tegra.h', subdir : 'libdrm')
+ 
+ pkg.generate(
+-- 
+2.40.1
+

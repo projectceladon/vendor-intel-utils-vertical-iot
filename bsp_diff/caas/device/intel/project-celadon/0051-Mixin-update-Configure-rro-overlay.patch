@@ -1,0 +1,28 @@
+From 7a98742054ddef494fa34bf6ac50bd1245cd92b4 Mon Sep 17 00:00:00 2001
+From: amudassx <afrax.mudassir@intel.com>
+Date: Wed, 12 Jul 2023 16:42:17 +0530
+Subject: [PATCH] Mixin update: Configure rro overlay
+
+configure the rro overlay for ServiceConnectivityResource to fix the Cts
+Net TC module issue.
+
+Tracked-On: 111114
+Signed-off-by: amudassx <afrax.mudassir@intel.com>
+
+diff --git a/caas/device.mk b/caas/device.mk
+index ea3de75a..921117b6 100644
+--- a/caas/device.mk
++++ b/caas/device.mk
+@@ -105,7 +105,8 @@ PRODUCT_PACKAGES += \
+     wpa_cli \
+     iw \
+     TetheringConfigOverlay \
+-    TetheringConfigOverlayGsi
++    TetheringConfigOverlayGsi \
++    ServiceConnectivityResourcesConfigOverlay
+ 
+ PRODUCT_PACKAGES += \
+     android.hardware.wifi@1.0-service
+-- 
+2.41.0
+

@@ -1,0 +1,29 @@
+From 50d941a20b5ad2e084d9380ff85ca4309bc5b495 Mon Sep 17 00:00:00 2001
+From: "Panda,SushreeX" <sushreex.panda@intel.com>
+Date: Thu, 7 Sep 2023 23:31:14 +0530
+Subject: [PATCH 2/2] Fix net node permission for ADL-PS Platform to pass
+ NetdSELinuxTest.
+
+Added the missing net node contexts 0000:00:0a.0 to pass the NetdSELinuxTest#CheckProperMTULabels
+
+Tracked-On: OAM-112139
+Signed-off-by: Panda,SushreeX <sushreex.panda@intel.com>
+---
+ ethernet/common/genfs_contexts | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/ethernet/common/genfs_contexts b/ethernet/common/genfs_contexts
+index 2880c35..0c9c2c3 100644
+--- a/ethernet/common/genfs_contexts
++++ b/ethernet/common/genfs_contexts
+@@ -5,6 +5,7 @@ genfscon sysfs /devices/pci0000:00/0000:00:04.0/net u:object_r:sysfs_net:s0
+ genfscon sysfs /devices/pci0000:00/0000:00:07.0/net u:object_r:sysfs_net:s0
+ genfscon sysfs /devices/pci0000:00/0000:00:06.0/net u:object_r:sysfs_net:s0
+ genfscon sysfs /devices/pci0000:00/0000:00:08.0/net/ u:object_r:sysfs_net:s0
++genfscon sysfs /devices/pci0000:00/0000:00:0a.0/net u:object_r:sysfs_net:s0
+ genfscon sysfs /devices/pci0000:00/0000:00:06.0/usb1/1-7/1-7.4/1-7.4:1.0/net u:object_r:sysfs_net:s0
+ genfscon sysfs /devices/pci0000:00/0000:00:06.0/usb2/2-4/2-4.4/2-4.4:1.0/net u:object_r:sysfs_net:s0
+ genfscon sysfs /devices/pci0000:00/0000:00:09.0/virtio2/net u:object_r:sysfs_net:s0
+-- 
+2.34.1
+

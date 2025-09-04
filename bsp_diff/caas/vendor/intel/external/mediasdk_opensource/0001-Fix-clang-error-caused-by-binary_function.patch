@@ -1,0 +1,25 @@
+From 4c8e12171d7389baf7ead59dfe8d032b981ac693 Mon Sep 17 00:00:00 2001
+From: celadon <celadon@intel.com>
+Date: Fri, 4 Jul 2025 11:06:45 +0000
+Subject: [PATCH] Fix clang error caused by binary_function
+
+Signed-off-by: celadon <celadon@intel.com>
+
+diff --git a/samples/sample_common/include/base_allocator.h b/samples/sample_common/include/base_allocator.h
+index f01388e6..cceb98eb 100644
+--- a/samples/sample_common/include/base_allocator.h
++++ b/samples/sample_common/include/base_allocator.h
+@@ -158,8 +158,9 @@ protected:
+     std::list<mfxFrameAllocResponse> m_responses;
+     std::list<UniqueResponse> m_ExtResponses;
+ 
++//    struct IsSame
++//        : public std::binary_function<mfxFrameAllocResponse, mfxFrameAllocResponse, bool>
+     struct IsSame
+-        : public std::binary_function<mfxFrameAllocResponse, mfxFrameAllocResponse, bool>
+     {
+         bool operator () (const mfxFrameAllocResponse & l, const mfxFrameAllocResponse &r)const
+         {
+-- 
+2.34.1
+

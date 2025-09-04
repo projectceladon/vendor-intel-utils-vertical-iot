@@ -1,0 +1,26 @@
+From b787d0917ad03abb6eaf4837d7be8cf375614590 Mon Sep 17 00:00:00 2001
+From: Basanagouda Nagappa Koppad <Basanagouda.Nagappa.Koppad@intel.com>
+Date: Thu, 28 Aug 2025 17:22:49 +0000
+Subject: [PATCH] Fix Kernel update error
+
+Tracked-On: OAM-133867
+Change-Id: Id7fdc4562167564e1875631487e045dde39a1128
+Signed-off-by: Basanagouda Nagappa Koppad <Basanagouda.Nagappa.Koppad@intel.com>
+
+diff --git a/fs/f2fs/f2fs.h b/fs/f2fs/f2fs.h
+index fd22fc03651d..7db50615cce1 100644
+--- a/fs/f2fs/f2fs.h
++++ b/fs/f2fs/f2fs.h
+@@ -2218,7 +2218,9 @@ void _trace_android_rvh_f2fs_down_read(wait_queue_head_t *read_waiters,
+ static inline void f2fs_down_read(struct f2fs_rwsem *sem)
+ {
+ 	bool skip = false;
++#ifdef CONFIG_F2FS_UNFAIR_RWSEM
+ 	_trace_android_rvh_f2fs_down_read(&sem->read_waiters, &sem->internal_rwsem, &skip);
++#endif
+ 	if (skip)
+ 		return;
+ #ifdef CONFIG_F2FS_UNFAIR_RWSEM
+-- 
+2.34.1
+

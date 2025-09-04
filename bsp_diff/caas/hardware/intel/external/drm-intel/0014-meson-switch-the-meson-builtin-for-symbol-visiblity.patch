@@ -1,0 +1,139 @@
+From 35c9eb53ffda6e0ac0054c701530d2a6c2c890e2 Mon Sep 17 00:00:00 2001
+From: Dylan Baker <dylan@pnwbakers.com>
+Date: Wed, 19 Jan 2022 10:42:20 -0800
+Subject: [PATCH 11/22] meson: switch the meson builtin for symbol visiblity
+
+This allows meson to check if the compiler supports gnu style symbol
+visibility, and apply the appropriate flags as necessary, rather than us
+adding them by hand
+
+Signed-off-by: Dylan Baker <dylan@pnwbakers.com>
+Reviewed-by: Simon Ser <contact@emersion.fr>
+---
+ etnaviv/meson.build | 1 +
+ exynos/meson.build  | 1 +
+ intel/meson.build   | 2 ++
+ meson.build         | 3 ++-
+ nouveau/meson.build | 1 +
+ omap/meson.build    | 1 +
+ radeon/meson.build  | 1 +
+ tegra/meson.build   | 1 +
+ 8 files changed, 10 insertions(+), 1 deletion(-)
+
+diff --git a/etnaviv/meson.build b/etnaviv/meson.build
+index ffc0a673..7cc89fd2 100644
+--- a/etnaviv/meson.build
++++ b/etnaviv/meson.build
+@@ -31,6 +31,7 @@ libdrm_etnaviv = library(
+   include_directories : [inc_root, inc_drm],
+   link_with : libdrm,
+   c_args : libdrm_c_args,
++  gnu_symbol_visibility : 'hidden',
+   dependencies : [dep_pthread_stubs, dep_rt, dep_atomic_ops],
+   version : '1.0.0',
+   install : true,
+diff --git a/exynos/meson.build b/exynos/meson.build
+index bd55a500..862d2b7b 100644
+--- a/exynos/meson.build
++++ b/exynos/meson.build
+@@ -22,6 +22,7 @@ libdrm_exynos = library(
+   'drm_exynos',
+   [files('exynos_drm.c', 'exynos_fimg2d.c'), config_file],
+   c_args : libdrm_c_args,
++  gnu_symbol_visibility : 'hidden',
+   include_directories : [inc_root, inc_drm],
+   link_with : libdrm,
+   dependencies : [dep_pthread_stubs],
+diff --git a/intel/meson.build b/intel/meson.build
+index 75e6bc3e..4ce36b9f 100644
+--- a/intel/meson.build
++++ b/intel/meson.build
+@@ -31,6 +31,7 @@ libdrm_intel = library(
+   link_with : libdrm,
+   dependencies : [dep_pciaccess, dep_pthread_stubs, dep_rt, dep_valgrind, dep_atomic_ops],
+   c_args : libdrm_c_args,
++  gnu_symbol_visibility : 'hidden',
+   version : '1.0.0',
+   install : true,
+ )
+@@ -64,6 +65,7 @@ test_decode = executable(
+   include_directories : [inc_root, inc_drm],
+   link_with : [libdrm, libdrm_intel],
+   c_args : libdrm_c_args,
++  gnu_symbol_visibility : 'hidden',
+ )
+ 
+ test(
+diff --git a/meson.build b/meson.build
+index 5b87a227..f0211457 100644
+--- a/meson.build
++++ b/meson.build
+@@ -241,8 +241,8 @@ foreach a : ['unused-parameter', 'attributes', 'long-long',
+ endforeach
+ 
+ # all c args:
+-libdrm_c_args = warn_c_args + ['-fvisibility=hidden']
+ 
++libdrm_c_args = warn_c_args
+ 
+ dep_pciaccess = dependency('pciaccess', version : '>= 0.10', required : with_intel)
+ dep_cunit = dependency('cunit', version : '>= 2.1', required : false)
+@@ -323,6 +323,7 @@ libdrm = library(
+   include_directories : inc_drm,
+   install : true,
+   kwargs : libdrm_kw,
++  gnu_symbol_visibility : 'hidden',
+ )
+ 
+ test(
+diff --git a/nouveau/meson.build b/nouveau/meson.build
+index 82947951..1724b2ed 100644
+--- a/nouveau/meson.build
++++ b/nouveau/meson.build
+@@ -23,6 +23,7 @@ libdrm_nouveau = library(
+   'drm_nouveau',
+   [files( 'nouveau.c', 'pushbuf.c', 'bufctx.c', 'abi16.c'), config_file],
+   c_args : libdrm_c_args,
++  gnu_symbol_visibility : 'hidden',
+   include_directories : [inc_root, inc_drm],
+   link_with : libdrm,
+   dependencies : [dep_threads, dep_atomic_ops],
+diff --git a/omap/meson.build b/omap/meson.build
+index bcf5b622..e3d8b5eb 100644
+--- a/omap/meson.build
++++ b/omap/meson.build
+@@ -23,6 +23,7 @@ libdrm_omap = library(
+   [files('omap_drm.c'), config_file],
+   include_directories : [inc_root, inc_drm],
+   c_args : libdrm_c_args,
++  gnu_symbol_visibility : 'hidden',
+   link_with : libdrm,
+   dependencies : [dep_pthread_stubs, dep_atomic_ops],
+   version : '1.0.0',
+diff --git a/radeon/meson.build b/radeon/meson.build
+index abc9be83..7e8b4a93 100644
+--- a/radeon/meson.build
++++ b/radeon/meson.build
+@@ -29,6 +29,7 @@ libdrm_radeon = library(
+     config_file,
+   ],
+   c_args : libdrm_c_args,
++  gnu_symbol_visibility : 'hidden',
+   include_directories : [inc_root, inc_drm],
+   link_with : libdrm,
+   dependencies : [dep_pthread_stubs, dep_atomic_ops],
+diff --git a/tegra/meson.build b/tegra/meson.build
+index 51caf67a..281c8944 100644
+--- a/tegra/meson.build
++++ b/tegra/meson.build
+@@ -25,6 +25,7 @@ libdrm_tegra = library(
+   link_with : libdrm,
+   dependencies : [dep_pthread_stubs, dep_atomic_ops],
+   c_args : libdrm_c_args,
++  gnu_symbol_visibility : 'hidden',
+   version : '0.0.0',
+   install : true,
+ )
+-- 
+2.40.1
+

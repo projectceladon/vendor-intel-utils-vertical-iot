@@ -1,0 +1,42 @@
+From 610972368e8d45d90907a1e7b67e2546a40742fb Mon Sep 17 00:00:00 2001
+From: Dylan Baker <dylan@pnwbakers.com>
+Date: Wed, 19 Jan 2022 11:12:43 -0800
+Subject: [PATCH 15/22] meson: use cc.has_function_attribute instead of open
+ coding
+
+It's less code, and also allows meson to short circuit for compilers is
+knows don't support this.
+
+Signed-off-by: Dylan Baker <dylan@pnwbakers.com>
+Reviewed-by: Simon Ser <contact@emersion.fr>
+---
+ meson.build | 6 ++----
+ 1 file changed, 2 insertions(+), 4 deletions(-)
+
+diff --git a/meson.build b/meson.build
+index 83bf29c3..e59fce5a 100644
+--- a/meson.build
++++ b/meson.build
+@@ -23,7 +23,7 @@ project(
+   ['c'],
+   version : '2.4.109',
+   license : 'MIT',
+-  meson_version : '>= 0.48',
++  meson_version : '>= 0.52',
+   default_options : ['buildtype=debugoptimized', 'c_std=c99'],
+ )
+ 
+@@ -257,9 +257,7 @@ with_man_pages = get_option('man-pages')
+ prog_rst2man = find_program('rst2man', 'rst2man.py', required: with_man_pages == 'true')
+ with_man_pages = with_man_pages != 'false' and prog_rst2man.found()
+ 
+-config.set10('HAVE_VISIBILITY',
+-  cc.compiles('''int foo_hidden(void) __attribute__((visibility(("hidden"))));''',
+-              name : 'compiler supports __attribute__(("hidden"))'))
++config.set10('HAVE_VISIBILITY', cc.has_function_attribute('visibility:hidden'))
+ 
+ foreach t : [
+              [with_exynos, 'EXYNOS'],
+-- 
+2.40.1
+

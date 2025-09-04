@@ -1,0 +1,26 @@
+From db62a05a1552de237c04c8e590b3a3d1ef76b483 Mon Sep 17 00:00:00 2001
+From: Samuel Pitoiset <samuel.pitoiset@gmail.com>
+Date: Wed, 16 Feb 2022 11:00:13 +0100
+Subject: [PATCH 19/22] build: bump version to 2.4.110
+
+Signed-off-by: Samuel Pitoiset <samuel.pitoiset@gmail.com>
+---
+ meson.build | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/meson.build b/meson.build
+index a87a47c3..210d29e0 100644
+--- a/meson.build
++++ b/meson.build
+@@ -21,7 +21,7 @@
+ project(
+   'libdrm',
+   ['c'],
+-  version : '2.4.109',
++  version : '2.4.110',
+   license : 'MIT',
+   meson_version : '>= 0.53',
+   default_options : ['buildtype=debugoptimized', 'c_std=c99'],
+-- 
+2.40.1
+

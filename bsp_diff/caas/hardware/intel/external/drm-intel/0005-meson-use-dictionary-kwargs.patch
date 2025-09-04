@@ -1,0 +1,58 @@
+From 2f02585a0bcfeec211fb42971b72f60efc09cffd Mon Sep 17 00:00:00 2001
+From: Dylan Baker <dylan@pnwbakers.com>
+Date: Wed, 17 Nov 2021 12:50:01 -0800
+Subject: [PATCH 02/22] meson: use dictionary kwargs
+
+So we don't have to duplicate the libdrm library call just to not set
+the version keyword for android
+
+Reviewed-by: Simon Ser <contact@emersion.fr>
+Signed-off-by: Dylan Baker <dylan@pnwbakers.com>
+---
+ meson.build | 26 +++++++++++++-------------
+ 1 file changed, 13 insertions(+), 13 deletions(-)
+
+diff --git a/meson.build b/meson.build
+index 5824da8a..62dec8dd 100644
+--- a/meson.build
++++ b/meson.build
+@@ -308,23 +308,23 @@ libdrm_files = [files(
+   config_file, format_mod_static_table
+ ]
+ 
++# Build an unversioned so on android
+ if android
+-  libdrm = library('drm', libdrm_files,
+-    c_args : libdrm_c_args,
+-    dependencies : [dep_valgrind, dep_rt, dep_m],
+-    include_directories : inc_drm,
+-    install : true,
+-  )
++  libdrm_kw = {}
+ else
+-  libdrm = library('drm', libdrm_files,
+-    c_args : libdrm_c_args,
+-    dependencies : [dep_valgrind, dep_rt, dep_m],
+-    include_directories : inc_drm,
+-    install : true,
+-    version: '2.4.0'
+-  )
++  libdrm_kw = {'version' : '2.4.0'}
+ endif
+ 
++libdrm = library(
++  'drm',
++  libdrm_files,
++  c_args : libdrm_c_args,
++  dependencies : [dep_valgrind, dep_rt, dep_m],
++  include_directories : inc_drm,
++  install : true,
++  kwargs : libdrm_kw,
++)
++
+ test(
+   'core-symbols-check',
+   symbols_check,
+-- 
+2.40.1
+

@@ -1,0 +1,124 @@
+From 7f98571abaf4e22cb12abf816f7635c5adfaf534 Mon Sep 17 00:00:00 2001
+From: Eric Engestrom <eric.engestrom@intel.com>
+Date: Tue, 17 Dec 2019 23:01:08 +0000
+Subject: [PATCH 07/22] use standard `__typeof__()` instead of GNU extension
+ `typeof()`
+
+And switch to c_std=c99. This simplifies using libdrm as a meson
+subproject for mesa.
+
+v2: (dylan)
+  - switch to c99 as the standard
+  - Fix amdgpu security tests as well
+
+Signed-off-by: Eric Engestrom <eric.engestrom@intel.com>
+Signed-off-by: Dylan Baker <dylan@pnwbakers.com>
+Reviewed-by: Simon Ser <contact@emersion.fr>
+Reviewed-by: Emma Anholt <emma@anholt.net>
+---
+ libdrm_lists.h                | 22 +++++++++++-----------
+ meson.build                   |  2 +-
+ tests/amdgpu/security_tests.c |  4 ++--
+ tests/nouveau/threaded.c      |  2 +-
+ util_double_list.h            |  2 +-
+ 5 files changed, 16 insertions(+), 16 deletions(-)
+
+diff --git a/libdrm_lists.h b/libdrm_lists.h
+index 8926d8d1..7f55fc0d 100644
+--- a/libdrm_lists.h
++++ b/libdrm_lists.h
+@@ -96,19 +96,19 @@ typedef struct _drmMMListHead
+ 	     (__item) = (__temp), (__temp) = (__item)->prev)
+ 
+ #define DRMLISTFOREACHENTRY(__item, __list, __head)                            \
+-	for ((__item) = DRMLISTENTRY(typeof(*__item), (__list)->next, __head); \
+-	     &(__item)->__head != (__list);                                    \
+-	     (__item) = DRMLISTENTRY(typeof(*__item),                          \
+-				     (__item)->__head.next, __head))
++	for ((__item) = DRMLISTENTRY(__typeof__(*__item), (__list)->next, __head); \
++	     &(__item)->__head != (__list);                                        \
++	     (__item) = DRMLISTENTRY(__typeof__(*__item),                          \
++	                             (__item)->__head.next, __head))
+ 
+ #define DRMLISTFOREACHENTRYSAFE(__item, __temp, __list, __head)                \
+-	for ((__item) = DRMLISTENTRY(typeof(*__item), (__list)->next, __head), \
+-	     (__temp) = DRMLISTENTRY(typeof(*__item),                          \
+-				     (__item)->__head.next, __head);           \
+-	     &(__item)->__head != (__list);                                    \
+-	     (__item) = (__temp),                                              \
+-	     (__temp) = DRMLISTENTRY(typeof(*__item),                          \
+-				     (__temp)->__head.next, __head))
++	for ((__item) = DRMLISTENTRY(__typeof__(*__item), (__list)->next, __head), \
++	     (__temp) = DRMLISTENTRY(__typeof__(*__item),                          \
++	                             (__item)->__head.next, __head);               \
++	     &(__item)->__head != (__list);                                        \
++	     (__item) = (__temp),                                                  \
++	     (__temp) = DRMLISTENTRY(__typeof__(*__item),                          \
++	                             (__temp)->__head.next, __head))
+ 
+ #define DRMLISTJOIN(__list, __join) if (!DRMLISTEMPTY(__list)) {	\
+ 	(__list)->next->prev = (__join);				\
+diff --git a/meson.build b/meson.build
+index f5704cf1..5b87a227 100644
+--- a/meson.build
++++ b/meson.build
+@@ -24,7 +24,7 @@ project(
+   version : '2.4.109',
+   license : 'MIT',
+   meson_version : '>= 0.46',
+-  default_options : ['buildtype=debugoptimized', 'c_std=gnu99'],
++  default_options : ['buildtype=debugoptimized', 'c_std=c99'],
+ )
+ 
+ pkg = import('pkgconfig')
+diff --git a/tests/amdgpu/security_tests.c b/tests/amdgpu/security_tests.c
+index 280e862d..e6c9f9a8 100644
+--- a/tests/amdgpu/security_tests.c
++++ b/tests/amdgpu/security_tests.c
+@@ -305,7 +305,7 @@ static void amdgpu_secure_bounce(void)
+ 	/* Fill Alice with a pattern.
+ 	 */
+ 	for (pp = alice.bo->cpu_ptr;
+-	     pp < (typeof(pp)) alice.bo->cpu_ptr + SECURE_BUFFER_SIZE;
++	     pp < (__typeof__(pp)) alice.bo->cpu_ptr + SECURE_BUFFER_SIZE;
+ 	     pp += sizeof(secure_pattern))
+ 		memcpy(pp, secure_pattern, sizeof(secure_pattern));
+ 
+@@ -343,7 +343,7 @@ static void amdgpu_secure_bounce(void)
+ 	/* Verify the contents of Alice.
+ 	 */
+ 	for (pp = alice.bo->cpu_ptr;
+-	     pp < (typeof(pp)) alice.bo->cpu_ptr + SECURE_BUFFER_SIZE;
++	     pp < (__typeof__(pp)) alice.bo->cpu_ptr + SECURE_BUFFER_SIZE;
+ 	     pp += sizeof(secure_pattern)) {
+ 		res = memcmp(pp, secure_pattern, sizeof(secure_pattern));
+ 		if (res) {
+diff --git a/tests/nouveau/threaded.c b/tests/nouveau/threaded.c
+index ddbac74e..eaa469e0 100644
+--- a/tests/nouveau/threaded.c
++++ b/tests/nouveau/threaded.c
+@@ -31,7 +31,7 @@
+ #include "xf86drm.h"
+ #include "nouveau.h"
+ 
+-static typeof(ioctl) *old_ioctl;
++static __typeof__(ioctl) *old_ioctl;
+ static int failed;
+ 
+ static int import_fd;
+diff --git a/util_double_list.h b/util_double_list.h
+index 7e48b26c..9bdca137 100644
+--- a/util_double_list.h
++++ b/util_double_list.h
+@@ -110,7 +110,7 @@ static inline void list_delinit(struct list_head *item)
+ #ifndef container_of
+ #define container_of(ptr, sample, member)				\
+     (void *)((char *)(ptr)						\
+-	     - ((char *)&((typeof(sample))0)->member))
++	     - ((char *)&((__typeof__(sample))0)->member))
+ #endif
+ 
+ #define LIST_FOR_EACH_ENTRY(pos, head, member)				\
+-- 
+2.40.1
+

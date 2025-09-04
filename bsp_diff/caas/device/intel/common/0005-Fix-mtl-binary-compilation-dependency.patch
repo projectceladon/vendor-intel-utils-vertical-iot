@@ -1,0 +1,24 @@
+From 73b752633fb8c84dfa6536ef400f387cc2098739 Mon Sep 17 00:00:00 2001
+From: "Kothapeta, BikshapathiX" <bikshapathix.kothapeta@intel.com>
+Date: Mon, 22 May 2023 08:49:51 +0530
+Subject: [PATCH] Fix mtl binary compilation dependency.
+
+Tracked-On:
+Signed-off-by: Basanagouda Koppad <basanagouda.nagappa.koppad@intel.com>
+Signed-off-by: Kothapeta, BikshapathiX <bikshapathix.kothapeta@intel.com>
+
+diff --git a/firmware.mk b/firmware.mk
+index d66894a..872b6cf 100644
+--- a/firmware.mk
++++ b/firmware.mk
+@@ -35,6 +35,7 @@ LOCAL_FIRMWARE_PATTERN := \
+     iwlwifi
+ 
+ LOCAL_FIRMWARE_PATTERN_IN_DIR := \
++    i915/mtl \
+     i915/kbl \
+     i915/bxt \
+     i915/cml \
+-- 
+2.40.1
+
