@@ -1,0 +1,60 @@
+From fdc47805c28ec66e1226cc08f5af032c0410b672 Mon Sep 17 00:00:00 2001
+From: Avinash Kumar <avinash3.kumar@intel.com>
+Date: Mon, 22 Sep 2025 09:15:39 +0000
+Subject: [PATCH] 0025-enable trusty on android 15
+
+Enable all trusty related kernel compile flags for android15 build.
+
+Tracked-On: OAM-134102
+Signed-off-by: Avinash Kumar <avinash3.kumar@intel.com>
+---
+ .../linux-intel-lts2024/x86_64_defconfig      | 26 ++++++++++++++++++-
+ 1 file changed, 25 insertions(+), 1 deletion(-)
+
+diff --git a/groups/kernel/gmin64/config-lts/linux-intel-lts2024/x86_64_defconfig b/groups/kernel/gmin64/config-lts/linux-intel-lts2024/x86_64_defconfig
+index 9bebcf21..ae72a69e 100644
+--- a/groups/kernel/gmin64/config-lts/linux-intel-lts2024/x86_64_defconfig
++++ b/groups/kernel/gmin64/config-lts/linux-intel-lts2024/x86_64_defconfig
+@@ -3709,7 +3709,12 @@ CONFIG_PROC_THERMAL_MMIO_RAPL=y
+ #
+ # Trusty driver
+ #
+-# CONFIG_TRUSTY is not set
++
++CONFIG_TRUSTY=y
++CONFIG_TRUSTY_X86_64=y
++CONFIG_TRUSTY_BACKUP_TIMER=y
++
++
+ # end of Trusty driver
+ 
+ CONFIG_WATCHDOG=y
+@@ -7114,6 +7119,25 @@ CONFIG_INTEL_TH_PTI=y
+ 
+ # CONFIG_FPGA is not set
+ # CONFIG_TEE is not set
++CONFIG_TEE=y
++
++#
++# TEE drivers
++#
++CONFIG_OPTEE=y
++CONFIG_OPTEE_SHM_NUM_PRIV_PAGES=1
++# CONFIG_OPTEE_BENCHMARK is not set
++# CONFIG_OPTEE_HV_IKGT is not set
++# CONFIG_OPTEE_VSOCK is not set
++CONFIG_OPTEE_IVSHMEM=y
++# end of TEE drivers
++
++CONFIG_HW_RANDOM_OPTEE=y
++# CONFIG_TCG_FTPM_TEE is not set
++# CONFIG_RTC_DRV_OPTEE is not set
++
++
++#
+ CONFIG_PM_OPP=y
+ # CONFIG_SIOX is not set
+ # CONFIG_SLIMBUS is not set
+-- 
+2.34.1
+
