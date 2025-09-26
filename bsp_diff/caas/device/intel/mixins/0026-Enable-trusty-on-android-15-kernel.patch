@@ -1,0 +1,24 @@
+From a7131f91a809ec872f1217e783880807860ef193 Mon Sep 17 00:00:00 2001
+From: Avinash Kumar <avinash3.kumar@intel.com>
+Date: Fri, 26 Sep 2025 05:55:42 +0000
+Subject: [PATCH] Enable trusty on android 15 kernel
+
+Enable all trusty related kernel compile flags for android15 build.
+
+Signed-off-by: Avinash Kumar <avinash3.kumar@intel.com>
+---
+ .../kernel/gmin64/config-lts/linux-intel-lts2024/caas_diffconfig | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/groups/kernel/gmin64/config-lts/linux-intel-lts2024/caas_diffconfig b/groups/kernel/gmin64/config-lts/linux-intel-lts2024/caas_diffconfig
+index 9fc72cd5..d47ec583 100644
+--- a/groups/kernel/gmin64/config-lts/linux-intel-lts2024/caas_diffconfig
++++ b/groups/kernel/gmin64/config-lts/linux-intel-lts2024/caas_diffconfig
+@@ -1,3 +1,4 @@
++CONFIG_TEE=y
+ CONFIG_TRUSTY=y
+ # CONFIG_TRUSTY_IRQ is not set
+ CONFIG_TRUSTY_LOG=y
+-- 
+2.34.1
+
