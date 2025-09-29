@@ -1,0 +1,32 @@
+From 075466baec5b4aaf2b696dc8d48208981e9b937c Mon Sep 17 00:00:00 2001
+From: preddycx <prashanthx.reddy.chintapally@intel.com>
+Date: Mon, 29 Sep 2025 06:04:42 +0000
+Subject: [PATCH] Fix CTS failures in VoiceInteraction tests
+
+Added a validation check to ensure that UIDs less than or equal to zero are
+considered invalid, and the function returns false in such cases. This change
+resolves detection mismatches observed during voice interaction tests.
+
+Tracked-On: OAM-134246
+Signed-off-by: preddycx <prashanthx.reddy.chintapally@intel.com>
+---
+ services/audiopolicy/service/AudioPolicyService.cpp | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/services/audiopolicy/service/AudioPolicyService.cpp b/services/audiopolicy/service/AudioPolicyService.cpp
+index 4c506e867c..db96dcfc34 100644
+--- a/services/audiopolicy/service/AudioPolicyService.cpp
++++ b/services/audiopolicy/service/AudioPolicyService.cpp
+@@ -1696,6 +1696,9 @@ void AudioPolicyService::UidPolicy::setAssistantUids(const std::vector<uid_t>& u
+ 
+ bool AudioPolicyService::UidPolicy::isAssistantUid(uid_t uid)
+ {
++    if (uid <= 0) {
++        return false;
++    }
+     std::vector<uid_t>::iterator it = find(mAssistantUids.begin(), mAssistantUids.end(), uid);
+     return it != mAssistantUids.end();
+ }
+-- 
+2.34.1
+
