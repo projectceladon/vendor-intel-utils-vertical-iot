@@ -1,0 +1,36 @@
+diff --git a/groups/serialport/ttyMAX0/BoardConfig.mk b/groups/serialport/ttyMAX0/BoardConfig.mk
+deleted file mode 100644
+index 57898372..00000000
+--- a/groups/serialport/ttyMAX0/BoardConfig.mk
++++ /dev/null
+@@ -1,3 +0,0 @@
+-ifneq ($(TARGET_BUILD_VARIANT),user)
+-BOARD_KERNEL_CMDLINE += console=ttyMAX0,230400n8
+-endif
+diff --git a/groups/serialport/ttyS1/BoardConfig.mk b/groups/serialport/ttyS1/BoardConfig.mk
+deleted file mode 100644
+index 96af39e3..00000000
+--- a/groups/serialport/ttyS1/BoardConfig.mk
++++ /dev/null
+@@ -1,3 +0,0 @@
+-ifneq ($(TARGET_BUILD_VARIANT),user)
+-BOARD_KERNEL_CMDLINE += console=ttyS1,115200n8
+-endif
+diff --git a/groups/serialport/ttyS2/BoardConfig.mk b/groups/serialport/ttyS2/BoardConfig.mk
+deleted file mode 100644
+index 004b0851..00000000
+--- a/groups/serialport/ttyS2/BoardConfig.mk
++++ /dev/null
+@@ -1,3 +0,0 @@
+-ifneq ($(TARGET_BUILD_VARIANT),user)
+-BOARD_KERNEL_CMDLINE += console=ttyS2,115200n8
+-endif
+diff --git a/groups/serialport/ttyUSB0/BoardConfig.mk b/groups/serialport/ttyUSB0/BoardConfig.mk
+deleted file mode 100644
+index 8defc1e8..00000000
+--- a/groups/serialport/ttyUSB0/BoardConfig.mk
++++ /dev/null
+@@ -1,3 +0,0 @@
+-ifneq ($(TARGET_BUILD_VARIANT),user)
+-BOARD_KERNEL_CMDLINE += console=ttyUSB0,115200n8
+-endif
