@@ -1,10 +1,21 @@
-From 4de4fc6a1decff6f901dfa255db6cb354963813f Mon Sep 17 00:00:00 2001
-From: Basanagouda Nagappa Koppad <Basanagouda.Nagappa.Koppad@intel.com>
-Date: Thu, 25 Sep 2025 13:57:38 +0000
-Subject: [PATCH] Update kernel config to lts-pre-prod-v6.12.47
+From e4f4982e143e1e0a4dd39716d3ac2e8805f21318 Mon Sep 17 00:00:00 2001
+From: lgundapx <lakshmanx.gundapu@intel.com>
+Date: Fri, 10 Oct 2025 18:01:29 +0000
+Subject: [PATCH 1/3] Upgrade to TWL Android kernel version v6.12.47
 
-Tracked-On: OAM-134138
-Signed-off-by: Basanagouda Nagappa Koppad <Basanagouda.Nagappa.Koppad@intel.com>
+Signed-off-by: lgundapx <lakshmanx.gundapu@intel.com>
+---
+ .../linux-intel-lts2024/aaos_diffconfig       |   27 +
+ .../linux-intel-lts2024/caas_diffconfig       |   11 +
+ .../linux-intel-lts2024/debug_diffconfig      |   80 +
+ .../linux-intel-lts2024/virt_diffconfig       |   33 +
+ .../linux-intel-lts2024/x86_64_defconfig      | 8269 +++++++++++++++++
+ 5 files changed, 8420 insertions(+)
+ create mode 100644 groups/kernel/gmin64/config-lts/linux-intel-lts2024/aaos_diffconfig
+ create mode 100644 groups/kernel/gmin64/config-lts/linux-intel-lts2024/caas_diffconfig
+ create mode 100644 groups/kernel/gmin64/config-lts/linux-intel-lts2024/debug_diffconfig
+ create mode 100644 groups/kernel/gmin64/config-lts/linux-intel-lts2024/virt_diffconfig
+ create mode 100644 groups/kernel/gmin64/config-lts/linux-intel-lts2024/x86_64_defconfig
 
 diff --git a/groups/kernel/gmin64/config-lts/linux-intel-lts2024/aaos_diffconfig b/groups/kernel/gmin64/config-lts/linux-intel-lts2024/aaos_diffconfig
 new file mode 100644
@@ -183,10 +194,10 @@ index 00000000..4ce1d148
 +CONFIG_VIDEO_VIRTIO_CAMERA=y
 diff --git a/groups/kernel/gmin64/config-lts/linux-intel-lts2024/x86_64_defconfig b/groups/kernel/gmin64/config-lts/linux-intel-lts2024/x86_64_defconfig
 new file mode 100644
-index 00000000..bc9ae690
+index 00000000..fc826d96
 --- /dev/null
 +++ b/groups/kernel/gmin64/config-lts/linux-intel-lts2024/x86_64_defconfig
-@@ -0,0 +1,8268 @@
+@@ -0,0 +1,8269 @@
 +#
 +# Automatically generated file; DO NOT EDIT.
 +# Linux/x86_64 6.12.47 Kernel Configuration
@@ -1819,6 +1830,7 @@ index 00000000..bc9ae690
 +CONFIG_BT_BCM=m
 +CONFIG_BT_RTL=m
 +CONFIG_BT_HCIBTUSB=m
++CONFIG_BT_SCOHCI=m
 +# CONFIG_BT_HCIBTUSB_AUTOSUSPEND is not set
 +CONFIG_BT_HCIBTUSB_POLL_SYNC=y
 +CONFIG_BT_HCIBTUSB_BCM=y
@@ -8209,7 +8221,7 @@ index 00000000..bc9ae690
 +CONFIG_DETECT_HUNG_TASK=y
 +CONFIG_DEFAULT_HUNG_TASK_TIMEOUT=120
 +CONFIG_BOOTPARAM_HUNG_TASK_PANIC=y
-+# CONFIG_DETECT_HUNG_TASK_BLOCKER is not set
++CONFIG_DETECT_HUNG_TASK_BLOCKER=y
 +# CONFIG_WQ_WATCHDOG is not set
 +# CONFIG_WQ_CPU_INTENSIVE_REPORT is not set
 +# CONFIG_TEST_LOCKUP is not set
