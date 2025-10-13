@@ -1,0 +1,37 @@
+From c1432de0323b56a5eea9b3565198e5476fe9c7a3 Mon Sep 17 00:00:00 2001
+From: Aseem Kumar <aseemk@google.com>
+Date: Wed, 16 Apr 2025 11:22:07 -0700
+Subject: [PATCH 1/8] Add ComponentName explicitly to make sure arbitary
+ intents aren't launched from Settings.
+
+Bug: 378902342
+Flag: EXEMPT security fix
+Change-Id: I0e67f1258cb427c5b998e40a8a0c104af3ead042
+(cherry picked from commit 6a896b6b26d445800773e1b4649895bea17eac1f)
+---
+ .../settings/accounts/AccountTypePreferenceLoader.java   | 9 ++++++++-
+ 1 file changed, 8 insertions(+), 1 deletion(-)
+
+diff --git a/src/com/android/settings/accounts/AccountTypePreferenceLoader.java b/src/com/android/settings/accounts/AccountTypePreferenceLoader.java
+index 71c71346adb..8ca74c85dd8 100644
+--- a/src/com/android/settings/accounts/AccountTypePreferenceLoader.java
++++ b/src/com/android/settings/accounts/AccountTypePreferenceLoader.java
+@@ -265,7 +265,14 @@ public class AccountTypePreferenceLoader {
+         try {
+             // Allows to launch only authenticator owned activities.
+             ApplicationInfo authenticatorAppInf = pm.getApplicationInfo(authDesc.packageName, 0);
+-            return resolvedAppInfo.uid == authenticatorAppInf.uid;
++            if (resolvedAppInfo.uid == authenticatorAppInf.uid) {
++                // Explicitly set the component to be same as authenticator to
++                // prevent launching arbitrary activities.
++                intent.setComponent(resolvedActivityInfo.getComponentName());
++                return true;
++            } else {
++                return false;
++            }
+         } catch (NameNotFoundException e) {
+             Log.e(TAG,
+                 "Intent considered unsafe due to exception.",
+-- 
+2.34.1
+
