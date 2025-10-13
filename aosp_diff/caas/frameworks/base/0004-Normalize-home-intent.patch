@@ -1,0 +1,229 @@
+From 1541cfaaa066bc27c4427fc57f3803ffa7cdfd47 Mon Sep 17 00:00:00 2001
+From: Louis Chang <louischang@google.com>
+Date: Thu, 28 Nov 2024 09:13:29 +0000
+Subject: [PATCH 01/25] Normalize home intent
+
+In order to prevent home activities being started as a standard
+type activity due to incorrect home intent format.
+
+Bug: 384656159
+Bug: 378505461
+Test: the same app on the bug
+Test: ActivityStartInterceptorTest
+Flag: com.android.window.flags.normalize_home_intent
+(cherry picked from https://googleplex-android-review.googlesource.com/q/commit:67ace66f8c9507b701f55bd23a87638bbe1eec76)
+Merged-In: I300f705798909014329f92118c266dbc04173e05
+
+Change-Id: I300f705798909014329f92118c266dbc04173e05
+---
+ .../server/wm/ActivityStartInterceptor.java   | 96 +++++++++++++++++--
+ .../android/server/wm/ActivityStarter.java    |  3 +-
+ .../wm/ActivityStartInterceptorTest.java      | 13 +++
+ 3 files changed, 101 insertions(+), 11 deletions(-)
+
+diff --git a/services/core/java/com/android/server/wm/ActivityStartInterceptor.java b/services/core/java/com/android/server/wm/ActivityStartInterceptor.java
+index 1a9d21187ddb..afe6e91bb949 100644
+--- a/services/core/java/com/android/server/wm/ActivityStartInterceptor.java
++++ b/services/core/java/com/android/server/wm/ActivityStartInterceptor.java
+@@ -25,6 +25,9 @@ import static android.app.PendingIntent.FLAG_ONE_SHOT;
+ import static android.app.admin.DevicePolicyManager.EXTRA_RESTRICTION;
+ import static android.app.admin.DevicePolicyManager.POLICY_SUSPEND_PACKAGES;
+ import static android.content.Context.KEYGUARD_SERVICE;
++import static android.content.Intent.ACTION_MAIN;
++import static android.content.Intent.CATEGORY_HOME;
++import static android.content.Intent.CATEGORY_SECONDARY_HOME;
+ import static android.content.Intent.EXTRA_INTENT;
+ import static android.content.Intent.EXTRA_PACKAGE_NAME;
+ import static android.content.Intent.EXTRA_TASK_ID;
+@@ -40,6 +43,7 @@ import android.app.ActivityOptions;
+ import android.app.KeyguardManager;
+ import android.app.TaskInfo;
+ import android.app.admin.DevicePolicyManagerInternal;
++import android.content.ComponentName;
+ import android.content.Context;
+ import android.content.IIntentSender;
+ import android.content.Intent;
+@@ -119,6 +123,11 @@ class ActivityStartInterceptor {
+      */
+     TaskDisplayArea mPresumableLaunchDisplayArea;
+ 
++    /**
++     * Whether the component is specified originally in the given Intent.
++     */
++    boolean mComponentSpecified;
++
+     ActivityStartInterceptor(
+             ActivityTaskManagerService service, ActivityTaskSupervisor supervisor) {
+         this(service, supervisor, service.mContext);
+@@ -185,6 +194,14 @@ class ActivityStartInterceptor {
+         return TaskFragment.fromTaskFragmentToken(taskFragToken, mService);
+     }
+ 
++    // TODO: consolidate this method with the one below since this is used for test only.
++    boolean intercept(Intent intent, ResolveInfo rInfo, ActivityInfo aInfo, String resolvedType,
++            Task inTask, TaskFragment inTaskFragment, int callingPid, int callingUid,
++            ActivityOptions activityOptions, TaskDisplayArea presumableLaunchDisplayArea) {
++        return intercept(intent, rInfo, aInfo, resolvedType, inTask, inTaskFragment, callingPid,
++                callingUid, activityOptions, presumableLaunchDisplayArea, false);
++    }
++
+     /**
+      * Intercept the launch intent based on various signals. If an interception happened the
+      * internal variables get assigned and need to be read explicitly by the caller.
+@@ -193,7 +210,8 @@ class ActivityStartInterceptor {
+      */
+     boolean intercept(Intent intent, ResolveInfo rInfo, ActivityInfo aInfo, String resolvedType,
+             Task inTask, TaskFragment inTaskFragment, int callingPid, int callingUid,
+-            ActivityOptions activityOptions, TaskDisplayArea presumableLaunchDisplayArea) {
++            ActivityOptions activityOptions, TaskDisplayArea presumableLaunchDisplayArea,
++            boolean componentSpecified) {
+         mUserManager = UserManager.get(mServiceContext);
+ 
+         mIntent = intent;
+@@ -206,6 +224,7 @@ class ActivityStartInterceptor {
+         mInTaskFragment = inTaskFragment;
+         mActivityOptions = activityOptions;
+         mPresumableLaunchDisplayArea = presumableLaunchDisplayArea;
++        mComponentSpecified = componentSpecified;
+ 
+         if (interceptQuietProfileIfNeeded()) {
+             // If work profile is turned off, skip the work challenge since the profile can only
+@@ -230,7 +249,8 @@ class ActivityStartInterceptor {
+         }
+         if (interceptHomeIfNeeded()) {
+             // Replace primary home intents directed at displays that do not support primary home
+-            // but support secondary home with the relevant secondary home activity.
++            // but support secondary home with the relevant secondary home activity. Or the home
++            // intent is not in the correct format.
+             return true;
+         }
+ 
+@@ -479,9 +499,72 @@ class ActivityStartInterceptor {
+         if (mPresumableLaunchDisplayArea == null || mService.mRootWindowContainer == null) {
+             return false;
+         }
+-        if (!ActivityRecord.isHomeIntent(mIntent)) {
++
++        boolean intercepted = false;
++        if (!ACTION_MAIN.equals(mIntent.getAction()) || (!mIntent.hasCategory(CATEGORY_HOME)
++                && !mIntent.hasCategory(CATEGORY_SECONDARY_HOME))) {
++            // not a home intent
+             return false;
+         }
++
++        if (mComponentSpecified) {
++            final ComponentName homeComponent = mIntent.getComponent();
++            final Intent homeIntent = mService.getHomeIntent();
++            final ActivityInfo aInfo = mService.mRootWindowContainer.resolveHomeActivity(
++                    mUserId, homeIntent);
++            if (!aInfo.getComponentName().equals(homeComponent)) {
++                // Do nothing if the intent is not for the default home component.
++                return false;
++            }
++        }
++
++        if (!ActivityRecord.isHomeIntent(mIntent) || mComponentSpecified) {
++            // This is not a standard home intent, make it so if possible.
++            normalizeHomeIntent();
++            intercepted = true;
++        }
++
++        intercepted |= replaceToSecondaryHomeIntentIfNeeded();
++        if (intercepted) {
++            mCallingPid = mRealCallingPid;
++            mCallingUid = mRealCallingUid;
++            mResolvedType = null;
++
++            mRInfo = mSupervisor.resolveIntent(mIntent, mResolvedType, mUserId, /* flags= */ 0,
++                    mRealCallingUid, mRealCallingPid);
++            mAInfo = mSupervisor.resolveActivity(mIntent, mRInfo, mStartFlags, /*profilerInfo=*/
++                    null);
++        }
++        return intercepted;
++    }
++
++    private void normalizeHomeIntent() {
++        Slog.w(TAG, "The home Intent is not correctly formatted");
++        if (mIntent.getCategories().size() > 1) {
++            Slog.d(TAG, "Purge home intent categories");
++            boolean isSecondaryHome = false;
++            final Object[] categories = mIntent.getCategories().toArray();
++            for (int i = categories.length - 1; i >= 0; i--) {
++                final String category = (String) categories[i];
++                if (CATEGORY_SECONDARY_HOME.equals(category)) {
++                    isSecondaryHome = true;
++                }
++                mIntent.removeCategory(category);
++            }
++            mIntent.addCategory(isSecondaryHome ? CATEGORY_SECONDARY_HOME : CATEGORY_HOME);
++        }
++        if (mIntent.getType() != null || mIntent.getData() != null) {
++            Slog.d(TAG, "Purge home intent data/type");
++            mIntent.setType(null);
++        }
++        if (mComponentSpecified) {
++            Slog.d(TAG, "Purge home intent component, " + mIntent.getComponent());
++            mIntent.setComponent(null);
++        }
++        mIntent.addFlags(FLAG_ACTIVITY_NEW_TASK);
++    }
++
++    private boolean replaceToSecondaryHomeIntentIfNeeded() {
+         if (!mIntent.hasCategory(Intent.CATEGORY_HOME)) {
+             // Already a secondary home intent, leave it alone.
+             return false;
+@@ -506,13 +589,6 @@ class ActivityStartInterceptor {
+         // and should not be moved to the caller's task. Also, activities cannot change their type,
+         // e.g. a standard activity cannot become a home activity.
+         mIntent.addFlags(FLAG_ACTIVITY_NEW_TASK);
+-        mCallingPid = mRealCallingPid;
+-        mCallingUid = mRealCallingUid;
+-        mResolvedType = null;
+-
+-        mRInfo = mSupervisor.resolveIntent(mIntent, mResolvedType, mUserId, /* flags= */ 0,
+-                mRealCallingUid, mRealCallingPid);
+-        mAInfo = mSupervisor.resolveActivity(mIntent, mRInfo, mStartFlags, /*profilerInfo=*/ null);
+         return true;
+     }
+ 
+diff --git a/services/core/java/com/android/server/wm/ActivityStarter.java b/services/core/java/com/android/server/wm/ActivityStarter.java
+index 2781592c6b4f..c352575f0102 100644
+--- a/services/core/java/com/android/server/wm/ActivityStarter.java
++++ b/services/core/java/com/android/server/wm/ActivityStarter.java
+@@ -1340,7 +1340,8 @@ class ActivityStarter {
+                 callingPackage,
+                 callingFeatureId);
+         if (mInterceptor.intercept(intent, rInfo, aInfo, resolvedType, inTask, inTaskFragment,
+-                callingPid, callingUid, checkedOptions, suggestedLaunchDisplayArea)) {
++                callingPid, callingUid, checkedOptions, suggestedLaunchDisplayArea,
++                request.componentSpecified)) {
+             // activity start was intercepted, e.g. because the target user is currently in quiet
+             // mode (turn off work) or the target application is suspended
+             intent = mInterceptor.mIntent;
+diff --git a/services/tests/wmtests/src/com/android/server/wm/ActivityStartInterceptorTest.java b/services/tests/wmtests/src/com/android/server/wm/ActivityStartInterceptorTest.java
+index 670f9f697a5c..97e97a9e74e7 100644
+--- a/services/tests/wmtests/src/com/android/server/wm/ActivityStartInterceptorTest.java
++++ b/services/tests/wmtests/src/com/android/server/wm/ActivityStartInterceptorTest.java
+@@ -236,6 +236,19 @@ public class ActivityStartInterceptorTest {
+         return dialogInfo;
+     }
+ 
++    @Test
++    public void testInterceptIncorrectHomeIntent() {
++        // Create a non-standard home intent
++        final Intent homeIntent = new Intent(Intent.ACTION_MAIN);
++        homeIntent.addCategory(Intent.CATEGORY_HOME);
++        homeIntent.addCategory(Intent.CATEGORY_LAUNCHER);
++
++        // Ensure the intent is intercepted and normalized to standard home intent.
++        assertTrue(mInterceptor.intercept(homeIntent, null, mAInfo, null, null, null, 0, 0, null,
++                mTaskDisplayArea, false));
++        assertTrue(ActivityRecord.isHomeIntent(homeIntent));
++    }
++
+     @Test
+     public void testInterceptLockTaskModeViolationPackage() {
+         when(mLockTaskController.isActivityAllowed(
+-- 
+2.34.1
+

@@ -1,0 +1,61 @@
+From 3e01747dd707f39731855df43f5d042515b31c2d Mon Sep 17 00:00:00 2001
+From: Louis Chang <louischang@google.com>
+Date: Tue, 24 Dec 2024 05:00:05 +0000
+Subject: [PATCH 02/25] Avoid home intent normalization if it is from trusted
+ callers
+
+In order to be compatible with several places that are starting
+home with component specified.
+- Press home button from Taskbar
+- RWC#startHomeOnTaskDisplayArea
+- WmTests
+
+Bug: 385721820
+Bug: 384656159
+Test: RootWindowContainerTest
+Flag: com.android.window.flags.normalize_home_intent
+(cherry picked from https://googleplex-android-review.googlesource.com/q/commit:2da0fd3573767fe585bd9d349cc4b69058c77a6f)
+Merged-In: Ie192b226eac970e9e897214059abd1615f1c5cf5
+Change-Id: Ie192b226eac970e9e897214059abd1615f1c5cf5
+---
+ .../android/server/wm/ActivityStartInterceptor.java    | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
+
+diff --git a/services/core/java/com/android/server/wm/ActivityStartInterceptor.java b/services/core/java/com/android/server/wm/ActivityStartInterceptor.java
+index afe6e91bb949..a33152c90456 100644
+--- a/services/core/java/com/android/server/wm/ActivityStartInterceptor.java
++++ b/services/core/java/com/android/server/wm/ActivityStartInterceptor.java
+@@ -16,6 +16,7 @@
+ 
+ package com.android.server.wm;
+ 
++import static android.Manifest.permission.MANAGE_ACTIVITY_TASKS;
+ import static android.app.ActivityManager.INTENT_SENDER_ACTIVITY;
+ import static android.app.ActivityOptions.ANIM_OPEN_CROSS_PROFILE_APPS;
+ import static android.app.ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_ALLOWED;
+@@ -35,6 +36,7 @@ import static android.content.Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS;
+ import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
+ import static android.content.Intent.FLAG_ACTIVITY_TASK_ON_HOME;
+ import static android.content.pm.ApplicationInfo.FLAG_SUSPENDED;
++import static android.content.pm.PackageManager.PERMISSION_GRANTED;
+ 
+ import static com.android.server.pm.PackageManagerService.PLATFORM_PACKAGE_NAME;
+ 
+@@ -508,6 +510,14 @@ class ActivityStartInterceptor {
+         }
+ 
+         if (mComponentSpecified) {
++            Slog.w(TAG, "Starting home with component specified, uid=" + mCallingUid);
++            if (mService.isCallerRecents(mCallingUid)
++                    || ActivityTaskManagerService.checkPermission(MANAGE_ACTIVITY_TASKS,
++                            mCallingPid, mCallingUid) == PERMISSION_GRANTED) {
++                // Allow home component specified from trusted callers.
++                return false;
++            }
++
+             final ComponentName homeComponent = mIntent.getComponent();
+             final Intent homeIntent = mService.getHomeIntent();
+             final ActivityInfo aInfo = mService.mRootWindowContainer.resolveHomeActivity(
+-- 
+2.34.1
+

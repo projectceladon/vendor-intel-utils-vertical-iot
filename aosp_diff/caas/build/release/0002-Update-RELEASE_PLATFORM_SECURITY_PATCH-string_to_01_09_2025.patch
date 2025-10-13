@@ -1,0 +1,23 @@
+From 7432c0a89478904b403355528f43008cb85054fd Mon Sep 17 00:00:00 2001
+From: lgundapx <lakshmanx.gundapu@intel.com>
+Date: Sun, 12 Oct 2025 11:50:27 +0000
+Subject: [PATCH] Update RELEASE_PLATFORM_SECURITY_PATCH string
+
+Signed-off-by: lgundapx <lakshmanx.gundapu@intel.com>
+---
+ flag_values/bp1a/RELEASE_PLATFORM_SECURITY_PATCH.textproto | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/flag_values/bp1a/RELEASE_PLATFORM_SECURITY_PATCH.textproto b/flag_values/bp1a/RELEASE_PLATFORM_SECURITY_PATCH.textproto
+index 063e19fd..b04a308e 100644
+--- a/flag_values/bp1a/RELEASE_PLATFORM_SECURITY_PATCH.textproto
++++ b/flag_values/bp1a/RELEASE_PLATFORM_SECURITY_PATCH.textproto
+@@ -1,4 +1,4 @@
+ name: "RELEASE_PLATFORM_SECURITY_PATCH"
+ value: {
+-  string_value: "2025-08-01"
++  string_value: "2025-09-01"
+ }
+-- 
+2.34.1
+
