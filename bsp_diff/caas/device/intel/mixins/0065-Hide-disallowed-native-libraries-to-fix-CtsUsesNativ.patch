@@ -1,0 +1,26 @@
+From d0818c252b464baf605080a839142264582c8454 Mon Sep 17 00:00:00 2001
+From: kancharx <kancharlax.suresh@intel.com>
+Date: Wed, 15 Oct 2025 10:01:04 +0000
+Subject: [PATCH] Hide disallowed native libraries to fix
+ CtsUsesNativeLibraryTest
+
+Tracked-On: https://jira.devtools.intel.com/browse/NIACP3-922
+Signed-off-by: kancharx <kancharlax.suresh@intel.com>
+---
+ groups/public-libraries/true/public.libraries.txt | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/groups/public-libraries/true/public.libraries.txt b/groups/public-libraries/true/public.libraries.txt
+index b0439e8c..f44544e5 100644
+--- a/groups/public-libraries/true/public.libraries.txt
++++ b/groups/public-libraries/true/public.libraries.txt
+@@ -1,4 +1,4 @@
+ # Specify additional native libraries
+ # So that Apps can use Intel proprietary libraries
+-libOpenCL.so
+-libopenvino.so
++#libOpenCL.so
++#libopenvino.so
+-- 
+2.34.1
+
