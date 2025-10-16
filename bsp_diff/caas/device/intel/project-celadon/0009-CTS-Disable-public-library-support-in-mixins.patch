@@ -1,0 +1,30 @@
+From ae0001c9a193ebdff843a3a5168f8f7dda6e8a72 Mon Sep 17 00:00:00 2001
+From: kancharx <kancharlax.suresh@intel.com>
+Date: Thu, 16 Oct 2025 05:36:20 +0000
+Subject: [PATCH] [CTS]Disable public library support in mixins
+
+Setting `public-libraries` to false in CAAS mixins.spec.
+This helps in resolving CtsUsesNativeLibraryTest failures.
+
+Tracked-On: OAM-134244
+Signed-off-by: kancharx <kancharlax.suresh@intel.com>
+---
+ caas/mixins.spec | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/caas/mixins.spec b/caas/mixins.spec
+index 18662414..6047ac1b 100755
+--- a/caas/mixins.spec
++++ b/caas/mixins.spec
+@@ -66,7 +66,7 @@ usb-init: true
+ usb-audio-init: false
+ usb-otg-switch: true
+ vndk: true
+-public-libraries: true
++public-libraries: false
+ device-specific: caas
+ hdcpd: true
+ treble: true
+-- 
+2.34.1
+
