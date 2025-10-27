@@ -1,0 +1,33 @@
+From 9e701df1160df26b07c3da7db1e4b3b091e9d5a9 Mon Sep 17 00:00:00 2001
+From: Basanagouda Nagappa Koppad <Basanagouda.Nagappa.Koppad@intel.com>
+Date: Mon, 27 Oct 2025 10:51:49 +0000
+Subject: [PATCH] Update kernel defconfig 6.12.52
+
+GKI_HIDDEN_MTK_CONFIGS is not set
+
+Tracked-On: OAM-134348
+Signed-off-by: Basanagouda Nagappa Koppad <Basanagouda.Nagappa.Koppad@intel.com>
+
+diff --git a/groups/kernel/gmin64/config-lts/linux-intel-lts2024/x86_64_defconfig b/groups/kernel/gmin64/config-lts/linux-intel-lts2024/x86_64_defconfig
+index fc826d96..0fbbea6a 100644
+--- a/groups/kernel/gmin64/config-lts/linux-intel-lts2024/x86_64_defconfig
++++ b/groups/kernel/gmin64/config-lts/linux-intel-lts2024/x86_64_defconfig
+@@ -1,6 +1,6 @@
+ #
+ # Automatically generated file; DO NOT EDIT.
+-# Linux/x86_64 6.12.47 Kernel Configuration
++# Linux/x86_64 6.12.52 Kernel Configuration
+ #
+ CONFIG_CC_VERSION_TEXT="Android (12701618, +pgo, +bolt, +lto, +mlgo, based on r536225) clang version 19.0.1 (https://android.googlesource.com/toolchain/llvm-project b3a530ec6537146650e42be89f1089e9a3588460)"
+ CONFIG_GCC_VERSION=0
+@@ -8260,6 +8260,7 @@ CONFIG_RUNTIME_TESTING_MENU=y
+ # CONFIG_TEST_OBJPOOL is not set
+ CONFIG_ARCH_USE_MEMTEST=y
+ # CONFIG_MEMTEST is not set
++# CONFIG_GKI_HIDDEN_MTK_CONFIGS is not set
+ # end of Kernel Testing and Coverage
+ 
+ #
+-- 
+2.34.1
+
