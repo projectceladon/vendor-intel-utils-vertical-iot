@@ -1,0 +1,26 @@
+From 9fd70fc010ece3488d4a974c1d5b9a711a7f8648 Mon Sep 17 00:00:00 2001
+From: Basanagouda Nagappa Koppad <Basanagouda.Nagappa.Koppad@intel.com>
+Date: Wed, 26 Nov 2025 14:28:22 +0000
+Subject: [PATCH] Fix RPL-SR platform on Android 15 boot issue
+
+Modify the kernel config CONFIG_VMD=m to y
+
+Tracked-On: OAM-134599
+Signed-off-by: Basanagouda Nagappa Koppad <Basanagouda.Nagappa.Koppad@intel.com>
+
+diff --git a/groups/kernel/gmin64/config-lts/linux-intel-lts2024/x86_64_defconfig b/groups/kernel/gmin64/config-lts/linux-intel-lts2024/x86_64_defconfig
+index b4c11918..302953a5 100644
+--- a/groups/kernel/gmin64/config-lts/linux-intel-lts2024/x86_64_defconfig
++++ b/groups/kernel/gmin64/config-lts/linux-intel-lts2024/x86_64_defconfig
+@@ -1756,7 +1756,7 @@ CONFIG_HOTPLUG_PCI_ACPI=y
+ #
+ # PCI controller drivers
+ #
+-CONFIG_VMD=m
++CONFIG_VMD=y
+ 
+ #
+ # Cadence-based PCIe controllers
+-- 
+2.34.1
+
