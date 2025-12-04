@@ -1,0 +1,29 @@
+From c8f4ffb18fc5d7256ff4e4b40814c57dc6f55179 Mon Sep 17 00:00:00 2001
+From: Anisetti Avinash Krishna <anisetti.avinash.krishna@intel.com>
+Date: Thu, 4 Dec 2025 12:45:21 +0000
+Subject: [PATCH] Added a fix for Audio server crash
+
+Fixes the crash by resetting device number from -1 to 0.
+
+Signed-off-by: Anisetti Avinash Krishna <anisetti.avinash.krishna@intel.com>
+---
+ audio/aidl/default/primary/StreamPrimary.cpp | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/audio/aidl/default/primary/StreamPrimary.cpp b/audio/aidl/default/primary/StreamPrimary.cpp
+index 4e9e2d863e..a3c36e3086 100644
+--- a/audio/aidl/default/primary/StreamPrimary.cpp
++++ b/audio/aidl/default/primary/StreamPrimary.cpp
+@@ -183,6 +183,9 @@ StreamPrimary::AlsaDeviceId StreamPrimary::getCardAndDeviceId(
+     AlsaDeviceId cardAndDeviceId;
+     cardAndDeviceId.first  = primary::PrimaryMixer::get_pcm_card("PCH");
+     cardAndDeviceId.second = primary::PrimaryMixer::get_pcm_device(cardAndDeviceId.first);
++    if (cardAndDeviceId.second == -1) {
++	    cardAndDeviceId.second = 0;
++    }
+     LOG(DEBUG) << __func__ << ": parsed with card id " << cardAndDeviceId.first << ", device id "
+                << cardAndDeviceId.second;
+     return cardAndDeviceId;
+-- 
+2.34.1
+
