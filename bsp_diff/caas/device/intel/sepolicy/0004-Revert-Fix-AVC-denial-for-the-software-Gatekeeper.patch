@@ -1,0 +1,34 @@
+From 318972d17895b5ba3123e76926d2aa13095f1e10 Mon Sep 17 00:00:00 2001
+From: celadon <celadon@intel.com>
+Date: Thu, 11 Dec 2025 04:18:18 +0000
+Subject: [PATCH] Revert "Fix AVC denial for the software Gatekeeper"
+
+This reverts commit 977e58218d53412adaef9eca9f2d9de945c25d11.
+
+Tracked-On: OAM-134836
+Signed-off-by: Avinash Kumar <avinash3.kumar@intel.com>
+---
+ tee/trusty/hal_gatekeeper_default.te | 2 --
+ tee/trusty/service_contexts          | 1 -
+ 2 files changed, 3 deletions(-)
+ delete mode 100644 tee/trusty/hal_gatekeeper_default.te
+ delete mode 100644 tee/trusty/service_contexts
+
+diff --git a/tee/trusty/hal_gatekeeper_default.te b/tee/trusty/hal_gatekeeper_default.te
+deleted file mode 100644
+index 0181578..0000000
+--- a/tee/trusty/hal_gatekeeper_default.te
++++ /dev/null
+@@ -1,2 +0,0 @@
+-hal_attribute_service(hal_gatekeeper, hal_gatekeeper_service)
+-allow hal_gatekeeper_default hal_gatekeeper_service:service_manager add;
+diff --git a/tee/trusty/service_contexts b/tee/trusty/service_contexts
+deleted file mode 100644
+index 434e1fc..0000000
+--- a/tee/trusty/service_contexts
++++ /dev/null
+@@ -1 +0,0 @@
+-android.hardware.security.sharedsecret.ISharedSecret/gatekeeper                      u:object_r:hal_gatekeeper_service:s0
+-- 
+2.34.1
+

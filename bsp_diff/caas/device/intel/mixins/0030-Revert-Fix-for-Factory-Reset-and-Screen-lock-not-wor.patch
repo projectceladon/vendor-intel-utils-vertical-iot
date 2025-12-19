@@ -1,0 +1,44 @@
+From e8fcb5452b499c44df1ad1e854d9d805d2ae4a08 Mon Sep 17 00:00:00 2001
+From: celadon <celadon@intel.com>
+Date: Thu, 11 Dec 2025 04:22:08 +0000
+Subject: [PATCH] Revert "Fix for Factory Reset and Screen lock not working
+ after trusty"
+
+This reverts commit 43d7e17a0417112ce0a0be7d9046c8afa7cd0902.
+
+Tracked-On: OAM-134836
+Signed-off-by: Avinash Kumar <avinash3.kumar@intel.com>
+---
+ groups/tee/trusty/product.mk | 9 ++++++---
+ 1 file changed, 6 insertions(+), 3 deletions(-)
+
+diff --git a/groups/tee/trusty/product.mk b/groups/tee/trusty/product.mk
+index f7914945..ee8b4b0c 100644
+--- a/groups/tee/trusty/product.mk
++++ b/groups/tee/trusty/product.mk
+@@ -4,9 +4,8 @@ PRODUCT_PACKAGES += \
+ 	storageproxyd \
+ 	libinteltrustystorage \
+ 	libinteltrustystorageinterface \
+-	android.hardware.gatekeeper-service.nonsecure \
+-	com.android.hardware.gatekeeper.nonsecure \
+-        android.hardware.security.keymint-service \
++	android.hardware.gatekeeper-service.trusty \
++	android.hardware.security.keymint-service.trusty \
+ 	keybox_provisioning \
+ 	RemoteProvisioner \
+ 	rpmb_dev
+@@ -19,6 +18,10 @@ PRODUCT_PACKAGES_DEBUG += \
+ 	RemoteProvisionerUnitTests \
+ 	libkeymint_remote_prov_support_test
+ 
++PRODUCT_PROPERTY_OVERRIDES += \
++	ro.hardware.gatekeeper=trusty \
++	ro.hardware.keystore=trusty
++
+ PRODUCT_COPY_FILES += \
+ 	frameworks/native/data/etc/android.hardware.keystore.app_attest_key.xml:vendor/etc/permissions/android.hardware.keystore.app_attest_key.xml
+ 
+-- 
+2.34.1
+
