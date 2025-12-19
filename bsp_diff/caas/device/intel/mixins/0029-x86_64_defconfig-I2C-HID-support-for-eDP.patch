@@ -1,0 +1,29 @@
+From 8a246276762a49a1409ef9ced338c8bc16d6e2f5 Mon Sep 17 00:00:00 2001
+From: gdonthu <gangadhar.donthu@intel.com>
+Date: Fri, 19 Dec 2025 09:36:26 +0000
+Subject: [PATCH] x86_64_defconfig: I2C HID support for eDP.
+
+These changes improve support for I2C HID devices.
+Pulling this change from Tushar on Android Kernel.
+tushar.jagad@intel.com
+
+Tracked-On: OAM-134834
+Signed-off-by: gdonthu <gangadhar.donthu@intel.com>
+
+diff --git a/groups/kernel/gmin64/config-lts/linux-intel-lts2024/x86_64_defconfig b/groups/kernel/gmin64/config-lts/linux-intel-lts2024/x86_64_defconfig
+index 302953a5..99848492 100644
+--- a/groups/kernel/gmin64/config-lts/linux-intel-lts2024/x86_64_defconfig
++++ b/groups/kernel/gmin64/config-lts/linux-intel-lts2024/x86_64_defconfig
+@@ -5388,7 +5388,8 @@ CONFIG_USB_HIDDEV=y
+ # end of USB HID support
+ 
+ CONFIG_I2C_HID=y
+-# CONFIG_I2C_HID_ACPI is not set
++CONFIG_I2C_HID_CORE=y
++CONFIG_I2C_HID_ACPI=y
+ # CONFIG_I2C_HID_OF is not set
+ 
+ #
+-- 
+2.34.1
+
