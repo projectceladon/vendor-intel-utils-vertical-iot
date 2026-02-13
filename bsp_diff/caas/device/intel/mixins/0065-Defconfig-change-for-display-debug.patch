@@ -1,0 +1,47 @@
+From a186e19d3731b0e312ffe7a4225f0255ea437b57 Mon Sep 17 00:00:00 2001
+From: somkarx <suhasx.omkar@intel.com>
+Date: Fri, 13 Feb 2026 09:19:44 +0000
+Subject: [PATCH] Defconfig change for display debug
+
+add below config to the kernel
+CONFIG_DRM_LOAD_EDID_FIRMWARE=y
+
+add below parameter to the kernel commandline
+i915.force_dp_lane_count=4
+
+Tracked-On:NIACP3-1133
+Signed-off-by: somkarx <suhasx.omkar@intel.com>
+---
+ groups/graphics/auto/BoardConfig.mk                             | 2 +-
+ .../gmin64/config-lts/linux-intel-lts2024/x86_64_defconfig      | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/groups/graphics/auto/BoardConfig.mk b/groups/graphics/auto/BoardConfig.mk
+index 2ed65c2e..617d8454 100755
+--- a/groups/graphics/auto/BoardConfig.mk
++++ b/groups/graphics/auto/BoardConfig.mk
+@@ -2,7 +2,7 @@
+ TARGET_USE_PRIVATE_LIBDRM := true
+ LIBDRM_VER ?= intel
+ 
+-BOARD_KERNEL_CMDLINE += vga=current i915.modeset=1 drm.atomic=1 i915.nuclear_pageflip=1 drm.vblankoffdelay=1 i915.fastboot=1
++BOARD_KERNEL_CMDLINE += vga=current i915.modeset=1 drm.atomic=1 i915.nuclear_pageflip=1 drm.vblankoffdelay=1 i915.fastboot=1 i915.force_dp_lane_count=4
+ 
+ USE_OPENGL_RENDERER := true
+ USE_INTEL_UFO_DRIVER := false
+diff --git a/groups/kernel/gmin64/config-lts/linux-intel-lts2024/x86_64_defconfig b/groups/kernel/gmin64/config-lts/linux-intel-lts2024/x86_64_defconfig
+index 99848492..ff241700 100644
+--- a/groups/kernel/gmin64/config-lts/linux-intel-lts2024/x86_64_defconfig
++++ b/groups/kernel/gmin64/config-lts/linux-intel-lts2024/x86_64_defconfig
+@@ -4491,7 +4491,7 @@ CONFIG_DRM_KMS_HELPER=y
+ CONFIG_DRM_FBDEV_EMULATION=y
+ CONFIG_DRM_FBDEV_OVERALLOC=100
+ # CONFIG_DRM_FBDEV_LEAK_PHYS_SMEM is not set
+-# CONFIG_DRM_LOAD_EDID_FIRMWARE is not set
++CONFIG_DRM_LOAD_EDID_FIRMWARE=y
+ CONFIG_DRM_DISPLAY_HELPER=y
+ # CONFIG_DRM_DISPLAY_DP_AUX_CEC is not set
+ # CONFIG_DRM_DISPLAY_DP_AUX_CHARDEV is not set
+-- 
+2.34.1
+
